@@ -50,7 +50,7 @@
         .nav-btn:hover{color:var(--t)}
         .nav-btn.active{background:var(--w);color:var(--p);box-shadow:0 1px 2px rgba(0,0,0,.1)}
         .actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-        .btn{padding:8px 14px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;border:none;display:inline-flex;align-items:center;gap:6px}
+        .btn{padding:8px 14px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;border:none;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
         .btn-p{background:var(--p);color:#fff}
         .btn-p:hover{background:var(--pd)}
         .btn-s{background:var(--gl);color:var(--t)}
@@ -60,10 +60,56 @@
         .view{display:none}
         .view.active{display:block}
         
-        /* Tasks */
-        .tasks-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+        /* Tasks - Calendar/iPhone style */
+        .tasks-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
         .tasks-title{font-size:22px;font-weight:700}
         .tasks-count{background:var(--r);color:#fff;padding:2px 10px;border-radius:12px;font-size:13px;margin-left:8px}
+        
+        .tasks-group{margin-bottom:24px}
+        .tasks-group-title{font-size:13px;font-weight:600;color:var(--g);text-transform:uppercase;letter-spacing:0.5px;padding:8px 0;border-bottom:1px solid #e5e7eb;margin-bottom:8px;display:flex;align-items:center;gap:8px}
+        .tasks-group-title svg{width:16px;height:16px}
+        .tasks-group-count{background:var(--gl);color:var(--ts);padding:2px 8px;border-radius:10px;font-size:11px}
+        
+        .task-item{display:flex;align-items:center;gap:12px;padding:12px 16px;background:var(--w);border-radius:12px;margin-bottom:6px;cursor:pointer;transition:all .15s;border:1px solid #e5e7eb}
+        .task-item:hover{background:var(--gl);transform:translateX(4px)}
+        .task-item:active{transform:scale(0.99)}
+        
+        .task-priority{width:4px;height:40px;border-radius:2px;flex-shrink:0}
+        .task-priority.critical{background:var(--r)}
+        .task-priority.warning{background:var(--o)}
+        .task-priority.info{background:var(--b)}
+        .task-priority.success{background:var(--p)}
+        
+        .task-checkbox{width:22px;height:22px;border:2px solid #d1d5db;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .15s}
+        .task-checkbox:hover{border-color:var(--p);background:var(--pl)}
+        .task-checkbox.done{background:var(--p);border-color:var(--p)}
+        .task-checkbox svg{width:12px;height:12px;color:#fff;opacity:0}
+        .task-checkbox.done svg{opacity:1}
+        
+        .task-content{flex:1;min-width:0}
+        .task-main{display:flex;align-items:center;gap:8px;margin-bottom:4px}
+        .task-name{font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+        .task-badge{font-size:10px;padding:2px 6px;border-radius:4px;font-weight:500;white-space:nowrap}
+        .task-badge.hot{background:#fee2e2;color:#dc2626}
+        .task-badge.warm{background:#fef3c7;color:#d97706}
+        .task-badge.cold{background:#dbeafe;color:#2563eb}
+        
+        .task-details{display:flex;align-items:center;gap:12px;font-size:12px;color:var(--ts)}
+        .task-details span{display:flex;align-items:center;gap:4px}
+        .task-details svg{width:12px;height:12px}
+        
+        .task-action-text{font-size:13px;color:var(--t);margin-top:6px;padding:8px 10px;background:var(--gl);border-radius:6px}
+        
+        .task-quick-btns{display:flex;gap:6px;flex-shrink:0}
+        .task-quick-btn{width:32px;height:32px;border-radius:8px;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s}
+        .task-quick-btn svg{width:16px;height:16px}
+        .task-quick-btn.call{background:#dcfce7;color:#16a34a}
+        .task-quick-btn.call:hover{background:#16a34a;color:#fff}
+        .task-quick-btn.done{background:#dbeafe;color:#2563eb}
+        .task-quick-btn.done:hover{background:#2563eb;color:#fff}
+        .task-quick-btn.fail{background:#fee2e2;color:#dc2626}
+        .task-quick-btn.fail:hover{background:#dc2626;color:#fff}
+        
         .task-card{background:var(--w);border-radius:12px;padding:16px;margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,.1);border-left:4px solid transparent;cursor:pointer}
         .task-card:hover{box-shadow:0 4px 12px rgba(0,0,0,.15)}
         .task-card.critical{border-left-color:var(--r);background:var(--rl)}
@@ -214,10 +260,30 @@
         
         .quick-actions{display:flex;gap:8px;flex-wrap:wrap;padding:12px;background:var(--gl);border-radius:8px;margin-bottom:16px}
         
-        @media(max-width:640px){
+        @media(max-width:768px){
+            .header{padding:10px 12px}
+            .header-content{flex-direction:column;gap:10px}
+            .logo{font-size:18px}
+            .nav{width:100%;justify-content:center;order:1}
+            .nav-btn{padding:8px 12px;font-size:13px}
+            .actions{width:100%;justify-content:center;flex-wrap:wrap;gap:6px;order:2}
+            .btn{padding:6px 10px;font-size:12px}
+            .sync-status{display:none}
+            .user-menu{order:3}
+            .user-email{max-width:120px;font-size:11px}
+        }
+        @media(max-width:480px){
             .form-row{grid-template-columns:1fr}
             .links-grid{grid-template-columns:1fr}
-            .header-content{flex-direction:column}
+            .nav-btn{padding:6px 10px;font-size:12px}
+            .actions .btn.btn-s:not([href]){display:none}
+            .kanban{overflow-x:auto;padding-bottom:20px}
+            .k-col{min-width:260px}
+            .tasks-header{flex-direction:column;align-items:flex-start;gap:12px}
+            .kanban-filters{flex-wrap:wrap}
+            .filter-btn{padding:6px 10px;font-size:11px}
+            .user-email{display:none}
+            .user-btn{font-size:11px;padding:4px 8px}
         }
     </style>
 </head>
@@ -255,6 +321,7 @@
                 <button class="btn btn-p" onclick="openModal()">+ Додати</button>
                 <label class="btn btn-s">Імпорт<input type="file" accept=".xlsx,.xls" onchange="importXLS(event)" hidden></label>
                 <button class="btn btn-s" onclick="exportXLS()">Експорт</button>
+                <button class="btn btn-s" style="background:#fef3c7;color:#92400e" onclick="loadDemo()">🎮 Демо</button>
                 <div class="sync-status" id="sync-status"><div class="sync-dot" id="sync-dot"></div><span id="sync-text">Синхронізовано</span></div>
                 <a href="https://chatgpt.com/g/g-695d18d64ffc8191885772ca62dfb66c-talko-crm-support" target="_blank" class="btn btn-s" style="background:linear-gradient(135deg,#10a37f,#1a7f5a);color:#fff;text-decoration:none">
                     <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a7 7 0 0 1 7 7c0 2.38-1.19 4.47-3 5.74V17a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1v-2.26C6.19 13.47 5 11.38 5 9a7 7 0 0 1 7-7z"/><path d="M9 21h6"/><path d="M9 18h6"/></svg>
@@ -300,14 +367,23 @@
         
         <!-- Reports View -->
         <div class="view" id="v-reports">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:12px">
                 <h1 class="tasks-title">Звіти</h1>
-                <div style="display:flex;gap:8px">
-                    <select id="period" onchange="renderReports()" class="form-select" style="width:auto">
-                        <option value="week">Тиждень</option>
-                        <option value="month">Місяць</option>
-                        <option value="all">Весь час</option>
-                    </select>
+                <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+                    <div style="display:flex;align-items:center;gap:6px">
+                        <label style="font-size:13px;color:var(--g)">З:</label>
+                        <input type="date" id="date-from" class="form-input" style="width:auto;padding:6px 10px" onchange="renderReports()">
+                    </div>
+                    <div style="display:flex;align-items:center;gap:6px">
+                        <label style="font-size:13px;color:var(--g)">До:</label>
+                        <input type="date" id="date-to" class="form-input" style="width:auto;padding:6px 10px" onchange="renderReports()">
+                    </div>
+                    <div style="display:flex;gap:4px">
+                        <button class="btn btn-s" onclick="setReportPeriod('week')">Тиждень</button>
+                        <button class="btn btn-s" onclick="setReportPeriod('month')">Місяць</button>
+                        <button class="btn btn-s" onclick="setReportPeriod('quarter')">Квартал</button>
+                        <button class="btn btn-s" onclick="setReportPeriod('all')">Все</button>
+                    </div>
                     <button class="btn btn-p" onclick="exportReport()">Експорт</button>
                 </div>
             </div>
@@ -784,27 +860,75 @@ function getAIHint(l){
 function renderTasks(){
     const allTasks=getTasks();
     const tasks=filterTasks(allTasks);
-    // Сортуємо по скорингу (гарячі зверху)
     tasks.sort((a,b)=>calcScore(b.l)-calcScore(a.l));
     document.getElementById('task-count').textContent=tasks.length;
     const c=document.getElementById('tasks-list');
-    if(!tasks.length){c.innerHTML='<div class="empty"><svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="#22c55e" stroke-width="2" style="margin-bottom:12px"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg><div style="font-size:18px;font-weight:600;margin-bottom:8px">'+(taskFilter==='all'?'Всі завдання виконані!':'Немає завдань в цій категорії')+'</div><div style="color:var(--g)">'+(taskFilter==='all'?'Можеш відпочити або перевірити Kanban':'Спробуй інший фільтр')+'</div></div>';return;}
-    c.innerHTML=tasks.map(t=>{
-        const score=calcScore(t.l);
-        const scoreClass=score>=70?'hot':score>=50?'warm':'cold';
-        const hint=getAIHint(t.l);
-        return`
-        <div class="task-card ${t.p}" onclick="openModal('${t.l.id}')">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
-                <div class="task-name">${t.l.tg||t.l.phone||'—'}</div>
-                <div class="score ${scoreClass}"><div class="score-bar"><div class="score-fill ${scoreClass}" style="width:${score}%"></div></div>${score}</div>
-            </div>
-            <div class="task-meta">${t.l.biz||''} ${t.l.status?'• '+ST[t.l.status]:''}</div>
-            ${hint?`<div class="ai-hint"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a7 7 0 0 1 7 7c0 2.38-1.19 4.47-3 5.74V17a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1v-2.26C6.19 13.47 5 11.38 5 9a7 7 0 0 1 7-7z"/><path d="M9 21h6"/><path d="M9 18h6"/></svg><div class="ai-hint-text"><div class="ai-hint-title">ШІ підказка</div>${hint}</div></div>`:''}
-            <div class="task-action">${t.msg}</div>
-            <div class="task-btns">${t.btns.map(b=>`<button class="task-btn ${b.t}" onclick="event.stopPropagation();taskAction('${t.l.id}','${b.a}')">${b.l}</button>`).join('')}</div>
-        </div>
-    `;}).join('');
+    
+    if(!tasks.length){
+        c.innerHTML='<div class="empty"><svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="#22c55e" stroke-width="2" style="margin-bottom:12px"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg><div style="font-size:18px;font-weight:600;margin-bottom:8px">'+(taskFilter==='all'?'Всі завдання виконані!':'Немає завдань в цій категорії')+'</div><div style="color:var(--g)">'+(taskFilter==='all'?'Можеш відпочити або перевірити Kanban':'Спробуй інший фільтр')+'</div></div>';
+        return;
+    }
+    
+    // Групуємо завдання
+    const groups = {
+        critical: {title:'🔴 Терміново', icon:'alert', tasks:[]},
+        today: {title:'📅 Сьогодні', icon:'calendar', tasks:[]},
+        calls: {title:'📞 Зателефонувати', icon:'phone', tasks:[]},
+        followup: {title:'💬 Дожати', icon:'chat', tasks:[]},
+        other: {title:'📋 Інші', icon:'list', tasks:[]}
+    };
+    
+    tasks.forEach(t => {
+        const score = calcScore(t.l);
+        if(t.p === 'critical' || score >= 70) groups.critical.tasks.push(t);
+        else if(t.l.nextDate === today() || t.l.consult?.startsWith(today())) groups.today.tasks.push(t);
+        else if(t.msg.includes('Подзвон') || t.msg.includes('дзвін')) groups.calls.tasks.push(t);
+        else if(t.l.status === 'report_sent' || t.msg.includes('Дожат')) groups.followup.tasks.push(t);
+        else groups.other.tasks.push(t);
+    });
+    
+    let html = '';
+    Object.entries(groups).forEach(([key, group]) => {
+        if(!group.tasks.length) return;
+        html += `<div class="tasks-group">
+            <div class="tasks-group-title">${group.title}<span class="tasks-group-count">${group.tasks.length}</span></div>`;
+        
+        group.tasks.forEach(t => {
+            const score = calcScore(t.l);
+            const scoreClass = score>=70?'hot':score>=50?'warm':'cold';
+            const hint = getAIHint(t.l);
+            const priorityClass = t.p || (score>=70?'critical':score>=50?'warning':'info');
+            
+            html += `
+            <div class="task-item" onclick="openModal('${t.l.id}')">
+                <div class="task-priority ${priorityClass}"></div>
+                <div class="task-content">
+                    <div class="task-main">
+                        <span class="task-name">${t.l.tg||t.l.phone||'—'}</span>
+                        <span class="task-badge ${scoreClass}">${score}</span>
+                        ${t.l.biz?`<span style="font-size:11px;color:var(--g)">${t.l.biz}</span>`:''}
+                    </div>
+                    <div class="task-details">
+                        <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg>${ST[t.l.status]||'Новий'}</span>
+                        ${t.l.consult?`<span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/></svg>${fmtDT(t.l.consult)}</span>`:''}
+                        ${t.l.calls?`<span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07"/></svg>${t.l.calls} дзв</span>`:''}
+                    </div>
+                    <div class="task-action-text">${t.msg}</div>
+                    ${hint?`<div class="ai-hint" style="margin-top:8px"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a7 7 0 0 1 7 7c0 2.38-1.19 4.47-3 5.74V17a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1v-2.26C6.19 13.47 5 11.38 5 9a7 7 0 0 1 7-7z"/></svg><span style="font-size:12px">${hint}</span></div>`:''}
+                </div>
+                <div class="task-quick-btns">
+                    ${t.btns.slice(0,2).map(b=>`<button class="task-quick-btn ${b.a.includes('call')?'call':b.a.includes('fail')?'fail':'done'}" onclick="event.stopPropagation();taskAction('${t.l.id}','${b.a}')" title="${b.l}">
+                        ${b.a.includes('call')?'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72"/></svg>'
+                        :b.a.includes('fail')?'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>'
+                        :'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>'}
+                    </button>`).join('')}
+                </div>
+            </div>`;
+        });
+        html += '</div>';
+    });
+    
+    c.innerHTML = html;
 }
 
 function taskAction(id,a){
@@ -932,9 +1056,43 @@ function dDrop(e,status){
 }
 
 // ===== REPORTS =====
+function initReportDates(){
+    const now=new Date();
+    const weekAgo=new Date(now);weekAgo.setDate(now.getDate()-7);
+    document.getElementById('date-from').value=weekAgo.toISOString().split('T')[0];
+    document.getElementById('date-to').value=now.toISOString().split('T')[0];
+}
+
+function setReportPeriod(p){
+    const now=new Date();
+    const to=now.toISOString().split('T')[0];
+    let from;
+    switch(p){
+        case'week':
+            const w=new Date(now);w.setDate(now.getDate()-7);
+            from=w.toISOString().split('T')[0];
+            break;
+        case'month':
+            const m=new Date(now);m.setMonth(now.getMonth()-1);
+            from=m.toISOString().split('T')[0];
+            break;
+        case'quarter':
+            const q=new Date(now);q.setMonth(now.getMonth()-3);
+            from=q.toISOString().split('T')[0];
+            break;
+        case'all':
+            from='2020-01-01';
+            break;
+    }
+    document.getElementById('date-from').value=from;
+    document.getElementById('date-to').value=to;
+    renderReports();
+}
+
 function renderReports(){
-    const period=document.getElementById('period').value;
-    const fl=filterByPeriod(leads,period);
+    const fromDate=document.getElementById('date-from').value;
+    const toDate=document.getElementById('date-to').value;
+    const fl=filterByDateRange(leads,fromDate,toDate);
     const byS={};fl.forEach(l=>{byS[l.status]=(byS[l.status]||0)+1;});
     const paid=fl.filter(l=>l.status==='paid');
     const dep=fl.filter(l=>l.status==='deposit');
@@ -942,6 +1100,15 @@ function renderReports(){
     paid.forEach(l=>{rev+=toUAH(l.finTotal,l.finTotalCur);});
     dep.forEach(l=>{rev+=toUAH(l.finDep,l.finDepCur);});
     const cons=fl.filter(l=>['completed','report_sent','repeat','deposit','paid'].includes(l.status)).length;
+    
+    // Додаткова статистика
+    const newLeads=fl.filter(l=>l.status==='new').length;
+    const failed=fl.filter(l=>l.status==='failed').length;
+    const avgDays=fl.length?Math.round(fl.reduce((s,l)=>{
+        if(!l.stageDate||!l.created)return s;
+        return s+Math.floor((new Date(l.stageDate)-new Date(l.created))/864e5);
+    },0)/fl.length):0;
+    
     document.getElementById('stats').innerHTML=`
         <div class="stat"><div class="stat-val">${fl.length}</div><div class="stat-label">Лідів</div></div>
         <div class="stat"><div class="stat-val">${cons}</div><div class="stat-label">Консультацій</div></div>
@@ -949,6 +1116,8 @@ function renderReports(){
         <div class="stat"><div class="stat-val">${paid.length}</div><div class="stat-label">Оплат</div></div>
         <div class="stat"><div class="stat-val">${Math.round(rev).toLocaleString()}</div><div class="stat-label">Сума (грн)</div></div>
         <div class="stat"><div class="stat-val">${fl.length?Math.round(paid.length/fl.length*100):0}%</div><div class="stat-label">Конверсія</div></div>
+        <div class="stat"><div class="stat-val">${failed}</div><div class="stat-label">Неуспішних</div></div>
+        <div class="stat"><div class="stat-val">${avgDays}д</div><div class="stat-label">Сер. цикл</div></div>
     `;
     const funnel=[['Нові',byS.new||0],['Призначені',byS.scheduled||0],['Проведені',byS.completed||0],['Звіт',byS.report_sent||0],['Завдаток',byS.deposit||0],['Оплачено',byS.paid||0]];
     const max=Math.max(...funnel.map(f=>f[1]),1);
@@ -956,23 +1125,46 @@ function renderReports(){
         <div class="funnel-row"><div class="funnel-label">${f[0]}</div><div class="funnel-bar"><div class="funnel-fill" style="width:${f[1]/max*100}%">${f[1]}</div></div></div>
     `).join('');
 }
-function filterByPeriod(arr,p){
-    if(p==='all')return arr;
-    const now=new Date();let start=new Date(now);
-    if(p==='week')start.setDate(now.getDate()-7);
-    else start.setMonth(now.getMonth()-1);
-    return arr.filter(l=>new Date(l.created)>=start);
+
+function filterByDateRange(arr,from,to){
+    if(!from&&!to)return arr;
+    const fromD=from?new Date(from+'T00:00:00'):new Date('2000-01-01');
+    const toD=to?new Date(to+'T23:59:59'):new Date();
+    return arr.filter(l=>{
+        const created=new Date(l.created);
+        return created>=fromD&&created<=toD;
+    });
 }
+
 function toUAH(a,c){if(!a)return 0;return a*({UAH:1,USD:41,EUR:45}[c]||1);}
+
 function exportReport(){
-    const period=document.getElementById('period').value;
-    const fl=filterByPeriod(leads,period);
+    const fromDate=document.getElementById('date-from').value;
+    const toDate=document.getElementById('date-to').value;
+    const fl=filterByDateRange(leads,fromDate,toDate);
     const byS={};fl.forEach(l=>{byS[l.status]=(byS[l.status]||0)+1;});
-    const data=[['TALKO CRM Звіт'],['Період:',period],[''],['Статус','К-сть'],...Object.entries(byS).map(([k,v])=>[ST[k]||k,v])];
+    const paid=fl.filter(l=>l.status==='paid');
+    const dep=fl.filter(l=>l.status==='deposit');
+    let rev=0;
+    paid.forEach(l=>{rev+=toUAH(l.finTotal,l.finTotalCur);});
+    dep.forEach(l=>{rev+=toUAH(l.finDep,l.finDepCur);});
+    
+    const data=[
+        ['TALKO CRM Звіт'],
+        ['Період:',fromDate+' — '+toDate],
+        [''],
+        ['Статус','К-сть'],
+        ...Object.entries(byS).map(([k,v])=>[ST[k]||k,v]),
+        [''],
+        ['Всього лідів',fl.length],
+        ['Оплачено',paid.length],
+        ['Сума (грн)',Math.round(rev)],
+        ['Конверсія',fl.length?Math.round(paid.length/fl.length*100)+'%':'0%']
+    ];
     const ws=XLSX.utils.aoa_to_sheet(data);
     const wb=XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb,ws,'Звіт');
-    XLSX.writeFile(wb,'TALKO_Report_'+today()+'.xlsx');
+    XLSX.writeFile(wb,'TALKO_Report_'+fromDate+'_'+toDate+'.xlsx');
 }
 
 // ===== MODAL =====
@@ -1315,6 +1507,9 @@ async function loadDemo(){
 }
 
 function toggleHelp(){document.getElementById('help').classList.toggle('active');}
+
+// Init report dates on load
+initReportDates();
 </script>
 </body>
 </html>
