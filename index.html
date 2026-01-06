@@ -67,67 +67,67 @@
         .sync-dot.error{background:var(--r)}
         @keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
         
-        .header{background:var(--w);padding:12px 20px;border-bottom:1px solid #e5e7eb;position:sticky;top:0;z-index:100}
-        .header-content{max-width:1600px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
-        .logo{font-size:20px;font-weight:700;color:var(--p)}
-        .nav{display:flex;gap:4px;background:var(--gl);padding:4px;border-radius:8px}
-        .nav-btn{padding:8px 16px;border:none;background:0;border-radius:6px;font-size:14px;cursor:pointer;color:var(--g)}
+        .header{background:var(--w);padding:8px 16px;border-bottom:1px solid #e5e7eb;position:sticky;top:0;z-index:100}
+        .header-content{max-width:1600px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+        .logo{font-size:18px;font-weight:700;color:var(--p)}
+        .nav{display:flex;gap:2px;background:var(--gl);padding:3px;border-radius:6px}
+        .nav-btn{padding:6px 12px;border:none;background:0;border-radius:5px;font-size:13px;cursor:pointer;color:var(--g)}
         .nav-btn:hover{color:var(--t)}
         .nav-btn.active{background:var(--w);color:var(--p);box-shadow:0 1px 2px rgba(0,0,0,.1)}
-        .actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-        .btn{padding:8px 14px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;border:none;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+        .actions{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+        .btn{padding:6px 10px;border-radius:6px;font-size:12px;font-weight:500;cursor:pointer;border:none;display:inline-flex;align-items:center;gap:4px;white-space:nowrap}
         .btn-p{background:var(--p);color:#fff}
         .btn-p:hover{background:var(--pd)}
         .btn-s{background:var(--gl);color:var(--t)}
         .btn-s:hover{background:#e5e7eb}
         .btn-d{background:var(--r);color:#fff}
-        .container{max-width:1600px;margin:0 auto;padding:20px}
+        .container{max-width:1600px;margin:0 auto;padding:12px 16px}
         .view{display:none}
         .view.active{display:block}
         
         /* Tasks - Calendar/iPhone style */
-        .tasks-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
-        .tasks-title{font-size:22px;font-weight:700}
-        .tasks-count{background:var(--r);color:#fff;padding:2px 10px;border-radius:12px;font-size:13px;margin-left:8px}
+        .tasks-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+        .tasks-title{font-size:18px;font-weight:700}
+        .tasks-count{background:var(--r);color:#fff;padding:2px 8px;border-radius:10px;font-size:12px;margin-left:6px}
         
-        .tasks-group{margin-bottom:24px}
-        .tasks-group-title{font-size:13px;font-weight:600;color:var(--g);text-transform:uppercase;letter-spacing:0.5px;padding:8px 0;border-bottom:1px solid #e5e7eb;margin-bottom:8px;display:flex;align-items:center;gap:8px}
-        .tasks-group-title svg{width:16px;height:16px}
-        .tasks-group-count{background:var(--gl);color:var(--ts);padding:2px 8px;border-radius:10px;font-size:11px}
+        .tasks-group{margin-bottom:16px}
+        .tasks-group-title{font-size:11px;font-weight:600;color:var(--g);text-transform:uppercase;letter-spacing:0.5px;padding:6px 0;border-bottom:1px solid #e5e7eb;margin-bottom:6px;display:flex;align-items:center;gap:6px}
+        .tasks-group-title svg{width:14px;height:14px}
+        .tasks-group-count{background:var(--gl);color:var(--ts);padding:1px 6px;border-radius:8px;font-size:10px}
         
-        .task-item{display:flex;align-items:center;gap:12px;padding:12px 16px;background:var(--w);border-radius:12px;margin-bottom:6px;cursor:pointer;transition:all .15s;border:1px solid #e5e7eb}
-        .task-item:hover{background:var(--gl);transform:translateX(4px)}
+        .task-item{display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--w);border-radius:8px;margin-bottom:4px;cursor:pointer;transition:all .15s;border:1px solid #e5e7eb}
+        .task-item:hover{background:var(--gl);transform:translateX(2px)}
         .task-item:active{transform:scale(0.99)}
         
-        .task-priority{width:4px;height:40px;border-radius:2px;flex-shrink:0}
+        .task-priority{width:3px;height:32px;border-radius:2px;flex-shrink:0}
         .task-priority.critical{background:var(--r)}
         .task-priority.warning{background:var(--o)}
         .task-priority.info{background:var(--b)}
         .task-priority.success{background:var(--p)}
         
-        .task-checkbox{width:22px;height:22px;border:2px solid #d1d5db;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .15s}
+        .task-checkbox{width:18px;height:18px;border:2px solid #d1d5db;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .15s}
         .task-checkbox:hover{border-color:var(--p);background:var(--pl)}
         .task-checkbox.done{background:var(--p);border-color:var(--p)}
-        .task-checkbox svg{width:12px;height:12px;color:#fff;opacity:0}
+        .task-checkbox svg{width:10px;height:10px;color:#fff;opacity:0}
         .task-checkbox.done svg{opacity:1}
         
         .task-content{flex:1;min-width:0}
-        .task-main{display:flex;align-items:center;gap:8px;margin-bottom:4px}
-        .task-name{font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-        .task-badge{font-size:10px;padding:2px 6px;border-radius:4px;font-weight:500;white-space:nowrap}
+        .task-main{display:flex;align-items:center;gap:6px;margin-bottom:2px}
+        .task-name{font-weight:600;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+        .task-badge{font-size:9px;padding:1px 5px;border-radius:4px;font-weight:500;white-space:nowrap}
         .task-badge.hot{background:#fee2e2;color:#dc2626}
         .task-badge.warm{background:#fef3c7;color:#d97706}
         .task-badge.cold{background:#dbeafe;color:#2563eb}
         
-        .task-details{display:flex;align-items:center;gap:12px;font-size:12px;color:var(--ts)}
-        .task-details span{display:flex;align-items:center;gap:4px}
-        .task-details svg{width:12px;height:12px}
+        .task-details{display:flex;align-items:center;gap:8px;font-size:10px;color:var(--ts)}
+        .task-details span{display:flex;align-items:center;gap:2px}
+        .task-details svg{width:10px;height:10px}
         
-        .task-action-text{font-size:13px;color:var(--t);margin-top:6px;padding:8px 10px;background:var(--gl);border-radius:6px}
+        .task-action-text{font-size:11px;color:var(--t);margin-top:4px;padding:4px 8px;background:var(--gl);border-radius:4px}
         
-        .task-quick-btns{display:flex;gap:6px;flex-shrink:0}
-        .task-quick-btn{width:32px;height:32px;border-radius:8px;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s}
-        .task-quick-btn svg{width:16px;height:16px}
+        .task-quick-btns{display:flex;gap:4px;flex-shrink:0}
+        .task-quick-btn{width:26px;height:26px;border-radius:5px;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s}
+        .task-quick-btn svg{width:13px;height:13px}
         .task-quick-btn.call{background:#dcfce7;color:#16a34a}
         .task-quick-btn.call:hover{background:#16a34a;color:#fff}
         .task-quick-btn.done{background:#dbeafe;color:#2563eb}
@@ -135,48 +135,63 @@
         .task-quick-btn.fail{background:#fee2e2;color:#dc2626}
         .task-quick-btn.fail:hover{background:#dc2626;color:#fff}
         
-        .task-card{background:var(--w);border-radius:12px;padding:16px;margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,.1);border-left:4px solid transparent;cursor:pointer}
-        .task-card:hover{box-shadow:0 4px 12px rgba(0,0,0,.15)}
+        .task-card{background:var(--w);border-radius:8px;padding:10px 12px;margin-bottom:8px;box-shadow:0 1px 2px rgba(0,0,0,.08);border-left:3px solid transparent;cursor:pointer}
+        .task-card:hover{box-shadow:0 2px 8px rgba(0,0,0,.12)}
         .task-card.critical{border-left-color:var(--r);background:var(--rl)}
         .task-card.warning{border-left-color:var(--o);background:var(--ol)}
         .task-card.info{border-left-color:var(--b);background:var(--bl)}
-        .task-name{font-weight:600;font-size:15px;margin-bottom:4px}
-        .task-meta{font-size:12px;color:var(--ts);margin-bottom:8px}
-        .task-action{font-size:14px;margin-bottom:12px}
-        .task-btns{display:flex;gap:8px;flex-wrap:wrap}
-        .task-btn{padding:8px 14px;border-radius:6px;font-size:12px;font-weight:500;cursor:pointer;border:none}
+        .task-name{font-weight:600;font-size:13px;margin-bottom:2px}
+        .task-meta{font-size:11px;color:var(--ts);margin-bottom:4px}
+        .task-action{font-size:12px;margin-bottom:8px}
+        .task-btns{display:flex;gap:6px;flex-wrap:wrap}
+        .task-btn{padding:5px 10px;border-radius:5px;font-size:11px;font-weight:500;cursor:pointer;border:none}
         .task-btn.success{background:var(--p);color:#fff}
         .task-btn.warn{background:var(--o);color:#fff}
         .task-btn.danger{background:var(--rl);color:var(--r)}
         .task-btn.secondary{background:var(--gl);color:var(--t)}
-        .empty{text-align:center;padding:60px 20px;color:var(--g)}
+        .empty{text-align:center;padding:40px 20px;color:var(--g)}
+        
+        /* Onboarding */
+        .onboarding{background:linear-gradient(135deg,#f0fdf4 0%,#ecfdf5 100%);border:2px dashed #86efac;border-radius:16px;padding:40px;text-align:center;max-width:600px;margin:40px auto}
+        .onboarding-icon{width:64px;height:64px;background:var(--p);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px}
+        .onboarding-icon svg{width:32px;height:32px;color:#fff}
+        .onboarding-title{font-size:20px;font-weight:700;color:var(--t);margin-bottom:8px}
+        .onboarding-text{font-size:14px;color:var(--ts);margin-bottom:24px;line-height:1.6}
+        .onboarding-steps{display:flex;flex-direction:column;gap:12px;text-align:left;margin-bottom:24px}
+        .onboarding-step{display:flex;align-items:center;gap:12px;padding:12px 16px;background:var(--w);border-radius:10px;font-size:13px}
+        .onboarding-step-num{width:28px;height:28px;background:var(--p);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;flex-shrink:0}
+        .onboarding-step-text{flex:1}
+        .onboarding-step-text strong{color:var(--t)}
+        .onboarding-btn{padding:12px 24px;background:var(--p);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:8px}
+        .onboarding-btn:hover{background:var(--pd)}
+        .onboarding-btn svg{width:18px;height:18px}
         
         /* Kanban */
-        .kanban{display:flex;gap:16px;overflow-x:auto;padding-bottom:20px}
-        .kanban-filters{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
-        .filter-btn{padding:8px 14px;border-radius:8px;font-size:12px;font-weight:500;cursor:pointer;border:1px solid #e5e7eb;background:var(--w);color:var(--t);display:inline-flex;align-items:center;gap:6px;transition:all .2s}
+        .kanban{display:flex;gap:12px;overflow-x:auto;padding-bottom:16px}
+        .kanban-filters{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap}
+        .filter-btn{padding:5px 10px;border-radius:6px;font-size:11px;font-weight:500;cursor:pointer;border:1px solid #e5e7eb;background:var(--w);color:var(--t);display:inline-flex;align-items:center;gap:4px;transition:all .2s}
         .filter-btn:hover{border-color:var(--p);background:var(--pl)}
         .filter-btn.active{background:var(--p);color:#fff;border-color:var(--p)}
         .filter-btn svg{flex-shrink:0}
-        .column{width:280px;flex-shrink:0;background:var(--gl);border-radius:12px;max-height:calc(100vh - 160px);display:flex;flex-direction:column}
-        .column-header{padding:14px;font-weight:600;font-size:13px;border-bottom:1px solid #e5e7eb;display:flex;justify-content:space-between;align-items:center}
-        .column-count{background:var(--w);padding:2px 8px;border-radius:8px;font-size:12px;color:var(--g)}
-        .column-cards{padding:10px;flex:1;overflow-y:auto;min-height:80px}
+        .column{width:260px;flex-shrink:0;background:var(--gl);border-radius:10px;max-height:calc(100vh - 130px);display:flex;flex-direction:column}
+        .column-header{padding:10px 12px;font-weight:600;font-size:12px;border-bottom:1px solid #e5e7eb;display:flex;justify-content:space-between;align-items:center}
+        .column-count{background:var(--w);padding:2px 6px;border-radius:6px;font-size:11px;color:var(--g)}
+        .column-cards{padding:8px;flex:1;overflow-y:auto;min-height:60px}
         .column-cards.drag-over{background:var(--pl)}
-        .k-card{background:var(--w);border-radius:8px;padding:12px;margin-bottom:8px;box-shadow:0 1px 2px rgba(0,0,0,.1);cursor:grab;border-left:3px solid transparent}
-        .k-card:hover{box-shadow:0 2px 8px rgba(0,0,0,.15)}
+        .k-card{background:var(--w);border-radius:6px;padding:8px 10px;margin-bottom:6px;box-shadow:0 1px 2px rgba(0,0,0,.08);cursor:grab;border-left:3px solid transparent}
+        .k-card:hover{box-shadow:0 2px 6px rgba(0,0,0,.12)}
         .k-card.dragging{opacity:.5}
         .k-card.has-alert{border-left-color:var(--o)}
         .k-card.has-critical{border-left-color:var(--r)}
-        .k-card-name{font-weight:600;font-size:13px;margin-bottom:4px}
-        .k-card-biz{font-size:11px;color:var(--ts);margin-bottom:6px}
-        .k-card-footer{display:flex;justify-content:space-between;font-size:11px;color:var(--g)}
+        .k-card-name{font-weight:600;font-size:12px;margin-bottom:2px}
+        .k-card-biz{font-size:10px;color:var(--ts);margin-bottom:4px}
+        .k-card-footer{display:flex;justify-content:space-between;font-size:10px;color:var(--g)}
         .k-card-amount{color:var(--p);font-weight:600}
-        .k-card-days{padding:2px 6px;border-radius:4px;background:var(--gl)}
+        .k-card-days{padding:1px 5px;border-radius:3px;background:var(--gl)}
         .k-card-days.over{background:var(--rl);color:var(--r)}
-        .k-card-tags{display:flex;gap:4px;flex-wrap:wrap;margin-top:6px}
-        .k-tag{padding:2px 6px;border-radius:4px;font-size:10px;font-weight:500;display:inline-flex;align-items:center;gap:3px}
-        .k-tag svg{width:10px;height:10px}
+        .k-card-tags{display:flex;gap:3px;flex-wrap:wrap;margin-top:4px}
+        .k-tag{padding:1px 5px;border-radius:3px;font-size:9px;font-weight:500;display:inline-flex;align-items:center;gap:2px}
+        .k-tag svg{width:9px;height:9px}
         .k-tag.overdue{background:var(--rl);color:var(--r)}
         .k-tag.consult-today{background:#dbeafe;color:#1e40af}
         .k-tag.consult-tomorrow{background:#fef3c7;color:#92400e}
@@ -368,7 +383,7 @@
                     <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
                     Увійти в систему
                 </button>
-                <button class="auth-btn-secondary" onclick="openAuthModal('register')">
+                <button class="auth-btn-secondary" onclick="window.open('https://calendly.com/management-talco/meet-with-me', '_blank')">
                     <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
                     Записатися на демо
                 </button>
@@ -687,7 +702,7 @@
                 <div class="ai-quick-btns">
                     <button class="ai-quick-btn" onclick="aiAsk('script')"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg> Скрипт дзвінка</button>
                     <button class="ai-quick-btn" onclick="aiAsk('analysis')"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 21H4.6c-.56 0-.84 0-1.05-.11a1 1 0 0 1-.44-.44C3 20.24 3 19.96 3 19.4V3"/><path d="m7 14 4-4 4 4 6-6"/></svg> Аналіз</button>
-                    <button class="ai-quick-btn" onclick="aiAsk('objections')"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> Заперечення</button>
+                    <button class="ai-quick-btn" onclick="aiAsk('objections')"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> СПІН</button>
                     <button class="ai-quick-btn" onclick="aiAsk('sms')"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 5L2 7"/></svg> SMS</button>
                 </div>
                 <div style="display:flex;gap:8px">
@@ -1028,6 +1043,32 @@ function renderTasks(){
     tasks.sort((a,b)=>calcScore(b.l)-calcScore(a.l));
     document.getElementById('task-count').textContent=tasks.length;
     const c=document.getElementById('tasks-list');
+    
+    // Онбординг якщо немає лідів взагалі
+    if(!leads.length){
+        c.innerHTML=`<div class="onboarding">
+            <div class="onboarding-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+            <div class="onboarding-title">Вітаю в TALKO CRM!</div>
+            <div class="onboarding-text">Система для закриття угод з AI-підказками. Почни з додавання першого ліда.</div>
+            <div class="onboarding-steps">
+                <div class="onboarding-step">
+                    <div class="onboarding-step-num">1</div>
+                    <div class="onboarding-step-text"><strong>Додай ліда</strong> — контакт, бізнес, джерело</div>
+                </div>
+                <div class="onboarding-step">
+                    <div class="onboarding-step-num">2</div>
+                    <div class="onboarding-step-text"><strong>Виконуй завдання</strong> — система підкаже що робити</div>
+                </div>
+                <div class="onboarding-step">
+                    <div class="onboarding-step-num">3</div>
+                    <div class="onboarding-step-text"><strong>Використовуй AI</strong> — скрипти, SMS, заперечення</div>
+                </div>
+            </div>
+            <button class="onboarding-btn" onclick="openModal()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Додати першого ліда</button>
+            <div style="margin-top:16px"><button class="btn btn-s" onclick="loadDemo()" style="font-size:12px">або завантажити демо-дані</button></div>
+        </div>`;
+        return;
+    }
     
     if(!tasks.length){
         c.innerHTML='<div class="empty"><svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="#22c55e" stroke-width="2" style="margin-bottom:12px"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg><div style="font-size:18px;font-weight:600;margin-bottom:8px">'+(taskFilter==='all'?'Всі завдання виконані!':'Немає завдань в цій категорії')+'</div><div style="color:var(--g)">'+(taskFilter==='all'?'Можеш відпочити або перевірити Kanban':'Спробуй інший фільтр')+'</div></div>';
@@ -1747,17 +1788,21 @@ async function aiAsk(type){
 
 ${lead.report ? 'Враховуй звіт консультації: ' + lead.report : ''}`,
 
-        objections: `Склади список можливих заперечень цього клієнта та дай відповіді:
+        objections: `Опрацюй заперечення для цього ліда через методологію СПІН:
 
-Для кожного заперечення:
-- Саме заперечення
-- Чому воно виникає
-- Відповідь (2-3 варіанти)
-- Як перевести в закриття
+СПІН = Ситуаційні → Проблемні → Імплікаційні → Напрямні питання
+
+Для кожного можливого заперечення дай:
+1. Саме заперечення
+2. С — Ситуаційне питання (розуміємо контекст)
+3. П — Проблемне питання (виявляємо біль)
+4. І — Імплікаційне питання (показуємо наслідки)
+5. Н — Напрямне питання (ведемо до рішення)
 
 Типові заперечення: дорого, немає часу, подумаю, порадюсь, вже є консультант, не вірю в консалтинг.
 
-${lead.report ? 'Враховуй звіт: ' + lead.report : ''}`,
+${lead.report ? 'Враховуй звіт консультації: ' + lead.report : ''}
+${lead.biz ? 'Бізнес клієнта: ' + lead.biz : ''}`,
 
         sms: `Напиши 3 варіанти SMS для цього ліда (кожен до 160 символів).
 
@@ -1812,7 +1857,7 @@ function getShortPromptName(type){
     const names = {
         script: 'Згенеруй скрипт дзвінка',
         analysis: 'Проаналізуй ліда',
-        objections: 'Підготуй відповіді на заперечення',
+        objections: 'Опрацюй заперечення через СПІН',
         sms: 'Напиши SMS варіанти',
         report_analysis: 'Проаналізуй звіт консультації'
     };
