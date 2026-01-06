@@ -5,10 +5,43 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TALKO CRM</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     <style>
         *{margin:0;padding:0;box-sizing:border-box}
         :root{--p:#22c55e;--pd:#16a34a;--pl:#f0fdf4;--r:#ef4444;--rl:#fef2f2;--o:#f97316;--ol:#fff7ed;--b:#3b82f6;--bl:#eff6ff;--g:#6b7280;--gl:#f3f4f6;--t:#1a1a1a;--ts:#525252;--bg:#f9fafb;--w:#fff}
         body{font-family:Inter,-apple-system,sans-serif;background:var(--bg);color:var(--t);min-height:100vh}
+        
+        /* Auth Screen */
+        .auth-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px}
+        .auth-box{background:var(--w);padding:40px;border-radius:16px;box-shadow:0 10px 40px rgba(0,0,0,.1);width:100%;max-width:400px}
+        .auth-logo{font-size:28px;font-weight:700;color:var(--p);text-align:center;margin-bottom:8px}
+        .auth-subtitle{text-align:center;color:var(--g);margin-bottom:32px}
+        .auth-input{width:100%;padding:12px 16px;border:1px solid #e5e7eb;border-radius:8px;font-size:14px;margin-bottom:12px}
+        .auth-input:focus{outline:none;border-color:var(--p)}
+        .auth-btn{width:100%;padding:14px;background:var(--p);color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer;margin-top:8px}
+        .auth-btn:hover{background:var(--pd)}
+        .auth-btn:disabled{background:var(--g);cursor:not-allowed}
+        .auth-error{background:var(--rl);color:var(--r);padding:10px;border-radius:8px;font-size:13px;margin-bottom:12px;display:none}
+        .auth-switch{text-align:center;margin-top:20px;font-size:13px;color:var(--g)}
+        .auth-switch a{color:var(--p);cursor:pointer;text-decoration:underline}
+        .auth-loading{display:none;text-align:center;padding:40px}
+        .spinner{width:40px;height:40px;border:3px solid var(--gl);border-top-color:var(--p);border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 16px}
+        @keyframes spin{to{transform:rotate(360deg)}}
+        
+        /* User menu */
+        .user-menu{display:flex;align-items:center;gap:8px}
+        .user-email{font-size:12px;color:var(--g);max-width:150px;overflow:hidden;text-overflow:ellipsis}
+        .user-btn{padding:6px 10px;font-size:12px}
+        
+        /* Sync indicator */
+        .sync-status{display:flex;align-items:center;gap:4px;font-size:11px;color:var(--g);padding:4px 8px;background:var(--gl);border-radius:4px}
+        .sync-dot{width:6px;height:6px;border-radius:50%;background:var(--p)}
+        .sync-dot.syncing{background:var(--o);animation:pulse 1s infinite}
+        .sync-dot.error{background:var(--r)}
+        @keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+        
         .header{background:var(--w);padding:12px 20px;border-bottom:1px solid #e5e7eb;position:sticky;top:0;z-index:100}
         .header-content{max-width:1600px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
         .logo{font-size:20px;font-weight:700;color:var(--p)}
@@ -16,7 +49,7 @@
         .nav-btn{padding:8px 16px;border:none;background:0;border-radius:6px;font-size:14px;cursor:pointer;color:var(--g)}
         .nav-btn:hover{color:var(--t)}
         .nav-btn.active{background:var(--w);color:var(--p);box-shadow:0 1px 2px rgba(0,0,0,.1)}
-        .actions{display:flex;gap:8px;flex-wrap:wrap}
+        .actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
         .btn{padding:8px 14px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;border:none;display:inline-flex;align-items:center;gap:6px}
         .btn-p{background:var(--p);color:#fff}
         .btn-p:hover{background:var(--pd)}
@@ -189,6 +222,27 @@
     </style>
 </head>
 <body>
+    <!-- Auth Screen -->
+    <div class="auth-screen" id="auth-screen">
+        <div class="auth-box">
+            <div class="auth-logo">TALKO CRM</div>
+            <div class="auth-subtitle">Увійдіть для продовження</div>
+            <div class="auth-error" id="auth-error"></div>
+            <input type="email" class="auth-input" id="auth-email" placeholder="Email">
+            <input type="password" class="auth-input" id="auth-password" placeholder="Пароль">
+            <button class="auth-btn" id="auth-btn" onclick="handleAuth()">Увійти</button>
+            <div class="auth-switch" id="auth-switch">
+                Немає акаунту? <a onclick="toggleAuthMode()">Зареєструватися</a>
+            </div>
+        </div>
+        <div class="auth-loading" id="auth-loading">
+            <div class="spinner"></div>
+            <div>Завантаження...</div>
+        </div>
+    </div>
+
+    <!-- Main App -->
+    <div id="app" style="display:none">
     <header class="header">
         <div class="header-content">
             <div class="logo">TALKO CRM</div>
@@ -201,7 +255,15 @@
                 <button class="btn btn-p" onclick="openModal()">+ Додати</button>
                 <label class="btn btn-s">Імпорт<input type="file" accept=".xlsx,.xls" onchange="importXLS(event)" hidden></label>
                 <button class="btn btn-s" onclick="exportXLS()">Експорт</button>
-                <button class="btn btn-s" style="background:#fef3c7" onclick="loadDemo()">Демо</button>
+                <div class="sync-status" id="sync-status"><div class="sync-dot" id="sync-dot"></div><span id="sync-text">Синхронізовано</span></div>
+                <a href="https://chatgpt.com/g/g-695d18d64ffc8191885772ca62dfb66c-talko-crm-support" target="_blank" class="btn btn-s" style="background:linear-gradient(135deg,#10a37f,#1a7f5a);color:#fff;text-decoration:none">
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a7 7 0 0 1 7 7c0 2.38-1.19 4.47-3 5.74V17a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1v-2.26C6.19 13.47 5 11.38 5 9a7 7 0 0 1 7-7z"/><path d="M9 21h6"/><path d="M9 18h6"/></svg>
+                    AI Підтримка
+                </a>
+                <div class="user-menu">
+                    <span class="user-email" id="user-email"></span>
+                    <button class="btn btn-s user-btn" onclick="logout()">Вийти</button>
+                </div>
             </div>
         </div>
     </header>
@@ -416,13 +478,14 @@
                 </div>
             </div>
             <div class="modal-foot">
-                <button class="btn btn-d" id="del-btn" style="display:none" onclick="delLead()">Видалити</button>
+                <button class="btn btn-d" id="del-btn" style="display:none" onclick="delLeadForm()">Видалити</button>
                 <div style="display:flex;gap:8px">
                     <button class="btn btn-s" onclick="closeModal()">Скасувати</button>
-                    <button class="btn btn-p" onclick="saveLead()">Зберегти</button>
+                    <button class="btn btn-p" onclick="saveLeadForm()">Зберегти</button>
                 </div>
             </div>
         </div>
+    </div>
     </div>
     
     <!-- Help -->
@@ -445,10 +508,156 @@
     </div>
 
 <script>
+// ===== FIREBASE CONFIG =====
+const firebaseConfig = {
+    apiKey: "AIzaSyCunQezswxYZyjSscD4b7Hg30YRWZ9zA-Y",
+    authDomain: "talko-crm.firebaseapp.com",
+    projectId: "talko-crm",
+    storageBucket: "talko-crm.firebasestorage.app",
+    messagingSenderId: "1090643937646",
+    appId: "1:1090643937646:web:5607640c57fe9f4192597f"
+};
+
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+
+let currentUser = null;
+let isAuthMode = 'login'; // 'login' or 'register'
+let unsubscribe = null; // Firestore listener
+
+// ===== AUTH FUNCTIONS =====
+function toggleAuthMode(){
+    isAuthMode = isAuthMode === 'login' ? 'register' : 'login';
+    document.getElementById('auth-btn').textContent = isAuthMode === 'login' ? 'Увійти' : 'Зареєструватися';
+    document.getElementById('auth-switch').innerHTML = isAuthMode === 'login' 
+        ? 'Немає акаунту? <a onclick="toggleAuthMode()">Зареєструватися</a>'
+        : 'Вже є акаунт? <a onclick="toggleAuthMode()">Увійти</a>';
+    hideAuthError();
+}
+
+function showAuthError(msg){
+    const el = document.getElementById('auth-error');
+    el.textContent = msg;
+    el.style.display = 'block';
+}
+
+function hideAuthError(){
+    document.getElementById('auth-error').style.display = 'none';
+}
+
+async function handleAuth(){
+    const email = document.getElementById('auth-email').value.trim();
+    const password = document.getElementById('auth-password').value;
+    
+    if(!email || !password){
+        showAuthError('Введіть email та пароль');
+        return;
+    }
+    
+    const btn = document.getElementById('auth-btn');
+    btn.disabled = true;
+    btn.textContent = 'Зачекайте...';
+    hideAuthError();
+    
+    try {
+        if(isAuthMode === 'login'){
+            await auth.signInWithEmailAndPassword(email, password);
+        } else {
+            await auth.createUserWithEmailAndPassword(email, password);
+        }
+    } catch(err){
+        let msg = 'Помилка авторизації';
+        if(err.code === 'auth/user-not-found') msg = 'Користувача не знайдено';
+        if(err.code === 'auth/wrong-password') msg = 'Невірний пароль';
+        if(err.code === 'auth/email-already-in-use') msg = 'Email вже зареєстровано';
+        if(err.code === 'auth/weak-password') msg = 'Пароль занадто слабкий (мін. 6 символів)';
+        if(err.code === 'auth/invalid-email') msg = 'Невірний формат email';
+        showAuthError(msg);
+        btn.disabled = false;
+        btn.textContent = isAuthMode === 'login' ? 'Увійти' : 'Зареєструватися';
+    }
+}
+
+function logout(){
+    if(confirm('Вийти з акаунту?')){
+        auth.signOut();
+    }
+}
+
+// ===== AUTH STATE LISTENER =====
+auth.onAuthStateChanged(user => {
+    if(user){
+        currentUser = user;
+        document.getElementById('auth-screen').style.display = 'none';
+        document.getElementById('app').style.display = 'block';
+        document.getElementById('user-email').textContent = user.email;
+        initFirestoreListener();
+    } else {
+        currentUser = null;
+        document.getElementById('auth-screen').style.display = 'flex';
+        document.getElementById('app').style.display = 'none';
+        document.querySelector('.auth-box').style.display = 'block';
+        document.getElementById('auth-loading').style.display = 'none';
+        document.getElementById('auth-btn').disabled = false;
+        document.getElementById('auth-btn').textContent = 'Увійти';
+        if(unsubscribe) unsubscribe();
+    }
+});
+
+// ===== FIRESTORE SYNC =====
+function initFirestoreListener(){
+    setSyncStatus('syncing', 'Синхронізація...');
+    
+    unsubscribe = db.collection('users').doc(currentUser.uid).collection('leads')
+        .onSnapshot(snapshot => {
+            leads = [];
+            snapshot.forEach(doc => {
+                leads.push({ id: doc.id, ...doc.data() });
+            });
+            render();
+            setSyncStatus('synced', 'Синхронізовано');
+        }, err => {
+            console.error('Firestore error:', err);
+            setSyncStatus('error', 'Помилка синхронізації');
+        });
+}
+
+function setSyncStatus(status, text){
+    const dot = document.getElementById('sync-dot');
+    const txt = document.getElementById('sync-text');
+    dot.className = 'sync-dot' + (status === 'syncing' ? ' syncing' : status === 'error' ? ' error' : '');
+    txt.textContent = text;
+}
+
+async function saveLead(leadData){
+    setSyncStatus('syncing', 'Збереження...');
+    try {
+        const docRef = db.collection('users').doc(currentUser.uid).collection('leads').doc(leadData.id);
+        await docRef.set(leadData);
+        setSyncStatus('synced', 'Синхронізовано');
+    } catch(err){
+        console.error('Save error:', err);
+        setSyncStatus('error', 'Помилка збереження');
+    }
+}
+
+async function deleteLead(leadId){
+    setSyncStatus('syncing', 'Видалення...');
+    try {
+        await db.collection('users').doc(currentUser.uid).collection('leads').doc(leadId).delete();
+        setSyncStatus('synced', 'Синхронізовано');
+    } catch(err){
+        console.error('Delete error:', err);
+        setSyncStatus('error', 'Помилка видалення');
+    }
+}
+
+// ===== CONSTANTS =====
 const ST={new:'Новий лід',scheduled:'Призначена',completed:'Проведена',report_sent:'Звіт відправлено',repeat:'Повторна',deposit:'Завдаток',paid:'Оплачено',failed:'Неуспішна',reactivation:'Реактивація'};
 const SRC={bot:'Бот',mk_clinic:'МК Клініки',mk_prod:'МК Виробництво',ads:'Реклама',ref:'Рекомендація'};
 const CUR={UAH:'₴',USD:'$',EUR:'€'};
-let leads=JSON.parse(localStorage.getItem('tcrm2'))||[];
+let leads=[];
 let editing=null;
 let currentFilter='all';
 let taskFilter='all';
@@ -460,7 +669,7 @@ function setTaskFilter(f){
     renderTasks();
 }
 
-function save(){localStorage.setItem('tcrm2',JSON.stringify(leads))}
+function save(){} // deprecated - now using Firestore
 function today(){return new Date().toISOString().split('T')[0]}
 function tomorrow(){let d=new Date();d.setDate(d.getDate()+1);return d.toISOString().split('T')[0]}
 function addDays(s,n){let d=new Date(s);d.setDate(d.getDate()+n);return d.toISOString().split('T')[0]}
@@ -600,27 +809,28 @@ function renderTasks(){
 
 function taskAction(id,a){
     const l=leads.find(x=>x.id===id);if(!l)return;
+    const updatedLead = {...l}; // clone
     switch(a){
-        case'open':openModal(id);break;
-        case'schedule':l.status='scheduled';l.consult=prompt('Дата консультації (YYYY-MM-DDTHH:MM):',tomorrow()+'T14:00');l.noshow=0;l.nextDate=l.consult?addDays(l.consult.split('T')[0],-1):tomorrow();l.nextAction='Підтвердити';addLog(l,'status','Консультація призначена');break;
-        case'call_later':l.calls=(l.calls||0)+1;l.nextDate=tomorrow();addLog(l,'call','Не взяв');break;
-        case'call':l.calls=(l.calls||0)+1;addLog(l,'call','Ще спроба');break;
-        case'fail':l.status='failed';l.failReason=prompt('Причина:','');l.reactDate=addDays(today(),90);addLog(l,'status','Неуспішна: '+(l.failReason||''));break;
-        case'confirm':addLog(l,'call','Підтвердив');break;
-        case'confirm_sms':l.sms=(l.sms||0)+1;addLog(l,'sms','Підтвердження');break;
-        case'complete':l.status='completed';l.calls=0;l.sms=0;addLog(l,'status','Проведена');break;
-        case'noshow':l.noshow=(l.noshow||0)+1;addLog(l,'status','Не прийшов ('+l.noshow+'/3)');break;
-        case'reschedule':l.consult=prompt('Нова дата:',tomorrow()+'T14:00');l.noshow=0;l.nextDate=l.consult?addDays(l.consult.split('T')[0],-1):tomorrow();addLog(l,'status','Перенесено');break;
-        case'send_report':l.status='report_sent';l.reportDate=today();l.calls=0;l.sms=0;l.nextDate=tomorrow();l.nextAction='Дізнатись реакцію';addLog(l,'status','Звіт відправлено');break;
-        case'followup':l.calls=(l.calls||0)+1;l.nextDate=tomorrow();addLog(l,'call','Думає');break;
-        case'repeat':l.status='repeat';l.repeatCount=(l.repeatCount||0)+1;l.calls=0;l.sms=0;l.noshow=0;l.consult=prompt('Дата:',tomorrow()+'T14:00');addLog(l,'status','Повторна консультація');break;
-        case'deposit':const amt=prompt('Сума завдатку:','');if(amt){l.status='deposit';l.finDep=+amt;l.finDepDate=today();l.nextDate=addDays(today(),7);addLog(l,'status','Завдаток '+amt);}break;
-        case'paid':const p=prompt('Повна сума:',l.finTotal||'');if(p){l.status='paid';l.finTotal=+p;l.finPaidDate=today();addLog(l,'status','Оплачено '+p);}break;
-        case'dep_later':l.nextDate=addDays(today(),7);addLog(l,'call','Нагадав, +тиждень');break;
-        case'react_ok':l.status='new';l.calls=0;l.sms=0;l.noshow=0;l.nextDate=today();addLog(l,'status','Реактивація — цікаво');break;
-        case'react_later':l.reactDate=addDays(today(),90);addLog(l,'call','Реактивація +3міс');break;
+        case'open':openModal(id);return;
+        case'schedule':updatedLead.status='scheduled';updatedLead.consult=prompt('Дата консультації (YYYY-MM-DDTHH:MM):',tomorrow()+'T14:00');updatedLead.noshow=0;updatedLead.nextDate=updatedLead.consult?addDays(updatedLead.consult.split('T')[0],-1):tomorrow();updatedLead.nextAction='Підтвердити';addLog(updatedLead,'status','Консультація призначена');break;
+        case'call_later':updatedLead.calls=(updatedLead.calls||0)+1;updatedLead.nextDate=tomorrow();addLog(updatedLead,'call','Не взяв');break;
+        case'call':updatedLead.calls=(updatedLead.calls||0)+1;addLog(updatedLead,'call','Ще спроба');break;
+        case'fail':updatedLead.status='failed';updatedLead.failReason=prompt('Причина:','');updatedLead.reactDate=addDays(today(),90);addLog(updatedLead,'status','Неуспішна: '+(updatedLead.failReason||''));break;
+        case'confirm':addLog(updatedLead,'call','Підтвердив');break;
+        case'confirm_sms':updatedLead.sms=(updatedLead.sms||0)+1;addLog(updatedLead,'sms','Підтвердження');break;
+        case'complete':updatedLead.status='completed';updatedLead.calls=0;updatedLead.sms=0;addLog(updatedLead,'status','Проведена');break;
+        case'noshow':updatedLead.noshow=(updatedLead.noshow||0)+1;addLog(updatedLead,'status','Не прийшов ('+updatedLead.noshow+'/3)');break;
+        case'reschedule':updatedLead.consult=prompt('Нова дата:',tomorrow()+'T14:00');updatedLead.noshow=0;updatedLead.nextDate=updatedLead.consult?addDays(updatedLead.consult.split('T')[0],-1):tomorrow();addLog(updatedLead,'status','Перенесено');break;
+        case'send_report':updatedLead.status='report_sent';updatedLead.reportDate=today();updatedLead.calls=0;updatedLead.sms=0;updatedLead.nextDate=tomorrow();updatedLead.nextAction='Дізнатись реакцію';addLog(updatedLead,'status','Звіт відправлено');break;
+        case'followup':updatedLead.calls=(updatedLead.calls||0)+1;updatedLead.nextDate=tomorrow();addLog(updatedLead,'call','Думає');break;
+        case'repeat':updatedLead.status='repeat';updatedLead.repeatCount=(updatedLead.repeatCount||0)+1;updatedLead.calls=0;updatedLead.sms=0;updatedLead.noshow=0;updatedLead.consult=prompt('Дата:',tomorrow()+'T14:00');addLog(updatedLead,'status','Повторна консультація');break;
+        case'deposit':const amt=prompt('Сума завдатку:','');if(amt){updatedLead.status='deposit';updatedLead.finDep=+amt;updatedLead.finDepDate=today();updatedLead.nextDate=addDays(today(),7);addLog(updatedLead,'status','Завдаток '+amt);}else return;break;
+        case'paid':const p=prompt('Повна сума:',updatedLead.finTotal||'');if(p){updatedLead.status='paid';updatedLead.finTotal=+p;updatedLead.finPaidDate=today();addLog(updatedLead,'status','Оплачено '+p);}else return;break;
+        case'dep_later':updatedLead.nextDate=addDays(today(),7);addLog(updatedLead,'call','Нагадав, +тиждень');break;
+        case'react_ok':updatedLead.status='new';updatedLead.calls=0;updatedLead.sms=0;updatedLead.noshow=0;updatedLead.nextDate=today();addLog(updatedLead,'status','Реактивація — цікаво');break;
+        case'react_later':updatedLead.reactDate=addDays(today(),90);addLog(updatedLead,'call','Реактивація +3міс');break;
     }
-    save();render();
+    saveLead(updatedLead);
 }
 
 // ===== KANBAN =====
@@ -711,13 +921,14 @@ function dDrop(e,status){
     e.preventDefault();e.currentTarget.classList.remove('drag-over');
     if(!dragId)return;
     const l=leads.find(x=>x.id===dragId);if(!l)return;
-    if(status==='paid'&&!l.finTotal){alert('Вкажіть суму!');openModal(l.id);return;}
-    if(status==='deposit'&&!l.finDep){const a=prompt('Сума завдатку:');if(!a)return;l.finDep=+a;l.finDepDate=today();}
-    const old=l.status;l.status=status;l.stageDate=new Date().toISOString();
-    if(status==='completed'){l.calls=0;l.sms=0;}
-    if(status==='report_sent'){l.reportDate=today();l.calls=0;l.sms=0;l.nextDate=tomorrow();}
-    addLog(l,'status',ST[old]+' → '+ST[status]);
-    save();renderKanban();
+    const updatedLead = {...l};
+    if(status==='paid'&&!updatedLead.finTotal){alert('Вкажіть суму!');openModal(updatedLead.id);return;}
+    if(status==='deposit'&&!updatedLead.finDep){const a=prompt('Сума завдатку:');if(!a)return;updatedLead.finDep=+a;updatedLead.finDepDate=today();}
+    const old=updatedLead.status;updatedLead.status=status;updatedLead.stageDate=new Date().toISOString();
+    if(status==='completed'){updatedLead.calls=0;updatedLead.sms=0;}
+    if(status==='report_sent'){updatedLead.reportDate=today();updatedLead.calls=0;updatedLead.sms=0;updatedLead.nextDate=tomorrow();}
+    addLog(updatedLead,'status',ST[old]+' → '+ST[status]);
+    saveLead(updatedLead);
 }
 
 // ===== REPORTS =====
@@ -819,7 +1030,7 @@ function fillForm(l){
     onStatusChange();
     renderCommLog(l);
 }
-function saveLead(){
+function saveLeadForm(){
     const phone=document.getElementById('f-phone').value;
     const tg=document.getElementById('f-tg').value;
     if(!phone&&!tg){alert('Вкажіть телефон або телеграм');return;}
@@ -860,19 +1071,19 @@ function saveLead(){
         data.log=leads[idx].log||[];
         if(leads[idx].status!==data.status){data.stageDate=new Date().toISOString();addLog(data,'status','→ '+ST[data.status]);}
         else data.stageDate=leads[idx].stageDate;
-        leads[idx]=data;
     }else{
         data.created=new Date().toISOString();
         data.stageDate=new Date().toISOString();
         data.log=[];
         if(!data.status)data.status='new';
         if(!data.nextDate){data.nextDate=today();data.nextAction='Подзвонити';}
-        leads.push(data);
     }
     if(data.status==='failed'&&!data.reactDate)data.reactDate=addDays(today(),90);
-    save();closeModal();render();
+    
+    saveLead(data); // Firebase save
+    closeModal();
 }
-function delLead(){if(!editing)return;if(!confirm('Видалити?'))return;leads=leads.filter(l=>l.id!==editing);save();closeModal();render();}
+function delLeadForm(){if(!editing)return;if(!confirm('Видалити?'))return;deleteLead(editing);closeModal();}
 function onStatusChange(){
     const st=document.getElementById('f-status').value;
     document.getElementById('fail-group').style.display=st==='failed'?'block':'none';
@@ -1059,7 +1270,7 @@ function importXLS(e){
                     else source='bot';
                 }
                 
-                leads.push({
+                const newLead = {
                     id:genId(),
                     tg,
                     phone,
@@ -1076,10 +1287,10 @@ function importXLS(e){
                     created:new Date().toISOString(),
                     stageDate:new Date().toISOString(),
                     log:[]
-                });
+                };
+                saveLead(newLead); // Firebase save
                 n++;
             }
-            save();render();
             alert('Імпортовано: '+n+(skip?' (пропущено: '+skip+')':''));
         }catch(err){console.error(err);alert('Помилка: '+err.message);}
     };
@@ -1088,26 +1299,22 @@ function importXLS(e){
 }
 
 // ===== DEMO =====
-function loadDemo(){
-    if(leads.length&&!confirm('Замінити дані?'))return;
-    leads=[
+async function loadDemo(){
+    if(leads.length&&!confirm('Додати демо-дані?'))return;
+    const demoLeads=[
         {id:'d1',tg:'@iryna_dental',phone:'+380501234567',biz:'Стоматологія-15',source:'mk_clinic',status:'new',calls:0,sms:0,noshow:0,nextDate:today(),nextAction:'Подзвонити',created:addDays(today(),-2),stageDate:addDays(today(),-2),log:[]},
         {id:'d2',tg:'@petro_meble',phone:'+380672345678',biz:'Меблі-25',source:'mk_prod',status:'scheduled',consult:tomorrow()+'T14:00',calls:1,sms:0,noshow:0,nextDate:today(),nextAction:'Підтвердити',created:addDays(today(),-5),stageDate:addDays(today(),-3),log:[{type:'call',text:'Призначили',date:addDays(today(),-3)}]},
         {id:'d3',tg:'@maria_cosmo',phone:'+380933456789',biz:'Косметологія-8',source:'bot',status:'scheduled',consult:addDays(today(),-1)+'T10:00',calls:2,sms:1,noshow:2,nextDate:today(),created:addDays(today(),-10),stageDate:addDays(today(),-1),log:[{type:'status',text:'Не прийшла 2/3',date:addDays(today(),-1)}]},
         {id:'d4',tg:'@oleksandr_food',phone:'+380504567890',biz:'Харчування-50',source:'mk_prod',status:'report_sent',calls:1,sms:1,noshow:0,reportDate:addDays(today(),-2),nextDate:today(),linkRecord:'https://youtu.be/ex',linkReport:'https://docs.google.com/ex',created:addDays(today(),-14),stageDate:addDays(today(),-2),log:[{type:'status',text:'Звіт відправлено',date:addDays(today(),-2)}]},
-        {id:'d5',tg:'@natalia_pharm',phone:'+380675678901',biz:'Аптеки-12',source:'ref',status:'deposit',finDep:15000,finDepCur:'UAH',finDepDate:addDays(today(),-10),finTotal:45000,finTotalCur:'UAH',nextDate:addDays(today(),-3),created:addDays(today(),-20),stageDate:addDays(today(),-10),log:[{type:'status',text:'Завдаток 15000',date:addDays(today(),-10)}]},
-        {id:'d6',tg:'@viktor_auto',phone:'+380936789012',biz:'Автосервіс-20',source:'ads',status:'report_sent',calls:3,sms:2,noshow:0,reportDate:addDays(today(),-7),nextDate:addDays(today(),-2),created:addDays(today(),-21),stageDate:addDays(today(),-7),log:[]},
-        {id:'d7',tg:'@anna_beauty',phone:'+380507890123',biz:'Салон-6',source:'mk_clinic',status:'paid',finDep:500,finDepCur:'USD',finTotal:1500,finTotalCur:'USD',finPaidDate:addDays(today(),-5),created:addDays(today(),-30),stageDate:addDays(today(),-5),log:[{type:'status',text:'Оплачено $1500',date:addDays(today(),-5)}]},
-        {id:'d8',tg:'@dmytro_log',phone:'+380678901234',biz:'Логістика-35',source:'mk_prod',status:'failed',failReason:'expensive',reactDate:addDays(today(),30),created:addDays(today(),-60),stageDate:addDays(today(),-60),log:[]},
-        {id:'d9',phone:'+380661234567',biz:'Клініка-10',source:'bot',status:'',calls:0,sms:0,noshow:0,created:today(),stageDate:today(),log:[]},
-        {id:'d10',tg:'@sergiy_build',phone:'+380939012345',biz:'Будівництво-80',source:'ref',status:'reactivation',failReason:'no_time',reactDate:today(),created:addDays(today(),-90),stageDate:addDays(today(),-90),log:[]}
+        {id:'d5',tg:'@natalia_pharm',phone:'+380675678901',biz:'Аптеки-12',source:'ref',status:'deposit',finDep:15000,finDepCur:'UAH',finDepDate:addDays(today(),-10),finTotal:45000,finTotalCur:'UAH',nextDate:addDays(today(),-3),created:addDays(today(),-20),stageDate:addDays(today(),-10),log:[{type:'status',text:'Завдаток 15000',date:addDays(today(),-10)}]}
     ];
-    save();render();
+    for(const lead of demoLeads){
+        await saveLead(lead);
+    }
+    alert('Демо-дані додано!');
 }
 
 function toggleHelp(){document.getElementById('help').classList.toggle('active');}
-
-render();
 </script>
 </body>
 </html>
