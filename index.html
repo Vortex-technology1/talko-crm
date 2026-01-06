@@ -13,20 +13,45 @@
         :root{--p:#22c55e;--pd:#16a34a;--pl:#f0fdf4;--r:#ef4444;--rl:#fef2f2;--o:#f97316;--ol:#fff7ed;--b:#3b82f6;--bl:#eff6ff;--g:#6b7280;--gl:#f3f4f6;--t:#1a1a1a;--ts:#525252;--bg:#f9fafb;--w:#fff}
         body{font-family:Inter,-apple-system,sans-serif;background:var(--bg);color:var(--t);min-height:100vh}
         
-        /* Auth Screen */
-        .auth-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px}
-        .auth-box{background:var(--w);padding:40px;border-radius:16px;box-shadow:0 10px 40px rgba(0,0,0,.1);width:100%;max-width:400px}
-        .auth-logo{font-size:28px;font-weight:700;color:var(--p);text-align:center;margin-bottom:8px}
-        .auth-subtitle{text-align:center;color:var(--g);margin-bottom:32px}
-        .auth-input{width:100%;padding:12px 16px;border:1px solid #e5e7eb;border-radius:8px;font-size:14px;margin-bottom:12px}
-        .auth-input:focus{outline:none;border-color:var(--p)}
-        .auth-btn{width:100%;padding:14px;background:var(--p);color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer;margin-top:8px}
-        .auth-btn:hover{background:var(--pd)}
-        .auth-btn:disabled{background:var(--g);cursor:not-allowed}
-        .auth-error{background:var(--rl);color:var(--r);padding:10px;border-radius:8px;font-size:13px;margin-bottom:12px;display:none}
-        .auth-switch{text-align:center;margin-top:20px;font-size:13px;color:var(--g)}
-        .auth-switch a{color:var(--p);cursor:pointer;text-decoration:underline}
-        .auth-loading{display:none;text-align:center;padding:40px}
+        /* Auth Screen - Premium */
+        .auth-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px;background:linear-gradient(135deg,#0f172a 0%,#1e293b 50%,#0f172a 100%)}
+        .auth-container{text-align:center;width:100%;max-width:500px}
+        .auth-logo-wrap{display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:48px}
+        .auth-logo-icon{width:48px;height:48px;background:linear-gradient(135deg,#22c55e,#16a34a);border-radius:12px;display:flex;align-items:center;justify-content:center}
+        .auth-logo-icon svg{width:28px;height:28px;color:#fff}
+        .auth-logo-text{font-size:24px;font-weight:700;color:#fff}
+        .auth-headline{font-size:42px;font-weight:700;line-height:1.2;margin-bottom:24px}
+        .auth-headline .green{color:#22c55e}
+        .auth-headline .white{color:#fff}
+        .auth-subtitle{font-size:18px;color:#94a3b8;line-height:1.6;margin-bottom:16px}
+        .auth-tagline{font-size:16px;color:#e2e8f0;margin-bottom:48px}
+        .auth-buttons{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin-bottom:48px}
+        .auth-btn-primary{padding:16px 32px;background:#22c55e;color:#fff;border:none;border-radius:12px;font-size:16px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:10px;transition:all .2s}
+        .auth-btn-primary:hover{background:#16a34a;transform:translateY(-2px)}
+        .auth-btn-secondary{padding:16px 32px;background:transparent;color:#fff;border:1px solid #475569;border-radius:12px;font-size:16px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:10px;transition:all .2s}
+        .auth-btn-secondary:hover{border-color:#22c55e;background:rgba(34,197,94,.1)}
+        .auth-features{display:flex;gap:32px;justify-content:center;flex-wrap:wrap;margin-bottom:48px}
+        .auth-feature{display:flex;align-items:center;gap:8px;color:#94a3b8;font-size:14px}
+        .auth-feature svg{color:#22c55e}
+        
+        /* Auth Modal */
+        .auth-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);backdrop-filter:blur(8px);z-index:200;align-items:center;justify-content:center;padding:20px}
+        .auth-modal.active{display:flex}
+        .auth-box{background:#1e293b;padding:40px;border-radius:20px;width:100%;max-width:400px;border:1px solid #334155}
+        .auth-box-title{font-size:24px;font-weight:700;color:#fff;text-align:center;margin-bottom:8px}
+        .auth-box-subtitle{text-align:center;color:#94a3b8;margin-bottom:32px;font-size:14px}
+        .auth-input{width:100%;padding:14px 16px;background:#0f172a;border:1px solid #334155;border-radius:10px;font-size:15px;color:#fff;margin-bottom:12px}
+        .auth-input::placeholder{color:#64748b}
+        .auth-input:focus{outline:none;border-color:#22c55e}
+        .auth-submit{width:100%;padding:14px;background:#22c55e;color:#fff;border:none;border-radius:10px;font-size:16px;font-weight:600;cursor:pointer;margin-top:8px}
+        .auth-submit:hover{background:#16a34a}
+        .auth-submit:disabled{background:#475569;cursor:not-allowed}
+        .auth-error{background:rgba(239,68,68,.2);color:#f87171;padding:12px;border-radius:8px;font-size:13px;margin-bottom:16px;display:none;border:1px solid rgba(239,68,68,.3)}
+        .auth-switch{text-align:center;margin-top:24px;font-size:14px;color:#94a3b8}
+        .auth-switch a{color:#22c55e;cursor:pointer;text-decoration:none;font-weight:500}
+        .auth-switch a:hover{text-decoration:underline}
+        .auth-close{position:absolute;top:20px;right:20px;background:none;border:none;color:#64748b;cursor:pointer;font-size:24px}
+        .auth-close:hover{color:#fff}
         .spinner{width:40px;height:40px;border:3px solid var(--gl);border-top-color:var(--p);border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 16px}
         @keyframes spin{to{transform:rotate(360deg)}}
         
@@ -258,6 +283,24 @@
         .st-failed{background:#f3f4f6;color:#374151}
         .st-reactivation{background:#ede9fe;color:#5b21b6}
         
+        /* AI Panel */
+        .ai-fab{position:fixed;bottom:80px;right:20px;width:50px;height:50px;border-radius:50%;background:linear-gradient(135deg,#8b5cf6,#6366f1);color:#fff;border:none;cursor:pointer;font-size:20px;box-shadow:0 4px 12px rgba(99,102,241,.4);z-index:98;display:flex;align-items:center;justify-content:center}
+        .ai-fab:hover{transform:scale(1.1)}
+        .ai-panel{display:none;position:fixed;bottom:140px;right:20px;width:400px;max-width:calc(100vw - 40px);height:500px;max-height:calc(100vh - 180px);background:var(--w);border-radius:16px;box-shadow:0 10px 40px rgba(0,0,0,.2);overflow:hidden;z-index:99;flex-direction:column}
+        .ai-panel.active{display:flex}
+        .ai-panel-head{padding:14px 16px;background:linear-gradient(135deg,#8b5cf6,#6366f1);color:#fff;font-weight:600;display:flex;justify-content:space-between;align-items:center}
+        .ai-panel-close{background:0;border:0;color:#fff;cursor:pointer;font-size:20px;line-height:1}
+        .ai-panel-body{flex:1;display:flex;flex-direction:column;overflow:hidden}
+        .ai-chat{flex:1;padding:12px;overflow-y:auto;display:flex;flex-direction:column;gap:10px}
+        .ai-msg{padding:10px 14px;border-radius:12px;font-size:13px;line-height:1.5;max-width:90%}
+        .ai-msg-user{background:var(--p);color:#fff;align-self:flex-end;border-bottom-right-radius:4px}
+        .ai-msg-bot{background:var(--gl);color:var(--t);align-self:flex-start;border-bottom-left-radius:4px}
+        .ai-msg-loading{background:var(--gl);color:var(--g);align-self:flex-start}
+        .ai-input-wrap{padding:12px;border-top:1px solid #e5e7eb;background:var(--w)}
+        .ai-quick-btns{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
+        .ai-quick-btn{padding:6px 10px;font-size:11px;background:var(--gl);border:none;border-radius:6px;cursor:pointer;white-space:nowrap}
+        .ai-quick-btn:hover{background:#e5e7eb}
+        
         .quick-actions{display:flex;gap:8px;flex-wrap:wrap;padding:12px;background:var(--gl);border-radius:8px;margin-bottom:16px}
         
         @media(max-width:768px){
@@ -288,22 +331,80 @@
     </style>
 </head>
 <body>
-    <!-- Auth Screen -->
+    <!-- Auth Screen - Premium Landing -->
     <div class="auth-screen" id="auth-screen">
+        <div class="auth-container">
+            <!-- Logo -->
+            <div class="auth-logo-wrap">
+                <div class="auth-logo-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                        <circle cx="9" cy="7" r="4"/>
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                    </svg>
+                </div>
+                <div class="auth-logo-text">TALKO CRM</div>
+            </div>
+            
+            <!-- Headline -->
+            <h1 class="auth-headline">
+                <span class="green">AI закриває угоди,</span><br>
+                <span class="white">поки ви п'єте каву</span>
+            </h1>
+            
+            <!-- Subtitle -->
+            <p class="auth-subtitle">
+                Скоринг лідів, генерація скриптів, автоматичні нагадування.<br>
+                Менеджер працює ефективніше. Ви контролюєте воронку.
+            </p>
+            
+            <!-- Tagline -->
+            <p class="auth-tagline">Не здогадуватись хто купить. Знати.</p>
+            
+            <!-- Buttons -->
+            <div class="auth-buttons">
+                <button class="auth-btn-primary" onclick="openAuthModal('login')">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+                    Увійти в систему
+                </button>
+                <button class="auth-btn-secondary" onclick="openAuthModal('register')">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                    Записатися на демо
+                </button>
+            </div>
+            
+            <!-- Features -->
+            <div class="auth-features">
+                <div class="auth-feature">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                    AI-скоринг лідів
+                </div>
+                <div class="auth-feature">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                    Автоматичні скрипти
+                </div>
+                <div class="auth-feature">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                    Синхронізація в реальному часі
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Auth Modal -->
+    <div class="auth-modal" id="auth-modal">
         <div class="auth-box">
-            <div class="auth-logo">TALKO CRM</div>
-            <div class="auth-subtitle">Увійдіть для продовження</div>
+            <button class="auth-close" onclick="closeAuthModal()">&times;</button>
+            <div class="auth-box-title" id="auth-title">Вхід в систему</div>
+            <div class="auth-box-subtitle" id="auth-subtitle-text">Введіть дані вашого акаунту</div>
             <div class="auth-error" id="auth-error"></div>
             <input type="email" class="auth-input" id="auth-email" placeholder="Email">
             <input type="password" class="auth-input" id="auth-password" placeholder="Пароль">
-            <button class="auth-btn" id="auth-btn" onclick="handleAuth()">Увійти</button>
+            <button class="auth-submit" id="auth-btn" onclick="handleAuth()">Увійти</button>
             <div class="auth-switch" id="auth-switch">
                 Немає акаунту? <a onclick="toggleAuthMode()">Зареєструватися</a>
             </div>
-        </div>
-        <div class="auth-loading" id="auth-loading">
-            <div class="spinner"></div>
-            <div>Завантаження...</div>
         </div>
     </div>
 
@@ -564,6 +665,43 @@
     </div>
     </div>
     
+    <!-- AI Assistant Panel -->
+    <div class="ai-panel" id="ai-panel">
+        <div class="ai-panel-head">
+            <span style="display:flex;align-items:center;gap:8px"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-1H2a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h1a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2z"/><circle cx="8" cy="14" r="1"/><circle cx="16" cy="14" r="1"/></svg> AI Асистент</span>
+            <button class="ai-panel-close" onclick="toggleAI()">&times;</button>
+        </div>
+        <div class="ai-panel-body">
+            <div class="ai-chat" id="ai-chat">
+                <div class="ai-msg ai-msg-bot">Привіт! Я AI-асистент TALKO CRM. Можу допомогти з:
+                    <br>• Генерація скриптів дзвінків
+                    <br>• SMS шаблони під конкретного ліда
+                    <br>• Аналіз звітів консультацій
+                    <br>• Відповіді на заперечення
+                    <br><br>Виберіть ліда та натисніть потрібну дію!</div>
+            </div>
+            <div class="ai-input-wrap">
+                <select id="ai-lead-select" class="form-select" style="margin-bottom:8px">
+                    <option value="">— Виберіть ліда —</option>
+                </select>
+                <div class="ai-quick-btns">
+                    <button class="ai-quick-btn" onclick="aiAsk('script')"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg> Скрипт дзвінка</button>
+                    <button class="ai-quick-btn" onclick="aiAsk('analysis')"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 21H4.6c-.56 0-.84 0-1.05-.11a1 1 0 0 1-.44-.44C3 20.24 3 19.96 3 19.4V3"/><path d="m7 14 4-4 4 4 6-6"/></svg> Аналіз</button>
+                    <button class="ai-quick-btn" onclick="aiAsk('objections')"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> Заперечення</button>
+                    <button class="ai-quick-btn" onclick="aiAsk('sms')"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 5L2 7"/></svg> SMS</button>
+                </div>
+                <div style="display:flex;gap:8px">
+                    <input type="text" id="ai-input" class="form-input" placeholder="Або задайте своє питання..." onkeypress="if(event.key==='Enter')aiSend()">
+                    <button class="btn btn-p" onclick="aiSend()"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg></button>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+    
+    <!-- AI FAB Button -->
+    <button class="ai-fab" onclick="toggleAI()"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-1H2a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h1a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2z"/><circle cx="8" cy="14" r="1"/><circle cx="16" cy="14" r="1"/><path d="M9 18h6"/></svg></button>
+    
     <!-- Help -->
     <button class="help-btn" onclick="toggleHelp()">?</button>
     <div class="help-panel" id="help">
@@ -602,14 +740,42 @@ let currentUser = null;
 let isAuthMode = 'login'; // 'login' or 'register'
 let unsubscribe = null; // Firestore listener
 
-// ===== AUTH FUNCTIONS =====
+// ===== AUTH MODAL FUNCTIONS =====
+function openAuthModal(mode){
+    isAuthMode = mode;
+    updateAuthModal();
+    document.getElementById('auth-modal').classList.add('active');
+    document.getElementById('auth-email').focus();
+}
+
+function closeAuthModal(){
+    document.getElementById('auth-modal').classList.remove('active');
+    hideAuthError();
+}
+
 function toggleAuthMode(){
     isAuthMode = isAuthMode === 'login' ? 'register' : 'login';
-    document.getElementById('auth-btn').textContent = isAuthMode === 'login' ? 'Увійти' : 'Зареєструватися';
-    document.getElementById('auth-switch').innerHTML = isAuthMode === 'login' 
-        ? 'Немає акаунту? <a onclick="toggleAuthMode()">Зареєструватися</a>'
-        : 'Вже є акаунт? <a onclick="toggleAuthMode()">Увійти</a>';
+    updateAuthModal();
     hideAuthError();
+}
+
+function updateAuthModal(){
+    const title = document.getElementById('auth-title');
+    const subtitle = document.getElementById('auth-subtitle-text');
+    const btn = document.getElementById('auth-btn');
+    const switchEl = document.getElementById('auth-switch');
+    
+    if(isAuthMode === 'login'){
+        title.textContent = 'Вхід в систему';
+        subtitle.textContent = 'Введіть дані вашого акаунту';
+        btn.textContent = 'Увійти';
+        switchEl.innerHTML = 'Немає акаунту? <a onclick="toggleAuthMode()">Зареєструватися</a>';
+    } else {
+        title.textContent = 'Реєстрація';
+        subtitle.textContent = 'Створіть акаунт для доступу до системи';
+        btn.textContent = 'Зареєструватися';
+        switchEl.innerHTML = 'Вже є акаунт? <a onclick="toggleAuthMode()">Увійти</a>';
+    }
 }
 
 function showAuthError(msg){
@@ -666,6 +832,7 @@ auth.onAuthStateChanged(user => {
     if(user){
         currentUser = user;
         document.getElementById('auth-screen').style.display = 'none';
+        document.getElementById('auth-modal').classList.remove('active');
         document.getElementById('app').style.display = 'block';
         document.getElementById('user-email').textContent = user.email;
         initFirestoreListener();
@@ -673,8 +840,6 @@ auth.onAuthStateChanged(user => {
         currentUser = null;
         document.getElementById('auth-screen').style.display = 'flex';
         document.getElementById('app').style.display = 'none';
-        document.querySelector('.auth-box').style.display = 'block';
-        document.getElementById('auth-loading').style.display = 'none';
         document.getElementById('auth-btn').disabled = false;
         document.getElementById('auth-btn').textContent = 'Увійти';
         if(unsubscribe) unsubscribe();
@@ -1507,6 +1672,186 @@ async function loadDemo(){
 }
 
 function toggleHelp(){document.getElementById('help').classList.toggle('active');}
+
+// ===== AI ASSISTANT =====
+const AI_API_URL = 'https://openai-proxy-1090643937646.europe-central2.run.app'; // Заміни на свій URL після деплою
+
+function toggleAI(){
+    document.getElementById('ai-panel').classList.toggle('active');
+    updateAILeadSelect();
+}
+
+function updateAILeadSelect(){
+    const sel = document.getElementById('ai-lead-select');
+    sel.innerHTML = '<option value="">— Виберіть ліда —</option>' + 
+        leads.map(l => `<option value="${l.id}">${l.tg||l.phone} (${l.biz||'—'})</option>`).join('');
+}
+
+function getSelectedLead(){
+    const id = document.getElementById('ai-lead-select').value;
+    return id ? leads.find(l => l.id === id) : null;
+}
+
+function addAIMessage(text, isUser = false){
+    const chat = document.getElementById('ai-chat');
+    const msg = document.createElement('div');
+    msg.className = `ai-msg ${isUser ? 'ai-msg-user' : 'ai-msg-bot'}`;
+    msg.innerHTML = text.replace(/\n/g, '<br>');
+    chat.appendChild(msg);
+    chat.scrollTop = chat.scrollHeight;
+    return msg;
+}
+
+function showAILoading(){
+    const chat = document.getElementById('ai-chat');
+    const msg = document.createElement('div');
+    msg.className = 'ai-msg ai-msg-loading';
+    msg.id = 'ai-loading';
+    msg.innerHTML = '⏳ Думаю...';
+    chat.appendChild(msg);
+    chat.scrollTop = chat.scrollHeight;
+}
+
+function hideAILoading(){
+    const el = document.getElementById('ai-loading');
+    if(el) el.remove();
+}
+
+async function aiAsk(type){
+    const lead = getSelectedLead();
+    if(!lead && type !== 'general'){
+        alert('Спочатку виберіть ліда');
+        return;
+    }
+    
+    const prompts = {
+        script: `Згенеруй детальний скрипт дзвінка для цього ліда. 
+Структура:
+1. Привітання (з урахуванням як ми познайомились)
+2. Причина дзвінка
+3. Виявлення болю (2-3 питання)
+4. Презентація рішення
+5. Робота з запереченнями
+6. Закриття на наступний крок
+
+Враховуй: статус ліда, історію контактів, розмір бізнесу, джерело.`,
+
+        analysis: `Проаналізуй цього ліда детально:
+
+1. СКОРИНГ (0-100): оціни ймовірність закриття
+2. СИЛЬНІ СТОРОНИ: що грає на нашу користь
+3. СЛАБКІ СТОРОНИ: що може завадити
+4. РЕКОМЕНДОВАНА СТРАТЕГІЯ: конкретні кроки
+5. ОПТИМАЛЬНИЙ ЧАС: коли краще дзвонити
+6. ПРОГНОЗ: скільки ще контактів до закриття
+
+${lead.report ? 'Враховуй звіт консультації: ' + lead.report : ''}`,
+
+        objections: `Склади список можливих заперечень цього клієнта та дай відповіді:
+
+Для кожного заперечення:
+- Саме заперечення
+- Чому воно виникає
+- Відповідь (2-3 варіанти)
+- Як перевести в закриття
+
+Типові заперечення: дорого, немає часу, подумаю, порадюсь, вже є консультант, не вірю в консалтинг.
+
+${lead.report ? 'Враховуй звіт: ' + lead.report : ''}`,
+
+        sms: `Напиши 3 варіанти SMS для цього ліда (кожен до 160 символів).
+
+Варіант 1: М'який (нагадування)
+Варіант 2: Цінність (користь від зустрічі)  
+Варіант 3: Терміновість (дедлайн/обмеження)
+
+Мета: підштовхнути до наступного кроку у воронці.
+Поточний статус: ${ST[lead.status] || lead.status}`,
+
+        report_analysis: `Проаналізуй звіт консультації та дай рекомендації:
+
+ЗВІТ: ${lead.report || 'Звіт відсутній'}
+
+Визнач:
+1. Головний біль клієнта
+2. Тригери до покупки
+3. Можливі заперечення
+4. Рекомендована стратегія дожиму
+5. Оптимальна пропозиція (пакет, ціна, умови)`
+    };
+    
+    const userMsg = prompts[type] || type;
+    addAIMessage(getShortPromptName(type), true);
+    showAILoading();
+    
+    try {
+        const response = await fetch(AI_API_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                messages: [{ role: 'user', content: userMsg }],
+                lead: lead
+            })
+        });
+        
+        const data = await response.json();
+        hideAILoading();
+        
+        if(data.success){
+            addAIMessage(data.message);
+        } else {
+            addAIMessage('Помилка: ' + (data.error || 'Невідома помилка'));
+        }
+    } catch(err){
+        hideAILoading();
+        addAIMessage('Помилка з\'єднання: ' + err.message);
+    }
+}
+
+function getShortPromptName(type){
+    const names = {
+        script: 'Згенеруй скрипт дзвінка',
+        analysis: 'Проаналізуй ліда',
+        objections: 'Підготуй відповіді на заперечення',
+        sms: 'Напиши SMS варіанти',
+        report_analysis: 'Проаналізуй звіт консультації'
+    };
+    return names[type] || type;
+}
+
+async function aiSend(){
+    const input = document.getElementById('ai-input');
+    const text = input.value.trim();
+    if(!text) return;
+    
+    input.value = '';
+    addAIMessage(text, true);
+    showAILoading();
+    
+    try {
+        const lead = getSelectedLead();
+        const response = await fetch(AI_API_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                messages: [{ role: 'user', content: text }],
+                lead: lead
+            })
+        });
+        
+        const data = await response.json();
+        hideAILoading();
+        
+        if(data.success){
+            addAIMessage(data.message);
+        } else {
+            addAIMessage('❌ Помилка: ' + (data.error || 'Невідома помилка'));
+        }
+    } catch(err){
+        hideAILoading();
+        addAIMessage('❌ Помилка з\'єднання: ' + err.message);
+    }
+}
 
 // Init report dates on load
 initReportDates();
