@@ -1,0 +1,1113 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TALKO CRM</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        :root{--p:#22c55e;--pd:#16a34a;--pl:#f0fdf4;--r:#ef4444;--rl:#fef2f2;--o:#f97316;--ol:#fff7ed;--b:#3b82f6;--bl:#eff6ff;--g:#6b7280;--gl:#f3f4f6;--t:#1a1a1a;--ts:#525252;--bg:#f9fafb;--w:#fff}
+        body{font-family:Inter,-apple-system,sans-serif;background:var(--bg);color:var(--t);min-height:100vh}
+        .header{background:var(--w);padding:12px 20px;border-bottom:1px solid #e5e7eb;position:sticky;top:0;z-index:100}
+        .header-content{max-width:1600px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+        .logo{font-size:20px;font-weight:700;color:var(--p)}
+        .nav{display:flex;gap:4px;background:var(--gl);padding:4px;border-radius:8px}
+        .nav-btn{padding:8px 16px;border:none;background:0;border-radius:6px;font-size:14px;cursor:pointer;color:var(--g)}
+        .nav-btn:hover{color:var(--t)}
+        .nav-btn.active{background:var(--w);color:var(--p);box-shadow:0 1px 2px rgba(0,0,0,.1)}
+        .actions{display:flex;gap:8px;flex-wrap:wrap}
+        .btn{padding:8px 14px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;border:none;display:inline-flex;align-items:center;gap:6px}
+        .btn-p{background:var(--p);color:#fff}
+        .btn-p:hover{background:var(--pd)}
+        .btn-s{background:var(--gl);color:var(--t)}
+        .btn-s:hover{background:#e5e7eb}
+        .btn-d{background:var(--r);color:#fff}
+        .container{max-width:1600px;margin:0 auto;padding:20px}
+        .view{display:none}
+        .view.active{display:block}
+        
+        /* Tasks */
+        .tasks-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+        .tasks-title{font-size:22px;font-weight:700}
+        .tasks-count{background:var(--r);color:#fff;padding:2px 10px;border-radius:12px;font-size:13px;margin-left:8px}
+        .task-card{background:var(--w);border-radius:12px;padding:16px;margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,.1);border-left:4px solid transparent;cursor:pointer}
+        .task-card:hover{box-shadow:0 4px 12px rgba(0,0,0,.15)}
+        .task-card.critical{border-left-color:var(--r);background:var(--rl)}
+        .task-card.warning{border-left-color:var(--o);background:var(--ol)}
+        .task-card.info{border-left-color:var(--b);background:var(--bl)}
+        .task-name{font-weight:600;font-size:15px;margin-bottom:4px}
+        .task-meta{font-size:12px;color:var(--ts);margin-bottom:8px}
+        .task-action{font-size:14px;margin-bottom:12px}
+        .task-btns{display:flex;gap:8px;flex-wrap:wrap}
+        .task-btn{padding:8px 14px;border-radius:6px;font-size:12px;font-weight:500;cursor:pointer;border:none}
+        .task-btn.success{background:var(--p);color:#fff}
+        .task-btn.warn{background:var(--o);color:#fff}
+        .task-btn.danger{background:var(--rl);color:var(--r)}
+        .task-btn.secondary{background:var(--gl);color:var(--t)}
+        .empty{text-align:center;padding:60px 20px;color:var(--g)}
+        
+        /* Kanban */
+        .kanban{display:flex;gap:16px;overflow-x:auto;padding-bottom:20px}
+        .kanban-filters{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+        .filter-btn{padding:8px 14px;border-radius:8px;font-size:12px;font-weight:500;cursor:pointer;border:1px solid #e5e7eb;background:var(--w);color:var(--t);display:inline-flex;align-items:center;gap:6px;transition:all .2s}
+        .filter-btn:hover{border-color:var(--p);background:var(--pl)}
+        .filter-btn.active{background:var(--p);color:#fff;border-color:var(--p)}
+        .filter-btn svg{flex-shrink:0}
+        .column{width:280px;flex-shrink:0;background:var(--gl);border-radius:12px;max-height:calc(100vh - 160px);display:flex;flex-direction:column}
+        .column-header{padding:14px;font-weight:600;font-size:13px;border-bottom:1px solid #e5e7eb;display:flex;justify-content:space-between;align-items:center}
+        .column-count{background:var(--w);padding:2px 8px;border-radius:8px;font-size:12px;color:var(--g)}
+        .column-cards{padding:10px;flex:1;overflow-y:auto;min-height:80px}
+        .column-cards.drag-over{background:var(--pl)}
+        .k-card{background:var(--w);border-radius:8px;padding:12px;margin-bottom:8px;box-shadow:0 1px 2px rgba(0,0,0,.1);cursor:grab;border-left:3px solid transparent}
+        .k-card:hover{box-shadow:0 2px 8px rgba(0,0,0,.15)}
+        .k-card.dragging{opacity:.5}
+        .k-card.has-alert{border-left-color:var(--o)}
+        .k-card.has-critical{border-left-color:var(--r)}
+        .k-card-name{font-weight:600;font-size:13px;margin-bottom:4px}
+        .k-card-biz{font-size:11px;color:var(--ts);margin-bottom:6px}
+        .k-card-footer{display:flex;justify-content:space-between;font-size:11px;color:var(--g)}
+        .k-card-amount{color:var(--p);font-weight:600}
+        .k-card-days{padding:2px 6px;border-radius:4px;background:var(--gl)}
+        .k-card-days.over{background:var(--rl);color:var(--r)}
+        .k-card-tags{display:flex;gap:4px;flex-wrap:wrap;margin-top:6px}
+        .k-tag{padding:2px 6px;border-radius:4px;font-size:10px;font-weight:500;display:inline-flex;align-items:center;gap:3px}
+        .k-tag svg{width:10px;height:10px}
+        .k-tag.overdue{background:var(--rl);color:var(--r)}
+        .k-tag.consult-today{background:#dbeafe;color:#1e40af}
+        .k-tag.consult-tomorrow{background:#fef3c7;color:#92400e}
+        .k-tag.noshow{background:var(--ol);color:#c2410c}
+        .k-tag.has-deposit{background:#d1fae5;color:#065f46}
+        .k-tag.action-today{background:#f5f3ff;color:#7c3aed}
+        .score{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600}
+        .score.hot{background:#fee2e2;color:#dc2626}
+        .score.warm{background:#fef3c7;color:#d97706}
+        .score.cold{background:#e0e7ff;color:#4f46e5}
+        .score-bar{width:40px;height:6px;background:#e5e7eb;border-radius:3px;overflow:hidden}
+        .score-fill{height:100%;border-radius:3px}
+        .score-fill.hot{background:#dc2626}
+        .score-fill.warm{background:#d97706}
+        .score-fill.cold{background:#4f46e5}
+        .ai-hint{background:linear-gradient(135deg,#f0fdf4,#ecfdf5);border:1px solid #86efac;border-radius:8px;padding:10px 12px;margin-bottom:12px;font-size:12px;display:flex;gap:8px;align-items:flex-start}
+        .ai-hint svg{flex-shrink:0;color:#22c55e}
+        .ai-hint-text{flex:1}
+        .ai-hint-title{font-weight:600;color:#166534;margin-bottom:2px}
+        .column[data-status="new"] .column-header{background:#dbeafe}
+        .column[data-status="scheduled"] .column-header{background:#fef3c7}
+        .column[data-status="completed"] .column-header{background:#e0e7ff}
+        .column[data-status="report_sent"] .column-header{background:#fce7f3}
+        .column[data-status="repeat"] .column-header{background:#f5f3ff}
+        .column[data-status="deposit"] .column-header{background:#d1fae5}
+        .column[data-status="paid"] .column-header{background:#22c55e;color:#fff}
+        
+        /* Reports */
+        .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-bottom:20px}
+        .stat{background:var(--w);padding:20px;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,.1)}
+        .stat-val{font-size:28px;font-weight:700;color:var(--p)}
+        .stat-label{font-size:12px;color:var(--g);margin-top:4px}
+        .funnel{background:var(--w);padding:20px;border-radius:12px}
+        .funnel-title{font-weight:600;margin-bottom:16px}
+        .funnel-row{display:flex;align-items:center;gap:12px;margin-bottom:8px}
+        .funnel-label{width:160px;font-size:13px}
+        .funnel-bar{flex:1;height:28px;background:var(--gl);border-radius:4px;overflow:hidden}
+        .funnel-fill{height:100%;background:var(--p);display:flex;align-items:center;padding:0 10px;font-size:12px;color:#fff;font-weight:500}
+        
+        /* Modal */
+        .modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;align-items:flex-start;justify-content:center;padding:20px;overflow-y:auto}
+        .modal-bg.active{display:flex}
+        .modal{background:var(--w);border-radius:16px;width:100%;max-width:640px;margin:40px 0}
+        .modal-head{padding:16px 20px;border-bottom:1px solid #e5e7eb;display:flex;justify-content:space-between;align-items:center}
+        .modal-title{font-size:18px;font-weight:600}
+        .modal-close{width:32px;height:32px;border:none;background:var(--gl);border-radius:8px;cursor:pointer;font-size:18px}
+        .modal-body{padding:20px;max-height:65vh;overflow-y:auto}
+        .modal-foot{padding:16px 20px;border-top:1px solid #e5e7eb;display:flex;justify-content:space-between}
+        .tabs{display:flex;gap:0;border-bottom:1px solid #e5e7eb;margin:-20px -20px 20px}
+        .tab{flex:1;padding:12px;text-align:center;font-size:13px;font-weight:500;cursor:pointer;border:none;background:0;color:var(--g);border-bottom:2px solid transparent}
+        .tab.active{color:var(--p);border-bottom-color:var(--p)}
+        .tab-content{display:none}
+        .tab-content.active{display:block}
+        .form-row{display:grid;gap:16px;grid-template-columns:1fr 1fr;margin-bottom:16px}
+        .form-group{display:flex;flex-direction:column;gap:4px}
+        .form-label{font-size:11px;font-weight:600;color:var(--ts);text-transform:uppercase}
+        .form-input,.form-select,.form-textarea{padding:10px;border:1px solid #e5e7eb;border-radius:8px;font-size:14px}
+        .form-input:focus,.form-select:focus{outline:none;border-color:var(--p)}
+        .form-textarea{min-height:80px;resize:vertical}
+        .form-hint{font-size:10px;color:var(--g)}
+        
+        /* Comm Log */
+        .comm-log{max-height:250px;overflow-y:auto}
+        .comm-item{display:flex;gap:10px;padding:10px;background:var(--gl);border-radius:8px;margin-bottom:8px}
+        .comm-icon{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px}
+        .comm-icon.call{background:var(--bl);color:var(--b)}
+        .comm-icon.sms{background:var(--pl);color:var(--p)}
+        .comm-icon.note{background:#f5f3ff;color:#8b5cf6}
+        .comm-icon.status{background:var(--ol);color:var(--o)}
+        .comm-body{flex:1}
+        .comm-head{display:flex;justify-content:space-between;font-size:12px;margin-bottom:2px}
+        .comm-type{font-weight:600}
+        .comm-date{color:var(--g)}
+        .comm-text{font-size:12px;color:var(--ts)}
+        .comm-add{display:flex;gap:8px;margin-top:12px}
+        .comm-add select{width:100px}
+        .comm-add input{flex:1}
+        
+        /* Links */
+        .links-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+        .link-item{padding:12px;background:var(--gl);border-radius:8px}
+        .link-label{font-size:10px;font-weight:600;color:var(--g);text-transform:uppercase;margin-bottom:4px}
+        .link-input{width:100%;padding:8px;border:1px solid #e5e7eb;border-radius:6px;font-size:12px}
+        
+        /* Finance */
+        .fin-row{display:grid;grid-template-columns:1fr 80px;gap:8px;margin-bottom:12px}
+        
+        /* Help */
+        .help-btn{position:fixed;bottom:20px;right:20px;width:50px;height:50px;border-radius:50%;background:var(--p);color:#fff;border:none;cursor:pointer;font-size:20px;box-shadow:0 4px 12px rgba(34,197,94,.4)}
+        .help-panel{display:none;position:fixed;bottom:80px;right:20px;width:360px;max-width:calc(100vw - 40px);max-height:60vh;background:var(--w);border-radius:12px;box-shadow:0 10px 40px rgba(0,0,0,.2);overflow:hidden;z-index:99}
+        .help-panel.active{display:block}
+        .help-head{padding:14px;background:var(--p);color:#fff;font-weight:600;display:flex;justify-content:space-between}
+        .help-close{background:0;border:0;color:#fff;cursor:pointer;font-size:18px}
+        .help-body{padding:14px;overflow-y:auto;max-height:calc(60vh - 50px)}
+        .help-item{display:flex;gap:8px;padding:8px;background:var(--gl);border-radius:6px;margin-bottom:6px;font-size:12px}
+        .status-badge{padding:3px 8px;border-radius:4px;font-size:11px;font-weight:500}
+        .st-new{background:#dbeafe;color:#1e40af}
+        .st-scheduled{background:#fef3c7;color:#92400e}
+        .st-completed{background:#e0e7ff;color:#3730a3}
+        .st-report_sent{background:#fce7f3;color:#9d174d}
+        .st-repeat{background:#f5f3ff;color:#5b21b6}
+        .st-deposit{background:#d1fae5;color:#065f46}
+        .st-paid{background:#22c55e;color:#fff}
+        .st-failed{background:#f3f4f6;color:#374151}
+        .st-reactivation{background:#ede9fe;color:#5b21b6}
+        
+        .quick-actions{display:flex;gap:8px;flex-wrap:wrap;padding:12px;background:var(--gl);border-radius:8px;margin-bottom:16px}
+        
+        @media(max-width:640px){
+            .form-row{grid-template-columns:1fr}
+            .links-grid{grid-template-columns:1fr}
+            .header-content{flex-direction:column}
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">TALKO CRM</div>
+            <nav class="nav">
+                <button class="nav-btn active" onclick="switchView('tasks')">Завдання</button>
+                <button class="nav-btn" onclick="switchView('kanban')">Kanban</button>
+                <button class="nav-btn" onclick="switchView('reports')">Звіти</button>
+            </nav>
+            <div class="actions">
+                <button class="btn btn-p" onclick="openModal()">+ Додати</button>
+                <label class="btn btn-s">Імпорт<input type="file" accept=".xlsx,.xls" onchange="importXLS(event)" hidden></label>
+                <button class="btn btn-s" onclick="exportXLS()">Експорт</button>
+                <button class="btn btn-s" style="background:#fef3c7" onclick="loadDemo()">Демо</button>
+            </div>
+        </div>
+    </header>
+    
+    <main class="container">
+        <!-- Tasks View -->
+        <div class="view active" id="v-tasks">
+            <div class="tasks-header">
+                <h1 class="tasks-title">Що робити зараз<span class="tasks-count" id="task-count">0</span></h1>
+            </div>
+            <div class="kanban-filters" id="tasks-filters">
+                <button class="filter-btn active" onclick="setTaskFilter('all')">Всі</button>
+                <button class="filter-btn" onclick="setTaskFilter('critical')"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> Критичні</button>
+                <button class="filter-btn" onclick="setTaskFilter('calls')"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg> Дзвінки</button>
+                <button class="filter-btn" onclick="setTaskFilter('consult')"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> Консультації</button>
+                <button class="filter-btn" onclick="setTaskFilter('followup')"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> Дожим</button>
+                <button class="filter-btn" onclick="setTaskFilter('money')"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg> Оплата</button>
+            </div>
+            <div id="tasks-list"></div>
+        </div>
+        
+        <!-- Kanban View -->
+        <div class="view" id="v-kanban">
+            <div class="kanban-filters" id="kanban-filters">
+                <button class="filter-btn active" onclick="setFilter('all')">Всі</button>
+                <button class="filter-btn" onclick="setFilter('critical')"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> Критичні</button>
+                <button class="filter-btn" onclick="setFilter('today')"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> Сьогодні</button>
+                <button class="filter-btn" onclick="setFilter('tomorrow')"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> Завтра</button>
+                <button class="filter-btn" onclick="setFilter('action')"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> Дія сьогодні</button>
+                <button class="filter-btn" onclick="setFilter('money')"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg> Чекають оплату</button>
+            </div>
+            <div class="kanban" id="kanban"></div>
+        </div>
+        
+        <!-- Reports View -->
+        <div class="view" id="v-reports">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+                <h1 class="tasks-title">Звіти</h1>
+                <div style="display:flex;gap:8px">
+                    <select id="period" onchange="renderReports()" class="form-select" style="width:auto">
+                        <option value="week">Тиждень</option>
+                        <option value="month">Місяць</option>
+                        <option value="all">Весь час</option>
+                    </select>
+                    <button class="btn btn-p" onclick="exportReport()">Експорт</button>
+                </div>
+            </div>
+            <div class="stats" id="stats"></div>
+            <div class="funnel">
+                <div class="funnel-title">Воронка продажів</div>
+                <div id="funnel"></div>
+            </div>
+        </div>
+    </main>
+    
+    <!-- Lead Modal -->
+    <div class="modal-bg" id="modal">
+        <div class="modal">
+            <div class="modal-head">
+                <span class="modal-title" id="modal-title">Новий лід</span>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="tabs">
+                    <button class="tab active" onclick="switchTab('main')">Основне</button>
+                    <button class="tab" onclick="switchTab('history')">Історія</button>
+                    <button class="tab" onclick="switchTab('links')">Посилання</button>
+                    <button class="tab" onclick="switchTab('finance')">Фінанси</button>
+                </div>
+                
+                <div class="quick-actions" id="quick-actions" style="display:none">
+                    <button class="btn btn-p" onclick="qAction('call')"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg> Подзвонив</button>
+                    <button class="btn btn-s" onclick="qAction('sms')"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> SMS</button>
+                    <button class="btn btn-s" onclick="qAction('schedule')"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> Призначити</button>
+                    <button class="btn btn-d" onclick="qAction('fail')"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg> Неуспішна</button>
+                </div>
+                
+                <div class="tab-content active" id="t-main">
+                    <input type="hidden" id="f-id">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Статус</label>
+                            <select class="form-select" id="f-status" onchange="onStatusChange()">
+                                <option value="">—</option>
+                                <option value="new">Новий лід</option>
+                                <option value="scheduled">Консультація призначена</option>
+                                <option value="completed">Консультація проведена</option>
+                                <option value="report_sent">Звіт відправлений</option>
+                                <option value="repeat">Повторна консультація</option>
+                                <option value="deposit">Завдаток</option>
+                                <option value="paid">Оплачено</option>
+                                <option value="failed">Неуспішна угода</option>
+                                <option value="reactivation">Реактивація</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Не прийшов</label>
+                            <select class="form-select" id="f-noshow">
+                                <option value="0">Ні</option>
+                                <option value="1">1 раз</option>
+                                <option value="2">2 рази</option>
+                                <option value="3">3 рази</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Телеграм</label>
+                            <input class="form-input" id="f-tg" placeholder="@username">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Телефон</label>
+                            <input class="form-input" id="f-phone" placeholder="+380...">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Бізнес</label>
+                            <input class="form-input" id="f-biz" placeholder="Стоматологія-15">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Джерело</label>
+                            <select class="form-select" id="f-source">
+                                <option value="">—</option>
+                                <option value="bot">Бот</option>
+                                <option value="mk_clinic">МК Клініки</option>
+                                <option value="mk_prod">МК Виробництво</option>
+                                <option value="ads">Реклама</option>
+                                <option value="ref">Рекомендація</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Дата консультації</label>
+                            <input type="datetime-local" class="form-input" id="f-consult">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Повторних</label>
+                            <select class="form-select" id="f-repeat"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option></select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Дзвінки</label>
+                            <select class="form-select" id="f-calls"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option></select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">SMS</label>
+                            <select class="form-select" id="f-sms"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option></select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Наступна дія</label>
+                            <input type="date" class="form-input" id="f-next">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Що зробити</label>
+                            <input class="form-input" id="f-action" placeholder="Подзвонити...">
+                        </div>
+                    </div>
+                    <div class="form-group" id="report-group" style="display:none">
+                        <label class="form-label">Звіт консультації</label>
+                        <textarea class="form-textarea" id="f-report" placeholder="Основні болі клієнта, заперечення, що цікавило, готовність до оплати..." style="min-height:120px"></textarea>
+                        <div class="form-hint">Детальний звіт = кращі підказки від ШІ</div>
+                    </div>
+                    <div class="form-group" id="fail-group" style="display:none">
+                        <label class="form-label">Причина відмови</label>
+                        <select class="form-select" id="f-fail">
+                            <option value="">—</option>
+                            <option value="expensive">Дорого</option>
+                            <option value="no_time">Немає часу</option>
+                            <option value="competitor">Конкурент</option>
+                            <option value="no_answer">Не відповідає</option>
+                            <option value="other">Інше</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Примітки</label>
+                        <textarea class="form-textarea" id="f-notes" placeholder="..."></textarea>
+                    </div>
+                </div>
+                
+                <div class="tab-content" id="t-history">
+                    <div class="comm-log" id="comm-log"></div>
+                    <div class="comm-add">
+                        <select class="form-select" id="comm-type"><option value="call">Дзвінок</option><option value="sms">SMS</option><option value="note">Нотатка</option></select>
+                        <input class="form-input" id="comm-text" placeholder="Коментар...">
+                        <button class="btn btn-p" onclick="addComm()">+</button>
+                    </div>
+                </div>
+                
+                <div class="tab-content" id="t-links">
+                    <div class="links-grid">
+                        <div class="link-item"><div class="link-label">Запис консультації</div><input class="link-input" id="l-record" placeholder="https://..."></div>
+                        <div class="link-item"><div class="link-label">Звіт</div><input class="link-input" id="l-report" placeholder="https://docs..."></div>
+                        <div class="link-item"><div class="link-label">КП</div><input class="link-input" id="l-kp" placeholder="https://..."></div>
+                        <div class="link-item"><div class="link-label">Договір</div><input class="link-input" id="l-contract" placeholder="https://..."></div>
+                    </div>
+                </div>
+                
+                <div class="tab-content" id="t-finance">
+                    <div class="form-group"><label class="form-label">Завдаток</label>
+                        <div class="fin-row"><input type="number" class="form-input" id="fin-dep" placeholder="0"><select class="form-select" id="fin-dep-cur"><option>UAH</option><option>USD</option><option>EUR</option></select></div>
+                    </div>
+                    <div class="form-group"><label class="form-label">Дата завдатку</label><input type="date" class="form-input" id="fin-dep-date"></div>
+                    <div class="form-group"><label class="form-label">Повна сума</label>
+                        <div class="fin-row"><input type="number" class="form-input" id="fin-total" placeholder="0"><select class="form-select" id="fin-total-cur"><option>UAH</option><option>USD</option><option>EUR</option></select></div>
+                    </div>
+                    <div class="form-group"><label class="form-label">Дата оплати</label><input type="date" class="form-input" id="fin-paid-date"></div>
+                </div>
+            </div>
+            <div class="modal-foot">
+                <button class="btn btn-d" id="del-btn" style="display:none" onclick="delLead()">Видалити</button>
+                <div style="display:flex;gap:8px">
+                    <button class="btn btn-s" onclick="closeModal()">Скасувати</button>
+                    <button class="btn btn-p" onclick="saveLead()">Зберегти</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Help -->
+    <button class="help-btn" onclick="toggleHelp()">?</button>
+    <div class="help-panel" id="help">
+        <div class="help-head"><span>Інструкція</span><button class="help-close" onclick="toggleHelp()">&times;</button></div>
+        <div class="help-body">
+            <div class="help-item"><span class="status-badge st-new">Новий</span><span>Подзвонити, призначити</span></div>
+            <div class="help-item"><span class="status-badge st-scheduled">Призначена</span><span>Підтвердити за день</span></div>
+            <div class="help-item"><span class="status-badge st-completed">Проведена</span><span>Чекати звіт</span></div>
+            <div class="help-item"><span class="status-badge st-report_sent">Звіт</span><span>Дожимати до оплати</span></div>
+            <div class="help-item"><span class="status-badge st-repeat">Повторна</span><span>Ще консультація</span></div>
+            <div class="help-item"><span class="status-badge st-deposit">Завдаток</span><span>Повна оплата</span></div>
+            <div class="help-item"><span class="status-badge st-paid">Оплачено</span><span>Закрито ✓</span></div>
+            <div class="help-item"><span class="status-badge st-failed">Неуспішна</span><span>+3 міс реактивація</span></div>
+            <div style="margin-top:12px;padding:10px;background:var(--ol);border-radius:6px;font-size:12px">
+                <b>Правила:</b><br>• Новий лід: макс 3 дзвінки<br>• Після звіту: 3 дзв + 3 SMS<br>• Неуспішна → реактивація 3 міс
+            </div>
+        </div>
+    </div>
+
+<script>
+const ST={new:'Новий лід',scheduled:'Призначена',completed:'Проведена',report_sent:'Звіт відправлено',repeat:'Повторна',deposit:'Завдаток',paid:'Оплачено',failed:'Неуспішна',reactivation:'Реактивація'};
+const SRC={bot:'Бот',mk_clinic:'МК Клініки',mk_prod:'МК Виробництво',ads:'Реклама',ref:'Рекомендація'};
+const CUR={UAH:'₴',USD:'$',EUR:'€'};
+let leads=JSON.parse(localStorage.getItem('tcrm2'))||[];
+let editing=null;
+let currentFilter='all';
+let taskFilter='all';
+
+function setTaskFilter(f){
+    taskFilter=f;
+    document.querySelectorAll('#tasks-filters .filter-btn').forEach(b=>b.classList.remove('active'));
+    document.querySelector(`#tasks-filters .filter-btn[onclick="setTaskFilter('${f}')"]`).classList.add('active');
+    renderTasks();
+}
+
+function save(){localStorage.setItem('tcrm2',JSON.stringify(leads))}
+function today(){return new Date().toISOString().split('T')[0]}
+function tomorrow(){let d=new Date();d.setDate(d.getDate()+1);return d.toISOString().split('T')[0]}
+function addDays(s,n){let d=new Date(s);d.setDate(d.getDate()+n);return d.toISOString().split('T')[0]}
+function fmtDate(s){if(!s)return'';return new Date(s).toLocaleDateString('uk-UA',{day:'numeric',month:'short'})}
+function fmtDT(s){if(!s)return'';return new Date(s).toLocaleString('uk-UA',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}
+function genId(){return'l'+Date.now()+''+Math.random().toString(36).substr(2,5)}
+
+function switchView(v){
+    document.querySelectorAll('.view').forEach(e=>e.classList.remove('active'));
+    document.getElementById('v-'+v).classList.add('active');
+    document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+    document.querySelector(`.nav-btn[onclick="switchView('${v}')"]`).classList.add('active');
+    render();
+}
+
+function render(){
+    const v=document.querySelector('.view.active').id;
+    if(v==='v-tasks')renderTasks();
+    else if(v==='v-kanban')renderKanban();
+    else renderReports();
+}
+
+// ===== TASKS =====
+function getTasks(){
+    const t=today(),tm=tomorrow(),tasks=[];
+    leads.forEach(l=>{
+        if(['paid','failed'].includes(l.status)){
+            if(l.status==='failed'&&l.reactDate&&l.reactDate<=t){
+                tasks.push({l,p:'info',msg:'Реактивація — подзвонити',btns:[{t:'success',l:'Цікаво',a:'react_ok'},{t:'secondary',l:'+3 міс',a:'react_later'}]});
+            }
+            return;
+        }
+        if(l.status==='reactivation'&&(!l.reactDate||l.reactDate<=t)){
+            tasks.push({l,p:'info',msg:'Реактивація — подзвонити',btns:[{t:'success',l:'Цікаво',a:'react_ok'},{t:'secondary',l:'+3 міс',a:'react_later'}]});
+            return;
+        }
+        if(!l.status){tasks.push({l,p:'critical',msg:'Немає статусу!',btns:[{t:'warn',l:'Відкрити',a:'open'}]});return;}
+        
+        if(l.status==='new'){
+            if(l.calls>=3){tasks.push({l,p:'critical',msg:'3 дзвінки — Неуспішна?',btns:[{t:'danger',l:'Неуспішна',a:'fail'},{t:'secondary',l:'Ще раз',a:'call'}]});}
+            else if(!l.nextDate||l.nextDate<=t){tasks.push({l,p:l.nextDate<t?'critical':'warning',msg:`Подзвонити (${l.calls||0}/3)`,btns:[{t:'success',l:'Призначити',a:'schedule'},{t:'secondary',l:'Не взяв',a:'call_later'},{t:'danger',l:'Відмова',a:'fail'}]});}
+        }
+        if(l.status==='scheduled'||l.status==='repeat'){
+            const cd=l.consult?l.consult.split('T')[0]:null;
+            if(l.noshow>=3){tasks.push({l,p:'critical',msg:'3 неявки — Неуспішна?',btns:[{t:'danger',l:'Неуспішна',a:'fail'}]});}
+            else if(l.noshow>0){tasks.push({l,p:'warning',msg:`Не прийшов (${l.noshow}/3)`,btns:[{t:'success',l:'Перенесли',a:'reschedule'},{t:'danger',l:'Відмова',a:'fail'}]});}
+            else if(cd===tm){tasks.push({l,p:'warning',msg:'Консультація завтра — підтвердити',btns:[{t:'success',l:'Підтвердив',a:'confirm'},{t:'secondary',l:'SMS',a:'confirm_sms'}]});}
+            else if(cd===t){tasks.push({l,p:'info',msg:'Консультація сьогодні',btns:[{t:'success',l:'Проведена',a:'complete'},{t:'danger',l:'Не прийшов',a:'noshow'}]});}
+        }
+        if(l.status==='completed'){tasks.push({l,p:'warning',msg:'Чекає звіт від консультанта',btns:[{t:'success',l:'Звіт готовий',a:'send_report'}]});}
+        if(l.status==='report_sent'){
+            if(l.calls>=3&&l.sms>=3){tasks.push({l,p:'critical',msg:'3+3 — Повторна чи Неуспішна?',btns:[{t:'warn',l:'Повторна',a:'repeat'},{t:'danger',l:'Неуспішна',a:'fail'}]});}
+            else if(!l.nextDate||l.nextDate<=t){tasks.push({l,p:l.nextDate<t?'critical':'warning',msg:`Дожати (дзв:${l.calls||0} sms:${l.sms||0})`,btns:[{t:'success',l:'Завдаток',a:'deposit'},{t:'secondary',l:'Думає',a:'followup'},{t:'warn',l:'Повторна',a:'repeat'},{t:'danger',l:'Відмова',a:'fail'}]});}
+        }
+        if(l.status==='deposit'){
+            const days=l.finDepDate?Math.floor((new Date()-new Date(l.finDepDate))/864e5):0;
+            if(days>=7||l.nextDate&&l.nextDate<=t){tasks.push({l,p:days>=14?'critical':'warning',msg:`Завдаток ${days}дн — повна оплата?`,btns:[{t:'success',l:'Оплатив',a:'paid'},{t:'secondary',l:'+тиждень',a:'dep_later'}]});}
+        }
+        if(l.nextDate&&l.nextDate<t&&!tasks.find(x=>x.l.id===l.id)){
+            const d=Math.floor((new Date(t)-new Date(l.nextDate))/864e5);
+            tasks.push({l,p:'critical',msg:`Протерміновано ${d}дн`,btns:[{t:'warn',l:'Відкрити',a:'open'}]});
+        }
+    });
+    tasks.sort((a,b)=>({critical:0,warning:1,info:2}[a.p])-({critical:0,warning:1,info:2}[b.p]));
+    return tasks;
+}
+
+function filterTasks(tasks){
+    switch(taskFilter){
+        case'critical':return tasks.filter(t=>t.p==='critical');
+        case'calls':return tasks.filter(t=>t.msg.includes('Подзвонити')||t.msg.includes('дзвінки')||t.msg.includes('дзв:'));
+        case'consult':return tasks.filter(t=>t.l.status==='scheduled'||t.l.status==='repeat'||t.msg.includes('Консультація'));
+        case'followup':return tasks.filter(t=>t.l.status==='report_sent'||t.msg.includes('Дожати')||t.msg.includes('звіту'));
+        case'money':return tasks.filter(t=>t.l.status==='deposit'||t.msg.includes('оплат')||t.msg.includes('Завдаток'));
+        default:return tasks;
+    }
+}
+
+function getAIHint(l){
+    const hints=[];
+    
+    // По статусу
+    if(l.status==='new'){
+        if(l.calls>=2)hints.push('Не бере трубку — спробуй SMS або інший час');
+        if(l.source==='ref')hints.push('Рекомендація — згадай хто порекомендував');
+        if(l.source==='mk_clinic'||l.source==='mk_prod')hints.push('Був на МК — вже теплий, одразу до суті');
+    }
+    if(l.status==='scheduled'||l.status==='repeat'){
+        if(l.noshow>0)hints.push('Вже не приходив — підтверди день в день');
+    }
+    if(l.status==='report_sent'){
+        if(l.calls>=2&&l.sms<2)hints.push('Спробуй SMS — деякі не люблять дзвінки');
+        if(l.report?.toLowerCase().includes('дорого'))hints.push('Згадував "дорого" — запропонуй розстрочку або ROI');
+        if(l.report?.toLowerCase().includes('думаю'))hints.push('Сказав "думаю" — дай дедлайн або бонус');
+    }
+    if(l.status==='deposit'){
+        const days=l.finDepDate?Math.floor((new Date()-new Date(l.finDepDate))/864e5):0;
+        if(days>=7)hints.push('Завдаток '+days+' днів тому — час закривати');
+    }
+    
+    // По розміру бізнесу
+    const bizMatch=l.biz?.match(/(\d+)/);
+    if(bizMatch){
+        const size=parseInt(bizMatch[1]);
+        if(size>=15&&size<=25)hints.push('Ідеальний розмір клініки — акцентуй на швидкому результаті');
+        if(size>40)hints.push('Великий бізнес — рішення приймають довше, будь терплячий');
+    }
+    
+    return hints[0]||null;
+}
+
+function renderTasks(){
+    const allTasks=getTasks();
+    const tasks=filterTasks(allTasks);
+    // Сортуємо по скорингу (гарячі зверху)
+    tasks.sort((a,b)=>calcScore(b.l)-calcScore(a.l));
+    document.getElementById('task-count').textContent=tasks.length;
+    const c=document.getElementById('tasks-list');
+    if(!tasks.length){c.innerHTML='<div class="empty"><svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="#22c55e" stroke-width="2" style="margin-bottom:12px"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg><div style="font-size:18px;font-weight:600;margin-bottom:8px">'+(taskFilter==='all'?'Всі завдання виконані!':'Немає завдань в цій категорії')+'</div><div style="color:var(--g)">'+(taskFilter==='all'?'Можеш відпочити або перевірити Kanban':'Спробуй інший фільтр')+'</div></div>';return;}
+    c.innerHTML=tasks.map(t=>{
+        const score=calcScore(t.l);
+        const scoreClass=score>=70?'hot':score>=50?'warm':'cold';
+        const hint=getAIHint(t.l);
+        return`
+        <div class="task-card ${t.p}" onclick="openModal('${t.l.id}')">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+                <div class="task-name">${t.l.tg||t.l.phone||'—'}</div>
+                <div class="score ${scoreClass}"><div class="score-bar"><div class="score-fill ${scoreClass}" style="width:${score}%"></div></div>${score}</div>
+            </div>
+            <div class="task-meta">${t.l.biz||''} ${t.l.status?'• '+ST[t.l.status]:''}</div>
+            ${hint?`<div class="ai-hint"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a7 7 0 0 1 7 7c0 2.38-1.19 4.47-3 5.74V17a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1v-2.26C6.19 13.47 5 11.38 5 9a7 7 0 0 1 7-7z"/><path d="M9 21h6"/><path d="M9 18h6"/></svg><div class="ai-hint-text"><div class="ai-hint-title">ШІ підказка</div>${hint}</div></div>`:''}
+            <div class="task-action">${t.msg}</div>
+            <div class="task-btns">${t.btns.map(b=>`<button class="task-btn ${b.t}" onclick="event.stopPropagation();taskAction('${t.l.id}','${b.a}')">${b.l}</button>`).join('')}</div>
+        </div>
+    `;}).join('');
+}
+
+function taskAction(id,a){
+    const l=leads.find(x=>x.id===id);if(!l)return;
+    switch(a){
+        case'open':openModal(id);break;
+        case'schedule':l.status='scheduled';l.consult=prompt('Дата консультації (YYYY-MM-DDTHH:MM):',tomorrow()+'T14:00');l.noshow=0;l.nextDate=l.consult?addDays(l.consult.split('T')[0],-1):tomorrow();l.nextAction='Підтвердити';addLog(l,'status','Консультація призначена');break;
+        case'call_later':l.calls=(l.calls||0)+1;l.nextDate=tomorrow();addLog(l,'call','Не взяв');break;
+        case'call':l.calls=(l.calls||0)+1;addLog(l,'call','Ще спроба');break;
+        case'fail':l.status='failed';l.failReason=prompt('Причина:','');l.reactDate=addDays(today(),90);addLog(l,'status','Неуспішна: '+(l.failReason||''));break;
+        case'confirm':addLog(l,'call','Підтвердив');break;
+        case'confirm_sms':l.sms=(l.sms||0)+1;addLog(l,'sms','Підтвердження');break;
+        case'complete':l.status='completed';l.calls=0;l.sms=0;addLog(l,'status','Проведена');break;
+        case'noshow':l.noshow=(l.noshow||0)+1;addLog(l,'status','Не прийшов ('+l.noshow+'/3)');break;
+        case'reschedule':l.consult=prompt('Нова дата:',tomorrow()+'T14:00');l.noshow=0;l.nextDate=l.consult?addDays(l.consult.split('T')[0],-1):tomorrow();addLog(l,'status','Перенесено');break;
+        case'send_report':l.status='report_sent';l.reportDate=today();l.calls=0;l.sms=0;l.nextDate=tomorrow();l.nextAction='Дізнатись реакцію';addLog(l,'status','Звіт відправлено');break;
+        case'followup':l.calls=(l.calls||0)+1;l.nextDate=tomorrow();addLog(l,'call','Думає');break;
+        case'repeat':l.status='repeat';l.repeatCount=(l.repeatCount||0)+1;l.calls=0;l.sms=0;l.noshow=0;l.consult=prompt('Дата:',tomorrow()+'T14:00');addLog(l,'status','Повторна консультація');break;
+        case'deposit':const amt=prompt('Сума завдатку:','');if(amt){l.status='deposit';l.finDep=+amt;l.finDepDate=today();l.nextDate=addDays(today(),7);addLog(l,'status','Завдаток '+amt);}break;
+        case'paid':const p=prompt('Повна сума:',l.finTotal||'');if(p){l.status='paid';l.finTotal=+p;l.finPaidDate=today();addLog(l,'status','Оплачено '+p);}break;
+        case'dep_later':l.nextDate=addDays(today(),7);addLog(l,'call','Нагадав, +тиждень');break;
+        case'react_ok':l.status='new';l.calls=0;l.sms=0;l.noshow=0;l.nextDate=today();addLog(l,'status','Реактивація — цікаво');break;
+        case'react_later':l.reactDate=addDays(today(),90);addLog(l,'call','Реактивація +3міс');break;
+    }
+    save();render();
+}
+
+// ===== KANBAN =====
+let dragId=null;
+
+function setFilter(f){
+    currentFilter=f;
+    document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+    document.querySelector(`.filter-btn[onclick="setFilter('${f}')"]`).classList.add('active');
+    renderKanban();
+}
+
+function filterLeads(arr){
+    const t=today(),tm=tomorrow();
+    switch(currentFilter){
+        case'critical':return arr.filter(l=>getAlert(l)?.crit);
+        case'today':return arr.filter(l=>l.consult&&l.consult.split('T')[0]===t);
+        case'tomorrow':return arr.filter(l=>l.consult&&l.consult.split('T')[0]===tm);
+        case'action':return arr.filter(l=>l.nextDate===t);
+        case'money':return arr.filter(l=>l.status==='deposit'||(l.status==='report_sent'&&l.calls>=2));
+        default:return arr;
+    }
+}
+
+function renderKanban(){
+    const cols=['new','scheduled','completed','report_sent','repeat','deposit','paid'];
+    const filtered=filterLeads(leads);
+    document.getElementById('kanban').innerHTML=cols.map(s=>{
+        const items=filtered.filter(l=>l.status===s);
+        return`<div class="column" data-status="${s}">
+            <div class="column-header"><span>${ST[s]}</span><span class="column-count">${items.length}</span></div>
+            <div class="column-cards" ondragover="dOver(event)" ondrop="dDrop(event,'${s}')" ondragleave="dLeave(event)">
+                ${items.map(l=>kCard(l)).join('')}
+            </div>
+        </div>`;
+    }).join('');
+}
+
+function getTags(l){
+    const t=today(),tm=tomorrow();
+    const tags=[];
+    if(l.nextDate&&l.nextDate<t)tags.push({cls:'overdue',icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>',text:'Протерміновано'});
+    if(l.consult){
+        const cd=l.consult.split('T')[0];
+        if(cd===t)tags.push({cls:'consult-today',icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>',text:'Сьогодні'});
+        else if(cd===tm)tags.push({cls:'consult-tomorrow',icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>',text:'Завтра'});
+    }
+    if(l.noshow>0)tags.push({cls:'noshow',icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>',text:'Не прийшов '+l.noshow+'x'});
+    if(l.finDep&&l.status!=='paid')tags.push({cls:'has-deposit',icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>',text:'Завдаток'});
+    if(l.nextDate===t&&!tags.find(x=>x.cls==='consult-today'))tags.push({cls:'action-today',icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>',text:'Дія сьогодні'});
+    return tags;
+}
+
+function kCard(l){
+    const days=l.stageDate?Math.floor((new Date()-new Date(l.stageDate))/864e5):0;
+    const alert=getAlert(l);
+    const amt=l.finTotal||l.finDep;
+    const tags=getTags(l);
+    const score=calcScore(l);
+    const scoreClass=score>=70?'hot':score>=50?'warm':'cold';
+    return`<div class="k-card ${alert?'has-'+(alert.crit?'critical':'alert'):''}" draggable="true" ondragstart="dStart(event,'${l.id}')" ondragend="dEnd(event)" onclick="openModal('${l.id}')">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+            <div class="k-card-name">${l.tg||l.phone||'—'}</div>
+            <div class="score ${scoreClass}"><div class="score-bar"><div class="score-fill ${scoreClass}" style="width:${score}%"></div></div>${score}</div>
+        </div>
+        ${l.biz?`<div class="k-card-biz">${l.biz}</div>`:''}
+        <div class="k-card-footer">
+            <span>${SRC[l.source]||''}</span>
+            ${amt?`<span class="k-card-amount">${amt}${CUR[l.finTotalCur||l.finDepCur]||''}</span>`:''}
+            <span class="k-card-days ${days>5?'over':''}">${days}д</span>
+        </div>
+        ${tags.length?`<div class="k-card-tags">${tags.map(tag=>`<span class="k-tag ${tag.cls}">${tag.icon} ${tag.text}</span>`).join('')}</div>`:''}
+    </div>`;
+}
+function getAlert(l){
+    if(!l.status)return{crit:true};
+    if(l.nextDate&&l.nextDate<today())return{crit:true};
+    if(l.status==='new'&&l.calls>=3)return{crit:true};
+    if(l.status==='report_sent'&&l.calls>=3&&l.sms>=3)return{crit:true};
+    if(l.noshow>=3)return{crit:true};
+    return null;
+}
+function dStart(e,id){dragId=id;e.target.classList.add('dragging');}
+function dEnd(e){e.target.classList.remove('dragging');dragId=null;}
+function dOver(e){e.preventDefault();e.currentTarget.classList.add('drag-over');}
+function dLeave(e){e.currentTarget.classList.remove('drag-over');}
+function dDrop(e,status){
+    e.preventDefault();e.currentTarget.classList.remove('drag-over');
+    if(!dragId)return;
+    const l=leads.find(x=>x.id===dragId);if(!l)return;
+    if(status==='paid'&&!l.finTotal){alert('Вкажіть суму!');openModal(l.id);return;}
+    if(status==='deposit'&&!l.finDep){const a=prompt('Сума завдатку:');if(!a)return;l.finDep=+a;l.finDepDate=today();}
+    const old=l.status;l.status=status;l.stageDate=new Date().toISOString();
+    if(status==='completed'){l.calls=0;l.sms=0;}
+    if(status==='report_sent'){l.reportDate=today();l.calls=0;l.sms=0;l.nextDate=tomorrow();}
+    addLog(l,'status',ST[old]+' → '+ST[status]);
+    save();renderKanban();
+}
+
+// ===== REPORTS =====
+function renderReports(){
+    const period=document.getElementById('period').value;
+    const fl=filterByPeriod(leads,period);
+    const byS={};fl.forEach(l=>{byS[l.status]=(byS[l.status]||0)+1;});
+    const paid=fl.filter(l=>l.status==='paid');
+    const dep=fl.filter(l=>l.status==='deposit');
+    let rev=0;
+    paid.forEach(l=>{rev+=toUAH(l.finTotal,l.finTotalCur);});
+    dep.forEach(l=>{rev+=toUAH(l.finDep,l.finDepCur);});
+    const cons=fl.filter(l=>['completed','report_sent','repeat','deposit','paid'].includes(l.status)).length;
+    document.getElementById('stats').innerHTML=`
+        <div class="stat"><div class="stat-val">${fl.length}</div><div class="stat-label">Лідів</div></div>
+        <div class="stat"><div class="stat-val">${cons}</div><div class="stat-label">Консультацій</div></div>
+        <div class="stat"><div class="stat-val">${dep.length}</div><div class="stat-label">Завдатків</div></div>
+        <div class="stat"><div class="stat-val">${paid.length}</div><div class="stat-label">Оплат</div></div>
+        <div class="stat"><div class="stat-val">${Math.round(rev).toLocaleString()}</div><div class="stat-label">Сума (грн)</div></div>
+        <div class="stat"><div class="stat-val">${fl.length?Math.round(paid.length/fl.length*100):0}%</div><div class="stat-label">Конверсія</div></div>
+    `;
+    const funnel=[['Нові',byS.new||0],['Призначені',byS.scheduled||0],['Проведені',byS.completed||0],['Звіт',byS.report_sent||0],['Завдаток',byS.deposit||0],['Оплачено',byS.paid||0]];
+    const max=Math.max(...funnel.map(f=>f[1]),1);
+    document.getElementById('funnel').innerHTML=funnel.map(f=>`
+        <div class="funnel-row"><div class="funnel-label">${f[0]}</div><div class="funnel-bar"><div class="funnel-fill" style="width:${f[1]/max*100}%">${f[1]}</div></div></div>
+    `).join('');
+}
+function filterByPeriod(arr,p){
+    if(p==='all')return arr;
+    const now=new Date();let start=new Date(now);
+    if(p==='week')start.setDate(now.getDate()-7);
+    else start.setMonth(now.getMonth()-1);
+    return arr.filter(l=>new Date(l.created)>=start);
+}
+function toUAH(a,c){if(!a)return 0;return a*({UAH:1,USD:41,EUR:45}[c]||1);}
+function exportReport(){
+    const period=document.getElementById('period').value;
+    const fl=filterByPeriod(leads,period);
+    const byS={};fl.forEach(l=>{byS[l.status]=(byS[l.status]||0)+1;});
+    const data=[['TALKO CRM Звіт'],['Період:',period],[''],['Статус','К-сть'],...Object.entries(byS).map(([k,v])=>[ST[k]||k,v])];
+    const ws=XLSX.utils.aoa_to_sheet(data);
+    const wb=XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb,ws,'Звіт');
+    XLSX.writeFile(wb,'TALKO_Report_'+today()+'.xlsx');
+}
+
+// ===== MODAL =====
+function openModal(id){
+    editing=id||null;
+    document.getElementById('modal').classList.add('active');
+    document.getElementById('modal-title').textContent=id?'Редагувати':'Новий лід';
+    document.getElementById('del-btn').style.display=id?'block':'none';
+    document.getElementById('quick-actions').style.display=id?'flex':'none';
+    resetForm();
+    if(id){const l=leads.find(x=>x.id===id);if(l)fillForm(l);}
+    switchTab('main');
+}
+function closeModal(){document.getElementById('modal').classList.remove('active');editing=null;}
+function switchTab(t){
+    document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));
+    document.querySelector(`.tab[onclick="switchTab('${t}')"]`).classList.add('active');
+    document.getElementById('t-'+t).classList.add('active');
+}
+function resetForm(){
+    ['f-id','f-status','f-noshow','f-tg','f-phone','f-biz','f-source','f-consult','f-repeat','f-calls','f-sms','f-next','f-action','f-fail','f-report','f-notes','l-record','l-report','l-kp','l-contract','fin-dep','fin-dep-cur','fin-dep-date','fin-total','fin-total-cur','fin-paid-date'].forEach(id=>{
+        const e=document.getElementById(id);if(e)e.value='';
+    });
+    document.getElementById('comm-log').innerHTML='<div style="color:var(--g);text-align:center;padding:20px">Історія порожня</div>';
+    document.getElementById('fail-group').style.display='none';
+}
+function fillForm(l){
+    document.getElementById('f-id').value=l.id;
+    document.getElementById('f-status').value=l.status||'';
+    document.getElementById('f-noshow').value=l.noshow||'0';
+    document.getElementById('f-tg').value=l.tg||'';
+    document.getElementById('f-phone').value=l.phone||'';
+    document.getElementById('f-biz').value=l.biz||'';
+    document.getElementById('f-source').value=l.source||'';
+    document.getElementById('f-consult').value=l.consult||'';
+    document.getElementById('f-repeat').value=l.repeatCount||'0';
+    document.getElementById('f-calls').value=l.calls||'0';
+    document.getElementById('f-sms').value=l.sms||'0';
+    document.getElementById('f-next').value=l.nextDate||'';
+    document.getElementById('f-action').value=l.nextAction||'';
+    document.getElementById('f-fail').value=l.failReason||'';
+    document.getElementById('f-notes').value=l.notes||'';
+    document.getElementById('f-report').value=l.report||'';
+    document.getElementById('l-record').value=l.linkRecord||'';
+    document.getElementById('l-report').value=l.linkReport||'';
+    document.getElementById('l-kp').value=l.linkKP||'';
+    document.getElementById('l-contract').value=l.linkContract||'';
+    document.getElementById('fin-dep').value=l.finDep||'';
+    document.getElementById('fin-dep-cur').value=l.finDepCur||'UAH';
+    document.getElementById('fin-dep-date').value=l.finDepDate||'';
+    document.getElementById('fin-total').value=l.finTotal||'';
+    document.getElementById('fin-total-cur').value=l.finTotalCur||'UAH';
+    document.getElementById('fin-paid-date').value=l.finPaidDate||'';
+    onStatusChange();
+    renderCommLog(l);
+}
+function saveLead(){
+    const phone=document.getElementById('f-phone').value;
+    const tg=document.getElementById('f-tg').value;
+    if(!phone&&!tg){alert('Вкажіть телефон або телеграм');return;}
+    const status=document.getElementById('f-status').value;
+    if(status==='failed'&&!document.getElementById('f-fail').value){alert('Вкажіть причину');return;}
+    
+    const data={
+        id:document.getElementById('f-id').value||genId(),
+        status,
+        noshow:+document.getElementById('f-noshow').value||0,
+        tg,phone,
+        biz:document.getElementById('f-biz').value,
+        source:document.getElementById('f-source').value,
+        consult:document.getElementById('f-consult').value,
+        repeatCount:+document.getElementById('f-repeat').value||0,
+        calls:+document.getElementById('f-calls').value||0,
+        sms:+document.getElementById('f-sms').value||0,
+        nextDate:document.getElementById('f-next').value,
+        nextAction:document.getElementById('f-action').value,
+        failReason:document.getElementById('f-fail').value,
+        report:document.getElementById('f-report').value,
+        notes:document.getElementById('f-notes').value,
+        linkRecord:document.getElementById('l-record').value,
+        linkReport:document.getElementById('l-report').value,
+        linkKP:document.getElementById('l-kp').value,
+        linkContract:document.getElementById('l-contract').value,
+        finDep:+document.getElementById('fin-dep').value||null,
+        finDepCur:document.getElementById('fin-dep-cur').value,
+        finDepDate:document.getElementById('fin-dep-date').value,
+        finTotal:+document.getElementById('fin-total').value||null,
+        finTotalCur:document.getElementById('fin-total-cur').value,
+        finPaidDate:document.getElementById('fin-paid-date').value
+    };
+    
+    const idx=leads.findIndex(l=>l.id===data.id);
+    if(idx>=0){
+        data.created=leads[idx].created;
+        data.log=leads[idx].log||[];
+        if(leads[idx].status!==data.status){data.stageDate=new Date().toISOString();addLog(data,'status','→ '+ST[data.status]);}
+        else data.stageDate=leads[idx].stageDate;
+        leads[idx]=data;
+    }else{
+        data.created=new Date().toISOString();
+        data.stageDate=new Date().toISOString();
+        data.log=[];
+        if(!data.status)data.status='new';
+        if(!data.nextDate){data.nextDate=today();data.nextAction='Подзвонити';}
+        leads.push(data);
+    }
+    if(data.status==='failed'&&!data.reactDate)data.reactDate=addDays(today(),90);
+    save();closeModal();render();
+}
+function delLead(){if(!editing)return;if(!confirm('Видалити?'))return;leads=leads.filter(l=>l.id!==editing);save();closeModal();render();}
+function onStatusChange(){
+    const st=document.getElementById('f-status').value;
+    document.getElementById('fail-group').style.display=st==='failed'?'block':'none';
+    document.getElementById('report-group').style.display=['completed','report_sent','repeat','deposit','paid'].includes(st)?'block':'none';
+}
+
+// ===== LEAD SCORING =====
+function calcScore(l){
+    let score=50; // базовий
+    
+    // Джерело (+/- 15)
+    if(l.source==='ref')score+=15; // рекомендація - найкраще
+    if(l.source==='mk_clinic')score+=10;
+    if(l.source==='mk_prod')score+=10;
+    if(l.source==='ads')score+=5;
+    if(l.source==='bot')score+=0;
+    
+    // Розмір бізнесу (+/- 10)
+    const bizMatch=l.biz?.match(/(\d+)/);
+    if(bizMatch){
+        const size=parseInt(bizMatch[1]);
+        if(size>=15&&size<=30)score+=10; // sweet spot
+        else if(size>=10&&size<=50)score+=5;
+        else if(size>50)score+=3; // великі довше закриваються
+    }
+    
+    // Прогрес по воронці (+20)
+    if(l.status==='report_sent')score+=10;
+    if(l.status==='repeat')score+=15;
+    if(l.status==='deposit')score+=20;
+    
+    // Швидкість реакції (+/- 10)
+    if(l.stageDate){
+        const days=Math.floor((new Date()-new Date(l.stageDate))/864e5);
+        if(days<=2)score+=10; // свіжий
+        else if(days<=5)score+=5;
+        else if(days>7)score-=10; // застряг
+        else if(days>14)score-=20;
+    }
+    
+    // Engagement (+/- 15)
+    if(l.noshow>0)score-=l.noshow*10; // кожна неявка -10
+    if(l.calls>3&&l.status==='new')score-=15; // не бере трубку
+    
+    // Фінанси (+15)
+    if(l.finDep)score+=15; // є завдаток
+    
+    // Звіт є (+10)
+    if(l.report&&l.report.length>50)score+=10;
+    
+    // Ключові слова в звіті
+    if(l.report){
+        const r=l.report.toLowerCase();
+        if(r.includes('готов')||r.includes('хоч'))score+=10;
+        if(r.includes('бюджет')||r.includes('грош'))score+=5;
+        if(r.includes('терміново')||r.includes('швидк'))score+=10;
+        if(r.includes('думаю')||r.includes('порадж'))score-=5;
+        if(r.includes('дорого')||r.includes('конкурент'))score-=10;
+    }
+    
+    // Обмежуємо 0-100
+    return Math.max(0,Math.min(100,score));
+}
+
+// ===== COMM LOG =====
+function renderCommLog(l){
+    const log=l.log||[];
+    const c=document.getElementById('comm-log');
+    if(!log.length){c.innerHTML='<div style="color:var(--g);text-align:center;padding:20px">Історія порожня</div>';return;}
+    c.innerHTML=log.slice().reverse().map(e=>`
+        <div class="comm-item">
+            <div class="comm-icon ${e.type}">${{call:'<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>',sms:'<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>',note:'<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>',status:'<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>'}[e.type]||'•'}</div>
+            <div class="comm-body">
+                <div class="comm-head"><span class="comm-type">${{call:'Дзвінок',sms:'SMS',note:'Нотатка',status:'Статус'}[e.type]||e.type}</span><span class="comm-date">${fmtDT(e.date)}</span></div>
+                <div class="comm-text">${e.text}</div>
+            </div>
+        </div>
+    `).join('');
+}
+function addComm(){
+    if(!editing)return;
+    const type=document.getElementById('comm-type').value;
+    const text=document.getElementById('comm-text').value;
+    if(!text.trim())return;
+    const l=leads.find(x=>x.id===editing);if(!l)return;
+    addLog(l,type,text);
+    if(type==='call'){l.calls=(l.calls||0)+1;document.getElementById('f-calls').value=l.calls;}
+    if(type==='sms'){l.sms=(l.sms||0)+1;document.getElementById('f-sms').value=l.sms;}
+    save();renderCommLog(l);
+    document.getElementById('comm-text').value='';
+}
+function addLog(l,type,text){if(!l.log)l.log=[];l.log.push({type,text,date:new Date().toISOString()});}
+
+function qAction(a){if(!editing)return;closeModal();taskAction(editing,a==='call'?'call_later':a==='sms'?'followup':a==='schedule'?'schedule':'fail');}
+
+// ===== IMPORT/EXPORT =====
+function exportXLS(){
+    if(!leads.length){alert('Немає даних');return;}
+    const data=leads.map(l=>({Телеграм:l.tg,Телефон:l.phone,Бізнес:l.biz,Джерело:SRC[l.source]||l.source,Статус:ST[l.status]||l.status,Консультація:l.consult,Дзвінки:l.calls,SMS:l.sms,'Наступна дія':l.nextDate,Завдаток:l.finDep,'Повна сума':l.finTotal,Примітки:l.notes}));
+    const ws=XLSX.utils.json_to_sheet(data);
+    const wb=XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb,ws,'Leads');
+    XLSX.writeFile(wb,'TALKO_CRM_'+today()+'.xlsx');
+}
+function importXLS(e){
+    const file=e.target.files[0];if(!file)return;
+    const reader=new FileReader();
+    reader.onload=function(ev){
+        try{
+            const data=new Uint8Array(ev.target.result);
+            const wb=XLSX.read(data,{type:'array',cellDates:true});
+            const rows=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{header:1,raw:false,defval:''});
+            
+            // Шукаємо рядок з заголовками (містить 'phone' або 'timestamp')
+            let headerRow=-1;
+            for(let i=0;i<Math.min(10,rows.length);i++){
+                const row=rows[i].map(c=>String(c).toLowerCase());
+                if(row.some(c=>c.includes('phone')||c.includes('timestamp')||c.includes('телефон'))){
+                    headerRow=i;break;
+                }
+            }
+            
+            // Якщо не знайшли заголовки — пробуємо перший рядок
+            if(headerRow===-1)headerRow=0;
+            
+            const headers=rows[headerRow].map(h=>String(h).toLowerCase().trim());
+            console.log('Headers found at row',headerRow,':',headers);
+            
+            // Маппінг колонок
+            const colMap={};
+            headers.forEach((h,i)=>{
+                if(h.includes('timestamp')||h.includes('дата'))colMap.date=i;
+                if(h.includes('clinic')||h.includes('тип')||h.includes('бізнес'))colMap.biz=i;
+                if(h.includes('problem')||h.includes('проблем'))colMap.problem=i;
+                if(h.includes('goal')||h.includes('ціль'))colMap.goal=i;
+                if(h.includes('phone')||h.includes('телефон'))colMap.phone=i;
+                if(h.includes('source')||h.includes('джерело'))colMap.source=i;
+                if(h.includes('telegram')||h.includes('нік'))colMap.tg=i;
+                if(h.includes('mk_name')||h.includes('назва'))colMap.mkName=i;
+                if(h.includes('status')||h.includes('статус'))colMap.status=i;
+            });
+            console.log('Column mapping:',colMap);
+            
+            let n=0,skip=0;
+            for(let i=headerRow+1;i<rows.length;i++){
+                const row=rows[i];
+                if(!row||row.length===0)continue;
+                
+                // Отримуємо телефон
+                let phone=colMap.phone!==undefined?String(row[colMap.phone]||''):'';
+                phone=phone.replace(/\D/g,''); // тільки цифри
+                if(phone.length===9)phone='380'+phone; // 970064026 -> 380970064026
+                if(phone.length===10&&phone[0]==='0')phone='38'+phone; // 0970064026 -> 380970064026
+                if(phone.length>=10)phone='+'+phone;
+                if(phone.length<10){skip++;continue;} // пропускаємо без телефону
+                
+                // Отримуємо телеграм
+                let tg=colMap.tg!==undefined?String(row[colMap.tg]||''):'';
+                if(tg&&!tg.startsWith('@'))tg='@'+tg;
+                if(tg==='@')tg='';
+                
+                // Перевіряємо дублікати
+                if(leads.some(l=>(phone&&l.phone===phone)||(tg&&l.tg===tg))){skip++;continue;}
+                
+                // Парсимо проблему (може бути число, текст, або дата-баг)
+                let problem=colMap.problem!==undefined?String(row[colMap.problem]||''):'';
+                if(problem.includes('1900')||problem.includes('2004'))problem=''; // Excel date bug
+                
+                // Парсимо ціль
+                let goal=colMap.goal!==undefined?String(row[colMap.goal]||''):'';
+                if(goal.includes('1900')||goal.includes('2004'))goal=''; // Excel date bug
+                
+                // Бізнес
+                let biz=colMap.biz!==undefined?String(row[colMap.biz]||''):'';
+                if(biz==='NaN'||biz==='undefined')biz='';
+                
+                // Джерело
+                let source=colMap.source!==undefined?String(row[colMap.source]||''):'';
+                if(!source||source==='NaN'){
+                    // Визначаємо по mk_name якщо є
+                    const mkName=colMap.mkName!==undefined?String(row[colMap.mkName]||'').toLowerCase():'';
+                    if(mkName.includes('клінік'))source='mk_clinic';
+                    else if(mkName.includes('виробн'))source='mk_prod';
+                    else source='bot';
+                }
+                
+                leads.push({
+                    id:genId(),
+                    tg,
+                    phone,
+                    biz,
+                    source,
+                    status:'new',
+                    problem,
+                    goal,
+                    calls:0,
+                    sms:0,
+                    noshow:0,
+                    nextDate:today(),
+                    nextAction:'Подзвонити',
+                    created:new Date().toISOString(),
+                    stageDate:new Date().toISOString(),
+                    log:[]
+                });
+                n++;
+            }
+            save();render();
+            alert('Імпортовано: '+n+(skip?' (пропущено: '+skip+')':''));
+        }catch(err){console.error(err);alert('Помилка: '+err.message);}
+    };
+    reader.readAsArrayBuffer(file);
+    e.target.value='';
+}
+
+// ===== DEMO =====
+function loadDemo(){
+    if(leads.length&&!confirm('Замінити дані?'))return;
+    leads=[
+        {id:'d1',tg:'@iryna_dental',phone:'+380501234567',biz:'Стоматологія-15',source:'mk_clinic',status:'new',calls:0,sms:0,noshow:0,nextDate:today(),nextAction:'Подзвонити',created:addDays(today(),-2),stageDate:addDays(today(),-2),log:[]},
+        {id:'d2',tg:'@petro_meble',phone:'+380672345678',biz:'Меблі-25',source:'mk_prod',status:'scheduled',consult:tomorrow()+'T14:00',calls:1,sms:0,noshow:0,nextDate:today(),nextAction:'Підтвердити',created:addDays(today(),-5),stageDate:addDays(today(),-3),log:[{type:'call',text:'Призначили',date:addDays(today(),-3)}]},
+        {id:'d3',tg:'@maria_cosmo',phone:'+380933456789',biz:'Косметологія-8',source:'bot',status:'scheduled',consult:addDays(today(),-1)+'T10:00',calls:2,sms:1,noshow:2,nextDate:today(),created:addDays(today(),-10),stageDate:addDays(today(),-1),log:[{type:'status',text:'Не прийшла 2/3',date:addDays(today(),-1)}]},
+        {id:'d4',tg:'@oleksandr_food',phone:'+380504567890',biz:'Харчування-50',source:'mk_prod',status:'report_sent',calls:1,sms:1,noshow:0,reportDate:addDays(today(),-2),nextDate:today(),linkRecord:'https://youtu.be/ex',linkReport:'https://docs.google.com/ex',created:addDays(today(),-14),stageDate:addDays(today(),-2),log:[{type:'status',text:'Звіт відправлено',date:addDays(today(),-2)}]},
+        {id:'d5',tg:'@natalia_pharm',phone:'+380675678901',biz:'Аптеки-12',source:'ref',status:'deposit',finDep:15000,finDepCur:'UAH',finDepDate:addDays(today(),-10),finTotal:45000,finTotalCur:'UAH',nextDate:addDays(today(),-3),created:addDays(today(),-20),stageDate:addDays(today(),-10),log:[{type:'status',text:'Завдаток 15000',date:addDays(today(),-10)}]},
+        {id:'d6',tg:'@viktor_auto',phone:'+380936789012',biz:'Автосервіс-20',source:'ads',status:'report_sent',calls:3,sms:2,noshow:0,reportDate:addDays(today(),-7),nextDate:addDays(today(),-2),created:addDays(today(),-21),stageDate:addDays(today(),-7),log:[]},
+        {id:'d7',tg:'@anna_beauty',phone:'+380507890123',biz:'Салон-6',source:'mk_clinic',status:'paid',finDep:500,finDepCur:'USD',finTotal:1500,finTotalCur:'USD',finPaidDate:addDays(today(),-5),created:addDays(today(),-30),stageDate:addDays(today(),-5),log:[{type:'status',text:'Оплачено $1500',date:addDays(today(),-5)}]},
+        {id:'d8',tg:'@dmytro_log',phone:'+380678901234',biz:'Логістика-35',source:'mk_prod',status:'failed',failReason:'expensive',reactDate:addDays(today(),30),created:addDays(today(),-60),stageDate:addDays(today(),-60),log:[]},
+        {id:'d9',phone:'+380661234567',biz:'Клініка-10',source:'bot',status:'',calls:0,sms:0,noshow:0,created:today(),stageDate:today(),log:[]},
+        {id:'d10',tg:'@sergiy_build',phone:'+380939012345',biz:'Будівництво-80',source:'ref',status:'reactivation',failReason:'no_time',reactDate:today(),created:addDays(today(),-90),stageDate:addDays(today(),-90),log:[]}
+    ];
+    save();render();
+}
+
+function toggleHelp(){document.getElementById('help').classList.toggle('active');}
+
+render();
+</script>
+</body>
+</html>
