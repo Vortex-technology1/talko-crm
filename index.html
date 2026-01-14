@@ -85,62 +85,77 @@
         .view{display:none}
         .view.active{display:block}
         
-        /* Tasks - Calendar/iPhone style */
-        .tasks-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
-        .tasks-title{font-size:18px;font-weight:700}
-        .tasks-count{background:var(--r);color:#fff;padding:2px 8px;border-radius:10px;font-size:12px;margin-left:6px}
+        /* Tasks - Focus on Date/Time/Action */
+        .tasks-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid #e5e7eb}
+        .tasks-title{font-size:20px;font-weight:600;color:#1d1d1f}
+        .tasks-count{background:#007aff;color:#fff;padding:2px 8px;border-radius:12px;font-size:12px;font-weight:500;margin-left:8px}
         
-        .tasks-group{margin-bottom:16px}
-        .tasks-group-title{font-size:11px;font-weight:600;color:var(--g);text-transform:uppercase;letter-spacing:0.5px;padding:6px 0;border-bottom:1px solid #e5e7eb;margin-bottom:6px;display:flex;align-items:center;gap:6px}
-        .tasks-group-title svg{width:14px;height:14px}
-        .tasks-group-count{background:var(--gl);color:var(--ts);padding:1px 6px;border-radius:8px;font-size:10px}
+        .tasks-filters{display:flex;gap:8px;margin-bottom:16px;overflow-x:auto;padding-bottom:4px}
+        .tasks-filters::-webkit-scrollbar{display:none}
+        .filter-pill{padding:6px 14px;border-radius:20px;font-size:13px;font-weight:500;cursor:pointer;border:none;background:#f5f5f7;color:#1d1d1f;white-space:nowrap;transition:all .2s}
+        .filter-pill:hover{background:#e8e8ed}
+        .filter-pill.active{background:#007aff;color:#fff}
         
-        .task-item{display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--w);border-radius:8px;margin-bottom:4px;cursor:pointer;transition:all .15s;border:1px solid #e5e7eb}
-        .task-item:hover{background:var(--gl);transform:translateX(2px)}
-        .task-item:active{transform:scale(0.99)}
+        .tasks-list{background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.08)}
         
-        .task-priority{width:3px;height:32px;border-radius:2px;flex-shrink:0}
-        .task-priority.critical{background:var(--r)}
-        .task-priority.warning{background:var(--o)}
-        .task-priority.info{background:var(--b)}
-        .task-priority.success{background:var(--p)}
+        /* Task Row - Time-focused */
+        .task-row{display:grid;grid-template-columns:70px 1fr auto;gap:12px;padding:12px 16px;border-bottom:1px solid #f0f0f0;cursor:pointer;transition:background .15s;align-items:center}
+        .task-row:last-child{border-bottom:none}
+        .task-row:hover{background:#fafafa}
+        .task-row.overdue{background:#fff5f5}
+        .task-row.now{background:#f0f9ff}
         
-        .task-checkbox{width:18px;height:18px;border:2px solid #d1d5db;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .15s}
-        .task-checkbox:hover{border-color:var(--p);background:var(--pl)}
-        .task-checkbox.done{background:var(--p);border-color:var(--p)}
-        .task-checkbox svg{width:10px;height:10px;color:#fff;opacity:0}
-        .task-checkbox.done svg{opacity:1}
+        /* Time Column */
+        .task-time{text-align:center}
+        .task-time-value{font-size:15px;font-weight:600;color:#1d1d1f}
+        .task-time-date{font-size:11px;color:#8e8e93}
+        .task-time.overdue .task-time-value{color:#ff3b30}
+        .task-time.overdue .task-time-date{color:#ff3b30}
+        .task-time.today .task-time-value{color:#007aff}
+        .task-time.now .task-time-value{color:#34c759;font-size:13px}
         
-        .task-content{flex:1;min-width:0}
-        .task-main{display:flex;align-items:center;gap:6px;margin-bottom:2px}
-        .task-name{font-weight:600;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-        .task-badge{font-size:9px;padding:1px 5px;border-radius:4px;font-weight:500;white-space:nowrap}
-        .task-badge.hot{background:#fee2e2;color:#dc2626}
-        .task-badge.warm{background:#fef3c7;color:#d97706}
-        .task-badge.cold{background:#dbeafe;color:#2563eb}
+        /* Main Info */
+        .task-main-info{min-width:0}
+        .task-action-line{font-size:15px;font-weight:500;color:#1d1d1f;margin-bottom:4px;display:flex;align-items:center;gap:8px}
+        .task-action-text{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+        .task-contact{font-size:13px;color:#8e8e93;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+        .task-contact-name{font-weight:500;color:#1d1d1f}
+        .task-score{font-size:10px;padding:2px 6px;border-radius:4px;font-weight:600}
+        .task-score.hot{background:#ffebee;color:#c62828}
+        .task-score.warm{background:#fff3e0;color:#ef6c00}
+        .task-score.cold{background:#e3f2fd;color:#1565c0}
         
-        .task-details{display:flex;align-items:center;gap:8px;font-size:10px;color:var(--ts)}
-        .task-details span{display:flex;align-items:center;gap:2px}
-        .task-details svg{width:10px;height:10px}
+        /* Actions */
+        .task-actions{display:flex;gap:4px}
+        .task-action-btn{width:36px;height:36px;border-radius:8px;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;background:#f5f5f7}
+        .task-action-btn:hover{background:#e8e8ed;transform:scale(1.05)}
+        .task-action-btn svg{width:18px;height:18px;color:#8e8e93}
+        .task-action-btn.primary{background:#e3f2fd}
+        .task-action-btn.primary svg{color:#007aff}
+        .task-action-btn.success{background:#e8f5e9}
+        .task-action-btn.success svg{color:#34c759}
+        .task-action-btn.ai{background:linear-gradient(135deg,#f0fdf4,#ecfdf5);border:1px solid #86efac}
+        .task-action-btn.ai svg{color:#22c55e}
         
-        .task-action-text{font-size:11px;color:var(--t);margin-top:4px;padding:4px 8px;background:var(--gl);border-radius:4px}
+        /* Section Headers */
+        .section-header{font-size:11px;font-weight:600;color:#8e8e93;text-transform:uppercase;letter-spacing:0.5px;padding:12px 16px 8px;background:#f9fafb;display:flex;align-items:center;gap:8px}
+        .section-header .dot{width:8px;height:8px;border-radius:50%}
+        .section-header .dot.red{background:#ff3b30}
+        .section-header .dot.blue{background:#007aff}
+        .section-header .dot.gray{background:#8e8e93}
         
-        .task-quick-btns{display:flex;gap:4px;flex-shrink:0}
-        .task-quick-btn{width:26px;height:26px;border-radius:5px;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s}
-        .task-quick-btn svg{width:13px;height:13px}
-        .task-quick-btn.call{background:#dcfce7;color:#16a34a}
-        .task-quick-btn.call:hover{background:#16a34a;color:#fff}
-        .task-quick-btn.done{background:#dbeafe;color:#2563eb}
-        .task-quick-btn.done:hover{background:#2563eb;color:#fff}
-        .task-quick-btn.fail{background:#fee2e2;color:#dc2626}
-        .task-quick-btn.fail:hover{background:#dc2626;color:#fff}
+        /* Empty State */
+        .tasks-empty{text-align:center;padding:60px 20px;color:#8e8e93}
+        .tasks-empty-icon{width:64px;height:64px;margin:0 auto 16px;background:#f5f5f7;border-radius:50%;display:flex;align-items:center;justify-content:center}
+        .tasks-empty-icon svg{width:32px;height:32px;color:#c7c7cc}
+        .tasks-empty-title{font-size:17px;font-weight:600;color:#1d1d1f;margin-bottom:4px}
+        .tasks-empty-text{font-size:14px}
         
         .task-card{background:var(--w);border-radius:8px;padding:10px 12px;margin-bottom:8px;box-shadow:0 1px 2px rgba(0,0,0,.08);border-left:3px solid transparent;cursor:pointer}
         .task-card:hover{box-shadow:0 2px 8px rgba(0,0,0,.12)}
         .task-card.critical{border-left-color:var(--r);background:var(--rl)}
         .task-card.warning{border-left-color:var(--o);background:var(--ol)}
         .task-card.info{border-left-color:var(--b);background:var(--bl)}
-        .task-name{font-weight:600;font-size:13px;margin-bottom:2px}
         .task-meta{font-size:11px;color:var(--ts);margin-bottom:4px}
         .task-action{font-size:12px;margin-bottom:8px}
         .task-btns{display:flex;gap:6px;flex-wrap:wrap}
@@ -457,13 +472,13 @@
             <div class="tasks-header">
                 <h1 class="tasks-title">Що робити зараз<span class="tasks-count" id="task-count">0</span></h1>
             </div>
-            <div class="kanban-filters" id="tasks-filters">
-                <button class="filter-btn active" onclick="setTaskFilter('all')">Всі</button>
-                <button class="filter-btn" onclick="setTaskFilter('critical')"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> Критичні</button>
-                <button class="filter-btn" onclick="setTaskFilter('calls')"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg> Дзвінки</button>
-                <button class="filter-btn" onclick="setTaskFilter('consult')"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> Консультації</button>
-                <button class="filter-btn" onclick="setTaskFilter('followup')"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> Дожим</button>
-                <button class="filter-btn" onclick="setTaskFilter('money')"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg> Оплата</button>
+            <div class="tasks-filters" id="tasks-filters">
+                <button class="filter-pill active" onclick="setTaskFilter('all')">Всі</button>
+                <button class="filter-pill" onclick="setTaskFilter('critical')">Термінові</button>
+                <button class="filter-pill" onclick="setTaskFilter('calls')">Дзвінки</button>
+                <button class="filter-pill" onclick="setTaskFilter('consult')">Консультації</button>
+                <button class="filter-pill" onclick="setTaskFilter('followup')">Дожим</button>
+                <button class="filter-pill" onclick="setTaskFilter('money')">Оплата</button>
             </div>
             <div id="tasks-list"></div>
         </div>
@@ -610,13 +625,17 @@
                     </div>
                     <div class="form-row">
                         <div class="form-group">
-                            <label class="form-label">Наступна дія</label>
+                            <label class="form-label"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:4px"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Наступна дія</label>
                             <input type="date" class="form-input" id="f-next">
                         </div>
-                        <div class="form-group">
-                            <label class="form-label">Що зробити</label>
-                            <input class="form-input" id="f-action" placeholder="Подзвонити...">
+                        <div class="form-group" style="max-width:120px">
+                            <label class="form-label"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:4px"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Час</label>
+                            <input type="time" class="form-input" id="f-next-time" value="10:00">
                         </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:4px"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>Що зробити</label>
+                        <input class="form-input" id="f-action" placeholder="Подзвонити, уточнити рішення..." style="font-weight:500">
                     </div>
                     <div class="form-group" id="report-group" style="display:none">
                         <label class="form-label">Звіт консультації</label>
@@ -920,8 +939,8 @@ let taskFilter='all';
 
 function setTaskFilter(f){
     taskFilter=f;
-    document.querySelectorAll('#tasks-filters .filter-btn').forEach(b=>b.classList.remove('active'));
-    document.querySelector(`#tasks-filters .filter-btn[onclick="setTaskFilter('${f}')"]`).classList.add('active');
+    document.querySelectorAll('#tasks-filters .filter-pill').forEach(b=>b.classList.remove('active'));
+    document.querySelector(`#tasks-filters .filter-pill[onclick="setTaskFilter('${f}')"]`).classList.add('active');
     renderTasks();
 }
 
@@ -1071,70 +1090,137 @@ function renderTasks(){
     }
     
     if(!tasks.length){
-        c.innerHTML='<div class="empty"><svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="#22c55e" stroke-width="2" style="margin-bottom:12px"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg><div style="font-size:18px;font-weight:600;margin-bottom:8px">'+(taskFilter==='all'?'Всі завдання виконані!':'Немає завдань в цій категорії')+'</div><div style="color:var(--g)">'+(taskFilter==='all'?'Можеш відпочити або перевірити Kanban':'Спробуй інший фільтр')+'</div></div>';
+        c.innerHTML=`<div class="tasks-empty">
+            <div class="tasks-empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></div>
+            <div class="tasks-empty-title">${taskFilter==='all'?'Всі завдання виконані':'Немає завдань'}</div>
+            <div class="tasks-empty-text">${taskFilter==='all'?'Час для перерви':'Оберіть інший фільтр'}</div>
+        </div>`;
         return;
     }
     
-    // Групуємо завдання
-    const groups = {
-        critical: {title:'🔴 Терміново', icon:'alert', tasks:[]},
-        today: {title:'📅 Сьогодні', icon:'calendar', tasks:[]},
-        calls: {title:'📞 Зателефонувати', icon:'phone', tasks:[]},
-        followup: {title:'💬 Дожати', icon:'chat', tasks:[]},
-        other: {title:'📋 Інші', icon:'list', tasks:[]}
-    };
+    // Сортуємо по даті і часу наступної дії
+    tasks.sort((a,b) => {
+        const dateA = a.l.nextDate || '9999-99-99';
+        const dateB = b.l.nextDate || '9999-99-99';
+        const timeA = a.l.nextTime || '23:59';
+        const timeB = b.l.nextTime || '23:59';
+        return (dateA + timeA).localeCompare(dateB + timeB);
+    });
+    
+    // Групуємо: прострочені, зараз, сьогодні, завтра, пізніше
+    const now = new Date();
+    const todayStr = today();
+    const tomorrowStr = tomorrow();
+    const currentHour = now.getHours();
+    const currentMin = now.getMinutes();
+    
+    const overdue = [];
+    const nowTasks = [];
+    const todayTasks = [];
+    const tomorrowTasks = [];
+    const later = [];
     
     tasks.forEach(t => {
-        const score = calcScore(t.l);
-        if(t.p === 'critical' || score >= 70) groups.critical.tasks.push(t);
-        else if(t.l.nextDate === today() || t.l.consult?.startsWith(today())) groups.today.tasks.push(t);
-        else if(t.msg.includes('Подзвон') || t.msg.includes('дзвін')) groups.calls.tasks.push(t);
-        else if(t.l.status === 'report_sent' || t.msg.includes('Дожат')) groups.followup.tasks.push(t);
-        else groups.other.tasks.push(t);
-    });
-    
-    let html = '';
-    Object.entries(groups).forEach(([key, group]) => {
-        if(!group.tasks.length) return;
-        html += `<div class="tasks-group">
-            <div class="tasks-group-title">${group.title}<span class="tasks-group-count">${group.tasks.length}</span></div>`;
+        const d = t.l.nextDate;
+        const time = t.l.nextTime || '09:00';
+        const [h, m] = time.split(':').map(Number);
         
-        group.tasks.forEach(t => {
-            const score = calcScore(t.l);
-            const scoreClass = score>=70?'hot':score>=50?'warm':'cold';
-            const hint = getAIHint(t.l);
-            const priorityClass = t.p || (score>=70?'critical':score>=50?'warning':'info');
-            
-            html += `
-            <div class="task-item" onclick="openModal('${t.l.id}')">
-                <div class="task-priority ${priorityClass}"></div>
-                <div class="task-content">
-                    <div class="task-main">
-                        <span class="task-name">${t.l.tg||t.l.phone||'—'}</span>
-                        <span class="task-badge ${scoreClass}">${score}</span>
-                        ${t.l.biz?`<span style="font-size:11px;color:var(--g)">${t.l.biz}</span>`:''}
-                    </div>
-                    <div class="task-details">
-                        <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg>${ST[t.l.status]||'Новий'}</span>
-                        ${t.l.consult?`<span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/></svg>${fmtDT(t.l.consult)}</span>`:''}
-                        ${t.l.calls?`<span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07"/></svg>${t.l.calls} дзв</span>`:''}
-                    </div>
-                    <div class="task-action-text">${t.msg}</div>
-                    ${hint?`<div class="ai-hint" style="margin-top:8px"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a7 7 0 0 1 7 7c0 2.38-1.19 4.47-3 5.74V17a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1v-2.26C6.19 13.47 5 11.38 5 9a7 7 0 0 1 7-7z"/></svg><span style="font-size:12px">${hint}</span></div>`:''}
-                </div>
-                <div class="task-quick-btns">
-                    ${t.btns.slice(0,2).map(b=>`<button class="task-quick-btn ${b.a.includes('call')?'call':b.a.includes('fail')?'fail':'done'}" onclick="event.stopPropagation();taskAction('${t.l.id}','${b.a}')" title="${b.l}">
-                        ${b.a.includes('call')?'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72"/></svg>'
-                        :b.a.includes('fail')?'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>'
-                        :'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>'}
-                    </button>`).join('')}
-                </div>
-            </div>`;
-        });
-        html += '</div>';
+        if(!d || d < todayStr) {
+            overdue.push(t);
+        } else if(d === todayStr) {
+            // Перевіряємо чи це зараз (±30 хв)
+            const taskMins = h * 60 + m;
+            const nowMins = currentHour * 60 + currentMin;
+            if(Math.abs(taskMins - nowMins) <= 30) {
+                nowTasks.push(t);
+            } else if(taskMins > nowMins) {
+                todayTasks.push(t);
+            } else {
+                overdue.push(t);
+            }
+        } else if(d === tomorrowStr) {
+            tomorrowTasks.push(t);
+        } else {
+            later.push(t);
+        }
     });
     
+    let html = '<div class="tasks-list">';
+    
+    if(overdue.length) {
+        html += `<div class="section-header"><span class="dot red"></span>Прострочено · ${overdue.length}</div>`;
+        overdue.forEach(t => html += renderTaskRow(t, 'overdue'));
+    }
+    
+    if(nowTasks.length) {
+        html += `<div class="section-header"><span class="dot blue"></span>Зараз · ${nowTasks.length}</div>`;
+        nowTasks.forEach(t => html += renderTaskRow(t, 'now'));
+    }
+    
+    if(todayTasks.length) {
+        html += `<div class="section-header"><span class="dot blue"></span>Сьогодні · ${todayTasks.length}</div>`;
+        todayTasks.forEach(t => html += renderTaskRow(t, 'today'));
+    }
+    
+    if(tomorrowTasks.length) {
+        html += `<div class="section-header"><span class="dot gray"></span>Завтра · ${tomorrowTasks.length}</div>`;
+        tomorrowTasks.forEach(t => html += renderTaskRow(t, 'tomorrow'));
+    }
+    
+    if(later.length) {
+        html += `<div class="section-header"><span class="dot gray"></span>Пізніше · ${later.length}</div>`;
+        later.forEach(t => html += renderTaskRow(t, 'later'));
+    }
+    
+    html += '</div>';
     c.innerHTML = html;
+}
+
+function renderTaskRow(t, status) {
+    const score = calcScore(t.l);
+    const scoreClass = score>=70?'hot':score>=50?'warm':'cold';
+    const time = t.l.nextTime || '—';
+    const date = t.l.nextDate;
+    const action = t.l.nextAction || t.msg || 'Зателефонувати';
+    
+    let dateLabel = '';
+    if(date === today()) dateLabel = 'Сьогодні';
+    else if(date === tomorrow()) dateLabel = 'Завтра';
+    else if(date) dateLabel = fmtDate(date);
+    else dateLabel = 'Не вказано';
+    
+    const timeClass = status === 'overdue' ? 'overdue' : status === 'now' ? 'now' : status === 'today' ? 'today' : '';
+    const rowClass = status === 'overdue' ? 'overdue' : status === 'now' ? 'now' : '';
+    
+    return `
+    <div class="task-row ${rowClass}" onclick="openModal('${t.l.id}')">
+        <div class="task-time ${timeClass}">
+            <div class="task-time-value">${status === 'now' ? '● ЗАРАЗ' : time}</div>
+            <div class="task-time-date">${dateLabel}</div>
+        </div>
+        <div class="task-main-info">
+            <div class="task-action-line">
+                <span class="task-action-text">${action}</span>
+            </div>
+            <div class="task-contact">
+                <span class="task-contact-name">${t.l.tg||t.l.phone||'—'}</span>
+                <span>${t.l.biz||''}</span>
+                <span class="task-score ${scoreClass}">${score}</span>
+                <span style="color:#8e8e93">${ST[t.l.status]||''}</span>
+            </div>
+        </div>
+        <div class="task-actions">
+            <button class="task-action-btn ai" onclick="event.stopPropagation();openAIPanel('${t.l.id}')" title="AI підказка">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a7 7 0 0 1 7 7c0 2.38-1.19 4.47-3 5.74V17a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1v-2.26C6.19 13.47 5 11.38 5 9a7 7 0 0 1 7-7z"/><path d="M9 21h6"/></svg>
+            </button>
+            <button class="task-action-btn success" onclick="event.stopPropagation();quickComplete('${t.l.id}')" title="Виконано">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+            </button>
+            <button class="task-action-btn primary" onclick="event.stopPropagation();quickReschedule('${t.l.id}')" title="Перенести">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/></svg>
+            </button>
+        </div>
+    </div>`;
 }
 
 function taskAction(id,a){
@@ -1161,6 +1247,57 @@ function taskAction(id,a){
         case'react_later':updatedLead.reactDate=addDays(today(),90);addLog(updatedLead,'call','Реактивація +3міс');break;
     }
     saveLead(updatedLead);
+}
+
+// Quick actions from task list
+function quickComplete(id) {
+    const l = leads.find(x => x.id === id);
+    if(!l) return;
+    
+    // Показуємо швидкий діалог для наступної дії
+    const nextAction = prompt('Що далі? (наступна дія)', l.nextAction || 'Зателефонувати');
+    if(nextAction === null) return;
+    
+    const nextDate = prompt('Коли? (YYYY-MM-DD)', tomorrow());
+    if(nextDate === null) return;
+    
+    const nextTime = prompt('О котрій? (HH:MM)', '10:00');
+    if(nextTime === null) return;
+    
+    const updatedLead = {...l};
+    updatedLead.calls = (updatedLead.calls || 0) + 1;
+    updatedLead.nextAction = nextAction;
+    updatedLead.nextDate = nextDate;
+    updatedLead.nextTime = nextTime;
+    addLog(updatedLead, 'call', 'Виконано: ' + (l.nextAction || 'дзвінок'));
+    saveLead(updatedLead);
+}
+
+function quickReschedule(id) {
+    const l = leads.find(x => x.id === id);
+    if(!l) return;
+    
+    const nextDate = prompt('Перенести на дату (YYYY-MM-DD):', tomorrow());
+    if(!nextDate) return;
+    
+    const nextTime = prompt('Час (HH:MM):', l.nextTime || '10:00');
+    if(nextTime === null) return;
+    
+    const updatedLead = {...l};
+    updatedLead.nextDate = nextDate;
+    updatedLead.nextTime = nextTime;
+    addLog(updatedLead, 'status', 'Перенесено на ' + nextDate + ' ' + nextTime);
+    saveLead(updatedLead);
+}
+
+function openAIPanel(id) {
+    // Відкриваємо модалку ліда і активуємо AI панель
+    openModal(id);
+    setTimeout(() => {
+        toggleAIPanel();
+        // Автоматично генеруємо скрипт для поточної дії
+        aiAsk('script');
+    }, 300);
 }
 
 // ===== KANBAN =====
@@ -1392,9 +1529,10 @@ function switchTab(t){
     document.getElementById('t-'+t).classList.add('active');
 }
 function resetForm(){
-    ['f-id','f-status','f-noshow','f-tg','f-phone','f-biz','f-source','f-consult','f-repeat','f-calls','f-sms','f-next','f-action','f-fail','f-report','f-notes','l-record','l-report','l-kp','l-contract','fin-dep','fin-dep-cur','fin-dep-date','fin-total','fin-total-cur','fin-paid-date'].forEach(id=>{
+    ['f-id','f-status','f-noshow','f-tg','f-phone','f-biz','f-source','f-consult','f-repeat','f-calls','f-sms','f-next','f-next-time','f-action','f-fail','f-report','f-notes','l-record','l-report','l-kp','l-contract','fin-dep','fin-dep-cur','fin-dep-date','fin-total','fin-total-cur','fin-paid-date'].forEach(id=>{
         const e=document.getElementById(id);if(e)e.value='';
     });
+    document.getElementById('f-next-time').value='10:00';
     document.getElementById('comm-log').innerHTML='<div style="color:var(--g);text-align:center;padding:20px">Історія порожня</div>';
     document.getElementById('fail-group').style.display='none';
 }
@@ -1411,6 +1549,7 @@ function fillForm(l){
     document.getElementById('f-calls').value=l.calls||'0';
     document.getElementById('f-sms').value=l.sms||'0';
     document.getElementById('f-next').value=l.nextDate||'';
+    document.getElementById('f-next-time').value=l.nextTime||'10:00';
     document.getElementById('f-action').value=l.nextAction||'';
     document.getElementById('f-fail').value=l.failReason||'';
     document.getElementById('f-notes').value=l.notes||'';
@@ -1447,6 +1586,7 @@ function saveLeadForm(){
         calls:+document.getElementById('f-calls').value||0,
         sms:+document.getElementById('f-sms').value||0,
         nextDate:document.getElementById('f-next').value,
+        nextTime:document.getElementById('f-next-time').value||'10:00',
         nextAction:document.getElementById('f-action').value,
         failReason:document.getElementById('f-fail').value,
         report:document.getElementById('f-report').value,
@@ -1474,7 +1614,7 @@ function saveLeadForm(){
         data.stageDate=new Date().toISOString();
         data.log=[];
         if(!data.status)data.status='new';
-        if(!data.nextDate){data.nextDate=today();data.nextAction='Подзвонити';}
+        if(!data.nextDate){data.nextDate=today();data.nextTime='10:00';data.nextAction='Подзвонити';}
     }
     if(data.status==='failed'&&!data.reactDate)data.reactDate=addDays(today(),90);
     
