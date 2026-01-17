@@ -151,6 +151,76 @@
         .tasks-empty-title{font-size:17px;font-weight:600;color:#1d1d1f;margin-bottom:4px}
         .tasks-empty-text{font-size:14px}
         
+        /* Quick Action Panel - Google Style */
+        .quick-panel{display:none;position:fixed;bottom:0;left:0;right:0;background:#fff;border-radius:20px 20px 0 0;box-shadow:0 -4px 24px rgba(0,0,0,0.15);z-index:150;max-height:80vh;overflow:hidden;animation:slideUp .25s ease}
+        .quick-panel.active{display:block}
+        @keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+        .quick-panel-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.3);z-index:149;display:none}
+        .quick-panel-overlay.active{display:block}
+        
+        .quick-panel-header{padding:16px 20px;border-bottom:1px solid #e5e7eb;display:flex;justify-content:space-between;align-items:center}
+        .quick-panel-title{font-size:18px;font-weight:600;color:#1a1a1a}
+        .quick-panel-close{width:32px;height:32px;border-radius:50%;border:none;background:#f5f5f5;cursor:pointer;display:flex;align-items:center;justify-content:center}
+        .quick-panel-close:hover{background:#e8e8e8}
+        .quick-panel-close svg{width:20px;height:20px;color:#666}
+        
+        .quick-panel-lead{padding:16px 20px;background:#f9fafb;border-bottom:1px solid #e5e7eb}
+        .quick-lead-name{font-size:16px;font-weight:600;color:#1a1a1a;margin-bottom:4px}
+        .quick-lead-info{font-size:13px;color:#666;display:flex;gap:12px;flex-wrap:wrap}
+        .quick-lead-action{font-size:14px;color:#1a73e8;font-weight:500;margin-top:8px}
+        
+        .quick-panel-body{padding:20px;overflow-y:auto;max-height:50vh}
+        
+        .quick-section{margin-bottom:24px}
+        .quick-section:last-child{margin-bottom:0}
+        .quick-section-title{font-size:12px;font-weight:600;color:#5f6368;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+        .quick-section-title svg{width:16px;height:16px}
+        
+        .quick-buttons{display:flex;flex-wrap:wrap;gap:8px}
+        .quick-btn{padding:10px 16px;border-radius:100px;border:1px solid #dadce0;background:#fff;font-size:14px;font-weight:500;color:#1a1a1a;cursor:pointer;display:flex;align-items:center;gap:8px;transition:all .15s}
+        .quick-btn:hover{background:#f1f3f4;border-color:#1a73e8}
+        .quick-btn:active{background:#e8f0fe}
+        .quick-btn svg{width:18px;height:18px;color:#5f6368}
+        
+        .quick-btn.answered{border-color:#34a853;color:#34a853}
+        .quick-btn.answered:hover{background:#e6f4ea}
+        .quick-btn.answered svg{color:#34a853}
+        
+        .quick-btn.no-answer{border-color:#ea4335;color:#ea4335}
+        .quick-btn.no-answer:hover{background:#fce8e6}
+        .quick-btn.no-answer svg{color:#ea4335}
+        
+        .quick-btn.scheduled{border-color:#1a73e8;color:#1a73e8}
+        .quick-btn.scheduled:hover{background:#e8f0fe}
+        .quick-btn.scheduled svg{color:#1a73e8}
+        
+        .quick-btn.completed{border-color:#34a853;background:#34a853;color:#fff}
+        .quick-btn.completed:hover{background:#2d9249}
+        .quick-btn.completed svg{color:#fff}
+        
+        .quick-btn.failed{border-color:#ea4335;background:#ea4335;color:#fff}
+        .quick-btn.failed:hover{background:#d33426}
+        .quick-btn.failed svg{color:#fff}
+        
+        /* Time picker buttons */
+        .time-buttons{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+        .time-btn{padding:12px 8px;border-radius:12px;border:1px solid #dadce0;background:#fff;font-size:13px;font-weight:500;color:#1a1a1a;cursor:pointer;text-align:center;transition:all .15s}
+        .time-btn:hover{background:#f1f3f4;border-color:#1a73e8}
+        .time-btn:active{background:#e8f0fe}
+        .time-btn .time{font-size:16px;font-weight:600;color:#1a73e8;display:block;margin-bottom:2px}
+        .time-btn .label{font-size:11px;color:#5f6368}
+        .time-btn.selected{border-color:#1a73e8;background:#e8f0fe}
+        
+        /* Note input */
+        .quick-note{width:100%;padding:12px 16px;border:1px solid #dadce0;border-radius:12px;font-size:14px;resize:none;min-height:60px;margin-top:12px}
+        .quick-note:focus{outline:none;border-color:#1a73e8}
+        
+        /* Confirm button */
+        .quick-confirm{width:100%;padding:14px;background:#1a73e8;color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;margin-top:16px;display:flex;align-items:center;justify-content:center;gap:8px}
+        .quick-confirm:hover{background:#1557b0}
+        .quick-confirm:disabled{background:#dadce0;color:#80868b;cursor:not-allowed}
+        .quick-confirm svg{width:20px;height:20px}
+        
         .task-card{background:var(--w);border-radius:8px;padding:10px 12px;margin-bottom:8px;box-shadow:0 1px 2px rgba(0,0,0,.08);border-left:3px solid transparent;cursor:pointer}
         .task-card:hover{box-shadow:0 2px 8px rgba(0,0,0,.12)}
         .task-card.critical{border-left-color:var(--r);background:var(--rl)}
@@ -755,6 +825,147 @@
         </div>
     </div>
 
+<!-- Quick Action Panel -->
+<div class="quick-panel-overlay" onclick="closeQuickPanel()"></div>
+<div class="quick-panel" id="quick-panel">
+    <div class="quick-panel-header">
+        <div class="quick-panel-title">Що сталось?</div>
+        <button class="quick-panel-close" onclick="closeQuickPanel()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        </button>
+    </div>
+    
+    <div class="quick-panel-lead" id="quick-lead-info">
+        <div class="quick-lead-name" id="quick-lead-name">—</div>
+        <div class="quick-lead-info">
+            <span id="quick-lead-biz">—</span>
+            <span id="quick-lead-phone">—</span>
+        </div>
+        <div class="quick-lead-action" id="quick-lead-task">Завдання: —</div>
+    </div>
+    
+    <div class="quick-panel-body">
+        <!-- Outcome buttons -->
+        <div class="quick-section" id="quick-outcome-section">
+            <div class="quick-section-title">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                Результат дзвінка
+            </div>
+            <div class="quick-buttons" id="quick-outcome-buttons">
+                <button class="quick-btn answered" onclick="setQuickOutcome('answered')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                    Взяв трубку
+                </button>
+                <button class="quick-btn no-answer" onclick="setQuickOutcome('no_answer')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 2v4M8 2v4M3 10h18M5 4h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"/><path d="M10 14l4 4m0-4l-4 4"/></svg>
+                    Не взяв
+                </button>
+                <button class="quick-btn" onclick="setQuickOutcome('sms')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                    SMS
+                </button>
+                <button class="quick-btn" onclick="setQuickOutcome('callback')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h7"/><path d="M18 2l4 4-10 10H8v-4L18 2z"/></svg>
+                    Передзвонить
+                </button>
+            </div>
+        </div>
+        
+        <!-- Next action section - shown after outcome -->
+        <div class="quick-section" id="quick-next-section" style="display:none">
+            <div class="quick-section-title">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                Коли наступний контакт?
+            </div>
+            <div class="time-buttons" id="quick-time-buttons">
+                <button class="time-btn" onclick="setQuickTime('30m')">
+                    <span class="time">30 хв</span>
+                    <span class="label">Скоро</span>
+                </button>
+                <button class="time-btn" onclick="setQuickTime('2h')">
+                    <span class="time">2 год</span>
+                    <span class="label">Сьогодні</span>
+                </button>
+                <button class="time-btn" onclick="setQuickTime('tomorrow_10')">
+                    <span class="time">10:00</span>
+                    <span class="label">Завтра</span>
+                </button>
+                <button class="time-btn" onclick="setQuickTime('tomorrow_14')">
+                    <span class="time">14:00</span>
+                    <span class="label">Завтра</span>
+                </button>
+                <button class="time-btn" onclick="setQuickTime('2d')">
+                    <span class="time">+2 дні</span>
+                    <span class="label">Післязавтра</span>
+                </button>
+                <button class="time-btn" onclick="setQuickTime('week')">
+                    <span class="time">+тиждень</span>
+                    <span class="label">Через 7 днів</span>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Action type - shown after time -->
+        <div class="quick-section" id="quick-action-section" style="display:none">
+            <div class="quick-section-title">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                Що зробити?
+            </div>
+            <div class="quick-buttons" id="quick-action-buttons">
+                <button class="quick-btn" onclick="setQuickAction('Подзвонити')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                    Подзвонити
+                </button>
+                <button class="quick-btn" onclick="setQuickAction('Написати SMS')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                    SMS
+                </button>
+                <button class="quick-btn" onclick="setQuickAction('Підтвердити зустріч')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                    Підтвердити
+                </button>
+                <button class="quick-btn" onclick="setQuickAction('Уточнити рішення')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                    Уточнити
+                </button>
+                <button class="quick-btn" onclick="setQuickAction('Надіслати КП')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                    Надіслати КП
+                </button>
+            </div>
+            <textarea class="quick-note" id="quick-note" placeholder="Додаткові нотатки (необов'язково)..."></textarea>
+        </div>
+        
+        <!-- Final actions -->
+        <div class="quick-section" id="quick-final-section" style="display:none">
+            <div class="quick-section-title">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                Фінальний результат
+            </div>
+            <div class="quick-buttons">
+                <button class="quick-btn scheduled" onclick="setQuickFinal('scheduled')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+                    Призначити консультацію
+                </button>
+                <button class="quick-btn completed" onclick="setQuickFinal('completed')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                    Консультація проведена
+                </button>
+                <button class="quick-btn failed" onclick="setQuickFinal('failed')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M15 9l-6 6M9 9l6 6"/></svg>
+                    Відмова
+                </button>
+            </div>
+        </div>
+        
+        <!-- Confirm button -->
+        <button class="quick-confirm" id="quick-confirm-btn" onclick="confirmQuickAction()" style="display:none">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+            Зберегти
+        </button>
+    </div>
+</div>
+
 <script>
 // ===== FIREBASE CONFIG =====
 const firebaseConfig = {
@@ -1193,7 +1404,7 @@ function renderTaskRow(t, status) {
     const rowClass = status === 'overdue' ? 'overdue' : status === 'now' ? 'now' : '';
     
     return `
-    <div class="task-row ${rowClass}" onclick="openModal('${t.l.id}')">
+    <div class="task-row ${rowClass}" onclick="openQuickPanel('${t.l.id}')" oncontextmenu="event.preventDefault();openModal('${t.l.id}')">
         <div class="task-time ${timeClass}">
             <div class="task-time-value">${status === 'now' ? '● ЗАРАЗ' : time}</div>
             <div class="task-time-date">${dateLabel}</div>
@@ -1210,14 +1421,11 @@ function renderTaskRow(t, status) {
             </div>
         </div>
         <div class="task-actions">
+            <button class="task-action-btn" onclick="event.stopPropagation();openModal('${t.l.id}')" title="Детальніше">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+            </button>
             <button class="task-action-btn ai" onclick="event.stopPropagation();openAIPanel('${t.l.id}')" title="AI підказка">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a7 7 0 0 1 7 7c0 2.38-1.19 4.47-3 5.74V17a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1v-2.26C6.19 13.47 5 11.38 5 9a7 7 0 0 1 7-7z"/><path d="M9 21h6"/></svg>
-            </button>
-            <button class="task-action-btn success" onclick="event.stopPropagation();quickComplete('${t.l.id}')" title="Виконано">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
-            </button>
-            <button class="task-action-btn primary" onclick="event.stopPropagation();quickReschedule('${t.l.id}')" title="Перенести">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/></svg>
             </button>
         </div>
     </div>`;
@@ -2040,6 +2248,233 @@ async function aiSend(){
 
 // Init report dates on load
 initReportDates();
+
+// ===== QUICK ACTION PANEL =====
+let quickLeadId = null;
+let quickState = {
+    outcome: null,
+    time: null,
+    action: null,
+    note: ''
+};
+
+function openQuickPanel(id) {
+    const l = leads.find(x => x.id === id);
+    if(!l) return;
+    
+    quickLeadId = id;
+    quickState = { outcome: null, time: null, action: null, note: '' };
+    
+    // Fill lead info
+    document.getElementById('quick-lead-name').textContent = l.tg || l.phone || '—';
+    document.getElementById('quick-lead-biz').textContent = l.biz || '—';
+    document.getElementById('quick-lead-phone').textContent = l.phone || '';
+    document.getElementById('quick-lead-task').textContent = 'Завдання: ' + (l.nextAction || 'Подзвонити');
+    
+    // Reset sections
+    document.getElementById('quick-outcome-section').style.display = 'block';
+    document.getElementById('quick-next-section').style.display = 'none';
+    document.getElementById('quick-action-section').style.display = 'none';
+    document.getElementById('quick-final-section').style.display = 'none';
+    document.getElementById('quick-confirm-btn').style.display = 'none';
+    document.getElementById('quick-note').value = '';
+    
+    // Clear selections
+    document.querySelectorAll('.quick-btn.selected, .time-btn.selected').forEach(b => b.classList.remove('selected'));
+    
+    // Show panel
+    document.getElementById('quick-panel').classList.add('active');
+    document.querySelector('.quick-panel-overlay').classList.add('active');
+}
+
+function closeQuickPanel() {
+    document.getElementById('quick-panel').classList.remove('active');
+    document.querySelector('.quick-panel-overlay').classList.remove('active');
+    quickLeadId = null;
+}
+
+function setQuickOutcome(outcome) {
+    quickState.outcome = outcome;
+    
+    // Highlight selected
+    document.querySelectorAll('#quick-outcome-buttons .quick-btn').forEach(b => b.classList.remove('selected'));
+    event.target.closest('.quick-btn').classList.add('selected');
+    
+    // Show next section based on outcome
+    if(outcome === 'answered') {
+        // Взяв - показуємо фінальні дії + час
+        document.getElementById('quick-next-section').style.display = 'block';
+        document.getElementById('quick-final-section').style.display = 'block';
+        document.getElementById('quick-action-section').style.display = 'none';
+    } else if(outcome === 'no_answer' || outcome === 'callback') {
+        // Не взяв / Передзвонить - показуємо тільки час
+        document.getElementById('quick-next-section').style.display = 'block';
+        document.getElementById('quick-final-section').style.display = 'none';
+        document.getElementById('quick-action-section').style.display = 'none';
+        quickState.action = outcome === 'callback' ? 'Чекаю дзвінок' : 'Подзвонити';
+    } else if(outcome === 'sms') {
+        // SMS - показуємо час
+        document.getElementById('quick-next-section').style.display = 'block';
+        document.getElementById('quick-final-section').style.display = 'none';
+        document.getElementById('quick-action-section').style.display = 'none';
+        quickState.action = 'Подзвонити (після SMS)';
+    }
+    
+    // Scroll to next section
+    setTimeout(() => {
+        document.getElementById('quick-next-section').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 100);
+}
+
+function setQuickTime(time) {
+    quickState.time = time;
+    
+    // Highlight selected
+    document.querySelectorAll('.time-btn').forEach(b => b.classList.remove('selected'));
+    event.target.closest('.time-btn').classList.add('selected');
+    
+    // Show action section if answered
+    if(quickState.outcome === 'answered') {
+        document.getElementById('quick-action-section').style.display = 'block';
+        setTimeout(() => {
+            document.getElementById('quick-action-section').scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 100);
+    } else {
+        // For no_answer/sms/callback - show confirm button directly
+        document.getElementById('quick-confirm-btn').style.display = 'flex';
+        setTimeout(() => {
+            document.getElementById('quick-confirm-btn').scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 100);
+    }
+}
+
+function setQuickAction(action) {
+    quickState.action = action;
+    
+    // Highlight selected
+    document.querySelectorAll('#quick-action-buttons .quick-btn').forEach(b => b.classList.remove('selected'));
+    event.target.closest('.quick-btn').classList.add('selected');
+    
+    // Show confirm button
+    document.getElementById('quick-confirm-btn').style.display = 'flex';
+    setTimeout(() => {
+        document.getElementById('quick-confirm-btn').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 100);
+}
+
+function setQuickFinal(finalAction) {
+    const l = leads.find(x => x.id === quickLeadId);
+    if(!l) return;
+    
+    const updatedLead = {...l};
+    
+    if(finalAction === 'scheduled') {
+        const dt = prompt('Дата і час консультації:', tomorrow() + 'T14:00');
+        if(!dt) return;
+        updatedLead.status = 'scheduled';
+        updatedLead.consult = dt;
+        updatedLead.noshow = 0;
+        updatedLead.nextDate = addDays(dt.split('T')[0], -1);
+        updatedLead.nextTime = '10:00';
+        updatedLead.nextAction = 'Підтвердити консультацію';
+        addLog(updatedLead, 'status', 'Консультація призначена на ' + fmtDT(dt));
+    } else if(finalAction === 'completed') {
+        updatedLead.status = 'completed';
+        updatedLead.calls = 0;
+        updatedLead.sms = 0;
+        updatedLead.nextDate = today();
+        updatedLead.nextTime = '10:00';
+        updatedLead.nextAction = 'Написати звіт';
+        addLog(updatedLead, 'status', 'Консультація проведена');
+    } else if(finalAction === 'failed') {
+        const reason = prompt('Причина відмови:', '');
+        updatedLead.status = 'failed';
+        updatedLead.failReason = reason || '';
+        updatedLead.reactDate = addDays(today(), 90);
+        addLog(updatedLead, 'status', 'Відмова: ' + (reason || 'не вказано'));
+    }
+    
+    saveLead(updatedLead);
+    closeQuickPanel();
+}
+
+function confirmQuickAction() {
+    const l = leads.find(x => x.id === quickLeadId);
+    if(!l) return;
+    
+    const updatedLead = {...l};
+    const note = document.getElementById('quick-note').value.trim();
+    
+    // Calculate next date/time
+    const nextDateTime = calculateNextDateTime(quickState.time);
+    updatedLead.nextDate = nextDateTime.date;
+    updatedLead.nextTime = nextDateTime.time;
+    updatedLead.nextAction = quickState.action || 'Подзвонити';
+    
+    // Update counters based on outcome
+    if(quickState.outcome === 'no_answer') {
+        updatedLead.calls = (updatedLead.calls || 0) + 1;
+        addLog(updatedLead, 'call', 'Не взяв трубку' + (note ? ': ' + note : ''));
+    } else if(quickState.outcome === 'sms') {
+        updatedLead.sms = (updatedLead.sms || 0) + 1;
+        addLog(updatedLead, 'sms', 'SMS надіслано' + (note ? ': ' + note : ''));
+    } else if(quickState.outcome === 'callback') {
+        addLog(updatedLead, 'call', 'Чекаю дзвінок' + (note ? ': ' + note : ''));
+    } else if(quickState.outcome === 'answered') {
+        updatedLead.calls = (updatedLead.calls || 0) + 1;
+        addLog(updatedLead, 'call', 'Розмова: ' + (quickState.action || '') + (note ? ' | ' + note : ''));
+    }
+    
+    // Add notes if provided
+    if(note && !quickState.outcome) {
+        updatedLead.notes = ((updatedLead.notes || '') + '\n' + note).trim();
+    }
+    
+    saveLead(updatedLead);
+    closeQuickPanel();
+}
+
+function calculateNextDateTime(timeCode) {
+    const now = new Date();
+    let targetDate = new Date();
+    let targetTime = '10:00';
+    
+    switch(timeCode) {
+        case '30m':
+            targetDate.setMinutes(targetDate.getMinutes() + 30);
+            targetTime = targetDate.getHours().toString().padStart(2,'0') + ':' + 
+                         Math.round(targetDate.getMinutes()/5)*5 .toString().padStart(2,'0');
+            break;
+        case '2h':
+            targetDate.setHours(targetDate.getHours() + 2);
+            targetTime = targetDate.getHours().toString().padStart(2,'0') + ':00';
+            break;
+        case 'tomorrow_10':
+            targetDate.setDate(targetDate.getDate() + 1);
+            targetTime = '10:00';
+            break;
+        case 'tomorrow_14':
+            targetDate.setDate(targetDate.getDate() + 1);
+            targetTime = '14:00';
+            break;
+        case '2d':
+            targetDate.setDate(targetDate.getDate() + 2);
+            targetTime = '10:00';
+            break;
+        case 'week':
+            targetDate.setDate(targetDate.getDate() + 7);
+            targetTime = '10:00';
+            break;
+        default:
+            targetDate.setDate(targetDate.getDate() + 1);
+            targetTime = '10:00';
+    }
+    
+    return {
+        date: targetDate.toISOString().split('T')[0],
+        time: targetTime
+    };
+}
 </script>
 </body>
 </html>
