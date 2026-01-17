@@ -127,6 +127,49 @@
         .color-option:hover{transform:scale(1.1)}
         .color-option.selected{border-color:#1f2937}
         
+        /* Reports - Stats Tracker style */
+        .reports-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;flex-wrap:wrap;gap:16px}
+        .reports-controls{display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+        .reports-period-btns{display:flex;background:#f3f4f6;border-radius:8px;padding:4px}
+        .period-btn{padding:8px 16px;border:none;background:transparent;font-size:13px;font-weight:500;color:#6b7280;cursor:pointer;border-radius:6px;transition:all .2s}
+        .period-btn:hover{color:#374151}
+        .period-btn.active{background:#fff;color:#22c55e;box-shadow:0 1px 3px rgba(0,0,0,0.1)}
+        .reports-dates{display:flex;align-items:center;gap:8px}
+        .reports-dates input{width:130px;padding:8px 12px;border:1px solid #e5e7eb;border-radius:8px;font-size:13px}
+        
+        .reports-summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-bottom:24px}
+        .summary-card{background:#fff;border-radius:12px;padding:20px;border:1px solid #e5e7eb}
+        .summary-card-label{font-size:13px;color:#6b7280;margin-bottom:8px}
+        .summary-card-value{font-size:28px;font-weight:700;color:#1f2937}
+        .summary-card-change{font-size:12px;margin-top:4px;display:flex;align-items:center;gap:4px}
+        .summary-card-change.up{color:#22c55e}
+        .summary-card-change.down{color:#ef4444}
+        
+        .reports-table-wrap{background:#fff;border-radius:12px;border:1px solid #e5e7eb;overflow:hidden;margin-bottom:24px}
+        .reports-table{width:100%;border-collapse:collapse;font-size:14px}
+        .reports-table th{background:#f9fafb;padding:14px 16px;text-align:left;font-weight:600;color:#374151;border-bottom:1px solid #e5e7eb;white-space:nowrap}
+        .reports-table th:first-child{position:sticky;left:0;background:#f9fafb;z-index:1;min-width:140px}
+        .reports-table td{padding:14px 16px;border-bottom:1px solid #f3f4f6;color:#1f2937}
+        .reports-table td:first-child{position:sticky;left:0;background:#fff;font-weight:500;z-index:1}
+        .reports-table tr:hover td{background:#f9fafb}
+        .reports-table tr:hover td:first-child{background:#f9fafb}
+        .reports-table tr:last-child td{border-bottom:none}
+        .reports-table .current-row{background:#f0fdf4}
+        .reports-table .current-row td:first-child{background:#f0fdf4}
+        .reports-table .status-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:8px}
+        .reports-table .cell-value{font-weight:500}
+        .reports-table .cell-zero{color:#d1d5db}
+        .reports-table .cell-money{color:#22c55e;font-weight:600}
+        
+        .reports-funnel{background:#fff;border-radius:12px;padding:24px;border:1px solid #e5e7eb}
+        .reports-funnel-title{font-size:16px;font-weight:600;margin-bottom:20px;color:#1f2937}
+        .funnel-bar-wrap{margin-bottom:16px}
+        .funnel-bar-header{display:flex;justify-content:space-between;margin-bottom:6px;font-size:13px}
+        .funnel-bar-label{color:#374151;font-weight:500}
+        .funnel-bar-value{color:#6b7280}
+        .funnel-bar{height:32px;background:#f3f4f6;border-radius:6px;overflow:hidden}
+        .funnel-bar-fill{height:100%;border-radius:6px;display:flex;align-items:center;justify-content:flex-end;padding-right:12px;font-size:12px;font-weight:600;color:#fff;min-width:40px}
+        
         /* Sync indicator */
         .sync-status{display:flex;align-items:center;gap:4px;font-size:11px;color:var(--g);padding:4px 8px;background:var(--gl);border-radius:4px}
         .sync-dot{width:6px;height:6px;border-radius:50%;background:var(--p)}
@@ -704,31 +747,39 @@
         
         <!-- Reports View -->
         <div class="view" id="v-reports">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:12px">
+            <div class="reports-header">
                 <h1 class="tasks-title">Звіти</h1>
-                <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-                    <div style="display:flex;align-items:center;gap:6px">
-                        <label style="font-size:13px;color:var(--g)">З:</label>
-                        <input type="date" id="date-from" class="form-input" style="width:auto;padding:6px 10px" onchange="renderReports()">
+                <div class="reports-controls">
+                    <div class="reports-period-btns">
+                        <button class="period-btn active" onclick="setReportPeriod('week', this)">Тиждень</button>
+                        <button class="period-btn" onclick="setReportPeriod('month', this)">Місяць</button>
+                        <button class="period-btn" onclick="setReportPeriod('quarter', this)">Квартал</button>
                     </div>
-                    <div style="display:flex;align-items:center;gap:6px">
-                        <label style="font-size:13px;color:var(--g)">До:</label>
-                        <input type="date" id="date-to" class="form-input" style="width:auto;padding:6px 10px" onchange="renderReports()">
+                    <div class="reports-dates">
+                        <input type="date" id="date-from" class="form-input" onchange="renderReports()">
+                        <span style="color:#9ca3af">—</span>
+                        <input type="date" id="date-to" class="form-input" onchange="renderReports()">
                     </div>
-                    <div style="display:flex;gap:4px">
-                        <button class="btn btn-s" onclick="setReportPeriod('week')">Тиждень</button>
-                        <button class="btn btn-s" onclick="setReportPeriod('month')">Місяць</button>
-                        <button class="btn btn-s" onclick="setReportPeriod('quarter')">Квартал</button>
-                        <button class="btn btn-s" onclick="setReportPeriod('all')">Все</button>
-                    </div>
-                    <button class="btn btn-p" onclick="exportReport()">Експорт</button>
+                    <button class="btn btn-p" onclick="exportReport()">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                        Експорт
+                    </button>
                 </div>
             </div>
-            <div class="stats" id="stats"></div>
-            <div class="funnel">
-                <div class="funnel-title">Воронка продажів</div>
-                <div id="funnel"></div>
+            
+            <!-- Summary Cards -->
+            <div class="reports-summary" id="reports-summary"></div>
+            
+            <!-- Stats Table -->
+            <div class="reports-table-wrap">
+                <table class="reports-table" id="reports-table">
+                    <thead id="reports-thead"></thead>
+                    <tbody id="reports-tbody"></tbody>
+                </table>
             </div>
+            
+            <!-- Conversion Funnel -->
+            <div class="reports-funnel" id="reports-funnel"></div>
         </div>
     </main>
     
@@ -2941,108 +2992,331 @@ function initReportDates(){
     document.getElementById('date-to').value=now.toISOString().split('T')[0];
 }
 
-function setReportPeriod(p){
-    const now=new Date();
-    const to=now.toISOString().split('T')[0];
+function setReportPeriod(p, btn){
+    // Оновлюємо активну кнопку
+    document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
+    if(btn) btn.classList.add('active');
+    
+    const now = new Date();
+    const to = now.toISOString().split('T')[0];
     let from;
+    let weeksToShow = 8;
+    
     switch(p){
-        case'week':
-            const w=new Date(now);w.setDate(now.getDate()-7);
-            from=w.toISOString().split('T')[0];
+        case 'week':
+            const w = new Date(now);
+            w.setDate(now.getDate() - 7 * 8); // 8 тижнів
+            from = w.toISOString().split('T')[0];
+            weeksToShow = 8;
             break;
-        case'month':
-            const m=new Date(now);m.setMonth(now.getMonth()-1);
-            from=m.toISOString().split('T')[0];
+        case 'month':
+            const m = new Date(now);
+            m.setMonth(now.getMonth() - 6); // 6 місяців
+            from = m.toISOString().split('T')[0];
             break;
-        case'quarter':
-            const q=new Date(now);q.setMonth(now.getMonth()-3);
-            from=q.toISOString().split('T')[0];
-            break;
-        case'all':
-            from='2020-01-01';
+        case 'quarter':
+            const q = new Date(now);
+            q.setMonth(now.getMonth() - 12); // 12 місяців
+            from = q.toISOString().split('T')[0];
             break;
     }
-    document.getElementById('date-from').value=from;
-    document.getElementById('date-to').value=to;
-    renderReports();
+    
+    document.getElementById('date-from').value = from;
+    document.getElementById('date-to').value = to;
+    renderReports(p);
 }
 
-function renderReports(){
-    const fromDate=document.getElementById('date-from').value;
-    const toDate=document.getElementById('date-to').value;
-    const fl=filterByDateRange(leads,fromDate,toDate);
-    const byS={};fl.forEach(l=>{byS[l.status]=(byS[l.status]||0)+1;});
-    const paid=fl.filter(l=>l.status==='paid');
-    const dep=fl.filter(l=>l.status==='deposit');
-    let rev=0;
-    paid.forEach(l=>{rev+=toUAH(l.finTotal,l.finTotalCur);});
-    dep.forEach(l=>{rev+=toUAH(l.finDep,l.finDepCur);});
-    const cons=fl.filter(l=>['completed','report_sent','repeat','deposit','paid'].includes(l.status)).length;
+function renderReports(periodType = 'week'){
+    const fromDate = document.getElementById('date-from').value;
+    const toDate = document.getElementById('date-to').value;
     
-    // Додаткова статистика
-    const newLeads=fl.filter(l=>l.status==='new').length;
-    const failed=fl.filter(l=>l.status==='failed').length;
-    const avgDays=fl.length?Math.round(fl.reduce((s,l)=>{
-        if(!l.stageDate||!l.created)return s;
-        return s+Math.floor((new Date(l.stageDate)-new Date(l.created))/864e5);
-    },0)/fl.length):0;
+    // Отримуємо статуси
+    const statuses = getOrgStatuses();
+    const statusIds = Object.entries(statuses)
+        .sort((a,b) => (a[1].order||0) - (b[1].order||0))
+        .map(([id]) => id);
     
-    document.getElementById('stats').innerHTML=`
-        <div class="stat"><div class="stat-val">${fl.length}</div><div class="stat-label">Лідів</div></div>
-        <div class="stat"><div class="stat-val">${cons}</div><div class="stat-label">Консультацій</div></div>
-        <div class="stat"><div class="stat-val">${dep.length}</div><div class="stat-label">Завдатків</div></div>
-        <div class="stat"><div class="stat-val">${paid.length}</div><div class="stat-label">Оплат</div></div>
-        <div class="stat"><div class="stat-val">${Math.round(rev).toLocaleString()}</div><div class="stat-label">Сума (грн)</div></div>
-        <div class="stat"><div class="stat-val">${fl.length?Math.round(paid.length/fl.length*100):0}%</div><div class="stat-label">Конверсія</div></div>
-        <div class="stat"><div class="stat-val">${failed}</div><div class="stat-label">Неуспішних</div></div>
-        <div class="stat"><div class="stat-val">${avgDays}д</div><div class="stat-label">Сер. цикл</div></div>
-    `;
-    const funnel=[['Нові',byS.new||0],['Призначені',byS.scheduled||0],['Проведені',byS.completed||0],['Звіт',byS.report_sent||0],['Завдаток',byS.deposit||0],['Оплачено',byS.paid||0]];
-    const max=Math.max(...funnel.map(f=>f[1]),1);
-    document.getElementById('funnel').innerHTML=funnel.map(f=>`
-        <div class="funnel-row"><div class="funnel-label">${f[0]}</div><div class="funnel-bar"><div class="funnel-fill" style="width:${f[1]/max*100}%">${f[1]}</div></div></div>
-    `).join('');
+    // Генеруємо періоди (тижні)
+    const periods = generatePeriods(fromDate, toDate, periodType);
+    
+    // Рахуємо дані для кожного періоду
+    const tableData = periods.map(period => {
+        const periodLeads = getLeadsInPeriod(period.start, period.end);
+        const row = { period: period };
+        
+        // Рахуємо по статусах (коли лід перейшов в цей статус)
+        statusIds.forEach(statusId => {
+            row[statusId] = periodLeads.filter(l => l.status === statusId).length;
+        });
+        
+        // Сума з оплачених
+        const paidLeads = periodLeads.filter(l => l.status === 'paid');
+        row.revenue = paidLeads.reduce((sum, l) => sum + toUAH(l.finTotal, l.finTotalCur), 0);
+        
+        // Конверсія
+        const newLeads = periodLeads.filter(l => l.status === 'new').length;
+        row.conversion = newLeads > 0 ? Math.round(paidLeads.length / newLeads * 100) : 0;
+        
+        return row;
+    });
+    
+    // Рендеримо summary cards
+    renderReportsSummary(fromDate, toDate);
+    
+    // Рендеримо таблицю
+    renderReportsTable(tableData, statusIds, statuses);
+    
+    // Рендеримо воронку
+    renderReportsFunnel(fromDate, toDate, statusIds, statuses);
 }
 
-function filterByDateRange(arr,from,to){
-    if(!from&&!to)return arr;
-    const fromD=from?new Date(from+'T00:00:00'):new Date('2000-01-01');
-    const toD=to?new Date(to+'T23:59:59'):new Date();
-    return arr.filter(l=>{
-        const created=new Date(l.created);
-        return created>=fromD&&created<=toD;
+function generatePeriods(fromDate, toDate, type = 'week'){
+    const periods = [];
+    const from = new Date(fromDate);
+    const to = new Date(toDate);
+    const today = new Date();
+    today.setHours(0,0,0,0);
+    
+    if(type === 'week'){
+        // Тижні (пн-нд)
+        let current = new Date(to);
+        // Знаходимо понеділок поточного тижня
+        const dayOfWeek = current.getDay();
+        const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+        current.setDate(current.getDate() + mondayOffset);
+        
+        while(current >= from && periods.length < 12){
+            const weekStart = new Date(current);
+            const weekEnd = new Date(current);
+            weekEnd.setDate(weekEnd.getDate() + 6);
+            
+            const isCurrent = today >= weekStart && today <= weekEnd;
+            
+            periods.push({
+                start: weekStart.toISOString().split('T')[0],
+                end: weekEnd.toISOString().split('T')[0],
+                label: formatPeriodLabel(weekStart, weekEnd),
+                isCurrent: isCurrent
+            });
+            
+            current.setDate(current.getDate() - 7);
+        }
+    } else if(type === 'month'){
+        // Місяці
+        let current = new Date(to);
+        current.setDate(1);
+        
+        while(current >= from && periods.length < 12){
+            const monthStart = new Date(current);
+            const monthEnd = new Date(current);
+            monthEnd.setMonth(monthEnd.getMonth() + 1);
+            monthEnd.setDate(0);
+            
+            const isCurrent = today.getMonth() === monthStart.getMonth() && today.getFullYear() === monthStart.getFullYear();
+            
+            periods.push({
+                start: monthStart.toISOString().split('T')[0],
+                end: monthEnd.toISOString().split('T')[0],
+                label: monthStart.toLocaleDateString('uk-UA', { month: 'long', year: 'numeric' }),
+                isCurrent: isCurrent
+            });
+            
+            current.setMonth(current.getMonth() - 1);
+        }
+    } else {
+        // Квартали
+        let current = new Date(to);
+        const currentQuarter = Math.floor(current.getMonth() / 3);
+        current.setMonth(currentQuarter * 3, 1);
+        
+        while(current >= from && periods.length < 8){
+            const quarterStart = new Date(current);
+            const quarterEnd = new Date(current);
+            quarterEnd.setMonth(quarterEnd.getMonth() + 3);
+            quarterEnd.setDate(0);
+            
+            const q = Math.floor(quarterStart.getMonth() / 3) + 1;
+            const isCurrent = today >= quarterStart && today <= quarterEnd;
+            
+            periods.push({
+                start: quarterStart.toISOString().split('T')[0],
+                end: quarterEnd.toISOString().split('T')[0],
+                label: `Q${q} ${quarterStart.getFullYear()}`,
+                isCurrent: isCurrent
+            });
+            
+            current.setMonth(current.getMonth() - 3);
+        }
+    }
+    
+    return periods;
+}
+
+function formatPeriodLabel(start, end){
+    const s = start.getDate().toString().padStart(2,'0') + '.' + (start.getMonth()+1).toString().padStart(2,'0');
+    const e = end.getDate().toString().padStart(2,'0') + '.' + (end.getMonth()+1).toString().padStart(2,'0');
+    return s + '-' + e;
+}
+
+function getLeadsInPeriod(startDate, endDate){
+    const from = new Date(startDate + 'T00:00:00');
+    const to = new Date(endDate + 'T23:59:59');
+    
+    return leads.filter(l => {
+        // Використовуємо дату створення або stageDate
+        const date = new Date(l.createdAt || l.created || l.stageDate);
+        return date >= from && date <= to;
     });
 }
 
-function toUAH(a,c){if(!a)return 0;return a*({UAH:1,USD:41,EUR:45}[c]||1);}
+function renderReportsSummary(fromDate, toDate){
+    const fl = filterByDateRange(leads, fromDate, toDate);
+    const paid = fl.filter(l => l.status === 'paid');
+    const dep = fl.filter(l => l.status === 'deposit');
+    
+    let revenue = 0;
+    paid.forEach(l => { revenue += toUAH(l.finTotal, l.finTotalCur); });
+    dep.forEach(l => { revenue += toUAH(l.finDep, l.finDepCur); });
+    
+    const conversion = fl.length > 0 ? Math.round(paid.length / fl.length * 100) : 0;
+    
+    document.getElementById('reports-summary').innerHTML = `
+        <div class="summary-card">
+            <div class="summary-card-label">Всього лідів</div>
+            <div class="summary-card-value">${fl.length}</div>
+        </div>
+        <div class="summary-card">
+            <div class="summary-card-label">Оплачено</div>
+            <div class="summary-card-value">${paid.length}</div>
+        </div>
+        <div class="summary-card">
+            <div class="summary-card-label">Сума (грн)</div>
+            <div class="summary-card-value">${Math.round(revenue).toLocaleString()}</div>
+        </div>
+        <div class="summary-card">
+            <div class="summary-card-label">Конверсія</div>
+            <div class="summary-card-value">${conversion}%</div>
+        </div>
+    `;
+}
+
+function renderReportsTable(data, statusIds, statuses){
+    const thead = document.getElementById('reports-thead');
+    const tbody = document.getElementById('reports-tbody');
+    
+    // Header
+    let headerHtml = '<tr><th>Період</th>';
+    statusIds.forEach(id => {
+        const status = statuses[id];
+        headerHtml += `<th><span class="status-dot" style="background:${status.color}"></span>${status.name}</th>`;
+    });
+    headerHtml += '<th>Сума</th></tr>';
+    thead.innerHTML = headerHtml;
+    
+    // Body
+    let bodyHtml = '';
+    data.forEach(row => {
+        const rowClass = row.period.isCurrent ? 'current-row' : '';
+        bodyHtml += `<tr class="${rowClass}">`;
+        bodyHtml += `<td>${row.period.isCurrent ? '● ' : ''}${row.period.label}</td>`;
+        
+        statusIds.forEach(id => {
+            const val = row[id] || 0;
+            const cellClass = val === 0 ? 'cell-zero' : 'cell-value';
+            bodyHtml += `<td class="${cellClass}">${val}</td>`;
+        });
+        
+        const revDisplay = row.revenue > 0 ? Math.round(row.revenue).toLocaleString() : '—';
+        bodyHtml += `<td class="${row.revenue > 0 ? 'cell-money' : 'cell-zero'}">${revDisplay}</td>`;
+        bodyHtml += '</tr>';
+    });
+    
+    tbody.innerHTML = bodyHtml;
+}
+
+function renderReportsFunnel(fromDate, toDate, statusIds, statuses){
+    const fl = filterByDateRange(leads, fromDate, toDate);
+    const byStatus = {};
+    fl.forEach(l => { byStatus[l.status] = (byStatus[l.status] || 0) + 1; });
+    
+    const max = Math.max(...Object.values(byStatus), 1);
+    
+    let funnelHtml = '<div class="reports-funnel-title">Воронка продажів</div>';
+    
+    statusIds.forEach(id => {
+        const status = statuses[id];
+        const count = byStatus[id] || 0;
+        const pct = Math.round(count / max * 100);
+        
+        funnelHtml += `
+            <div class="funnel-bar-wrap">
+                <div class="funnel-bar-header">
+                    <span class="funnel-bar-label">${status.name}</span>
+                    <span class="funnel-bar-value">${count}</span>
+                </div>
+                <div class="funnel-bar">
+                    <div class="funnel-bar-fill" style="width:${pct}%;background:${status.color}">${count > 0 ? count : ''}</div>
+                </div>
+            </div>
+        `;
+    });
+    
+    document.getElementById('reports-funnel').innerHTML = funnelHtml;
+}
+
+function filterByDateRange(arr, from, to){
+    if(!from && !to) return arr;
+    const fromD = from ? new Date(from + 'T00:00:00') : new Date('2000-01-01');
+    const toD = to ? new Date(to + 'T23:59:59') : new Date();
+    return arr.filter(l => {
+        const created = new Date(l.createdAt || l.created);
+        return created >= fromD && created <= toD;
+    });
+}
+
+function toUAH(a, c){ if(!a) return 0; return a * ({UAH:1, USD:41, EUR:45}[c] || 1); }
 
 function exportReport(){
-    const fromDate=document.getElementById('date-from').value;
-    const toDate=document.getElementById('date-to').value;
-    const fl=filterByDateRange(leads,fromDate,toDate);
-    const byS={};fl.forEach(l=>{byS[l.status]=(byS[l.status]||0)+1;});
-    const paid=fl.filter(l=>l.status==='paid');
-    const dep=fl.filter(l=>l.status==='deposit');
-    let rev=0;
-    paid.forEach(l=>{rev+=toUAH(l.finTotal,l.finTotalCur);});
-    dep.forEach(l=>{rev+=toUAH(l.finDep,l.finDepCur);});
+    const fromDate = document.getElementById('date-from').value;
+    const toDate = document.getElementById('date-to').value;
+    const statuses = getOrgStatuses();
+    const statusIds = Object.entries(statuses)
+        .sort((a,b) => (a[1].order||0) - (b[1].order||0))
+        .map(([id]) => id);
     
-    const data=[
+    const periods = generatePeriods(fromDate, toDate, 'week');
+    
+    // Header row
+    const headers = ['Період', ...statusIds.map(id => statuses[id].name), 'Сума (грн)'];
+    
+    // Data rows
+    const rows = periods.map(period => {
+        const periodLeads = getLeadsInPeriod(period.start, period.end);
+        const row = [period.label];
+        
+        statusIds.forEach(statusId => {
+            row.push(periodLeads.filter(l => l.status === statusId).length);
+        });
+        
+        const paidLeads = periodLeads.filter(l => l.status === 'paid');
+        const revenue = paidLeads.reduce((sum, l) => sum + toUAH(l.finTotal, l.finTotalCur), 0);
+        row.push(Math.round(revenue));
+        
+        return row;
+    });
+    
+    const data = [
         ['TALKO CRM Звіт'],
-        ['Період:',fromDate+' — '+toDate],
+        ['Період:', fromDate + ' — ' + toDate],
         [''],
-        ['Статус','К-сть'],
-        ...Object.entries(byS).map(([k,v])=>[ST[k]||k,v]),
-        [''],
-        ['Всього лідів',fl.length],
-        ['Оплачено',paid.length],
-        ['Сума (грн)',Math.round(rev)],
-        ['Конверсія',fl.length?Math.round(paid.length/fl.length*100)+'%':'0%']
+        headers,
+        ...rows
     ];
-    const ws=XLSX.utils.aoa_to_sheet(data);
-    const wb=XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb,ws,'Звіт');
-    XLSX.writeFile(wb,'TALKO_Report_'+fromDate+'_'+toDate+'.xlsx');
+    
+    const ws = XLSX.utils.aoa_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Звіт');
+    XLSX.writeFile(wb, 'TALKO_Report_' + fromDate + '_' + toDate + '.xlsx');
 }
 
 // ===== MODAL =====
