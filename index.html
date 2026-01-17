@@ -693,43 +693,41 @@
             .user-btn{font-size:11px;padding:6px 10px}
             
             /* Container */
-            .container{padding:6px 8px}
+            .container{padding:6px 10px}
             
             /* Funnel bar - compact */
-            .funnel-bar{padding:8px 10px;margin-bottom:10px;gap:6px;flex-direction:row;overflow-x:auto}
+            .funnel-bar{padding:8px;margin-bottom:8px;gap:8px;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch}
             .funnel-selector{flex-shrink:0}
-            .funnel-selector-btn{padding:6px 10px;font-size:11px;white-space:nowrap}
-            .funnel-dropdown{min-width:180px}
+            .funnel-selector-btn{padding:8px 12px;font-size:12px;white-space:nowrap;min-width:auto;gap:6px}
+            .funnel-selector-btn span{max-width:100px;overflow:hidden;text-overflow:ellipsis}
+            .funnel-dropdown{min-width:200px;max-width:280px}
             
             /* Tasks View */
             .tasks-header{flex-direction:column;align-items:stretch;gap:8px;padding-bottom:8px;margin-bottom:10px}
             .tasks-title{font-size:18px}
             .tasks-count{font-size:11px;padding:2px 6px}
-            .tasks-filters{gap:6px;margin-bottom:10px;padding-bottom:8px;-webkit-overflow-scrolling:touch}
-            .filter-pill{padding:6px 12px;font-size:12px;white-space:nowrap}
+            .tasks-filters{gap:6px;margin-bottom:10px;padding-bottom:8px;-webkit-overflow-scrolling:touch;overflow-x:auto}
+            .filter-pill{padding:6px 12px;font-size:12px;white-space:nowrap;flex-shrink:0}
             
             /* Task rows - mobile optimized */
-            .task-row{flex-direction:column;align-items:stretch;gap:10px;padding:12px}
-            .task-time{flex-direction:row;justify-content:space-between;align-items:center;min-width:auto;padding:0}
-            .task-time-value{font-size:13px}
-            .task-time-date{font-size:11px}
-            .task-main-info{flex-wrap:wrap;gap:6px}
-            .task-action-text{font-size:13px;width:100%;margin-bottom:2px}
-            .task-contact-link{font-size:11px;padding:4px 8px}
-            .task-biz{font-size:11px}
-            .task-score{font-size:9px;padding:2px 5px}
-            .task-status-wrap{width:100%;margin-top:8px}
+            .task-row{flex-wrap:wrap;gap:8px;padding:12px;position:relative}
+            .task-time{min-width:55px;padding:0;flex-direction:column;align-items:flex-start}
+            .task-time-value{font-size:12px}
+            .task-time-date{font-size:10px}
+            .task-main-info{flex:1;min-width:0;flex-wrap:wrap;gap:4px;padding-right:80px}
+            .task-action-text{font-size:13px;font-weight:500}
+            .task-contact-link{font-size:11px;padding:3px 6px}
+            .task-biz{font-size:10px;width:100%}
+            .task-score{font-size:9px;padding:2px 4px}
+            .task-status-wrap{width:100%;order:10;margin-top:4px}
             .task-status-btn{width:100%;justify-content:center;padding:8px 12px;font-size:11px}
             .task-status-dropdown{left:0;right:0;min-width:auto}
-            .task-actions{position:absolute;top:12px;right:12px;gap:6px}
-            .task-action-btn{width:36px;height:36px}
-            .task-action-btn svg{width:16px;height:16px}
-            
-            /* Task card relative for absolute actions */
-            .task-row{position:relative;padding-right:90px}
+            .task-actions{position:absolute;top:10px;right:10px;flex-direction:column;gap:4px}
+            .task-action-btn{width:32px;height:32px}
+            .task-action-btn svg{width:14px;height:14px}
             
             /* Sections styling */
-            .task-section{margin-bottom:16px}
+            .task-section{margin-bottom:12px}
             .task-section-header{font-size:11px;padding:6px 10px}
             
             /* Kanban - horizontal scroll */
