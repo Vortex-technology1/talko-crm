@@ -119,6 +119,59 @@
         .status-add-btn{display:flex;align-items:center;justify-content:center;gap:8px;padding:12px;border:2px dashed #d1d5db;border-radius:10px;background:transparent;color:#6b7280;font-size:14px;font-weight:500;cursor:pointer;margin-top:12px;width:100%}
         .status-add-btn:hover{border-color:#22c55e;color:#22c55e;background:#f0fdf4}
         
+        /* Funnel List */
+        .funnel-list{display:flex;flex-direction:column;gap:6px}
+        .funnel-item{display:flex;align-items:center;gap:10px;padding:12px 14px;background:#f9fafb;border-radius:10px;cursor:pointer;border:2px solid transparent;transition:all .2s}
+        .funnel-item:hover{background:#f3f4f6}
+        .funnel-item.active{background:#f0fdf4;border-color:#22c55e}
+        .funnel-item-icon{width:32px;height:32px;background:linear-gradient(135deg,#22c55e,#16a34a);border-radius:8px;display:flex;align-items:center;justify-content:center}
+        .funnel-item-icon svg{width:18px;height:18px;color:#fff}
+        .funnel-item-info{flex:1;min-width:0}
+        .funnel-item-name{font-size:14px;font-weight:600;color:#1f2937}
+        .funnel-item-meta{font-size:12px;color:#6b7280;display:flex;gap:12px;margin-top:2px}
+        .funnel-item-actions{display:flex;gap:4px}
+        .funnel-default-badge{font-size:10px;background:#dbeafe;color:#1d4ed8;padding:2px 6px;border-radius:4px;font-weight:500}
+        
+        /* Assignment Modes */
+        .assignment-modes{display:flex;flex-direction:column;gap:8px}
+        .assignment-mode{display:flex;align-items:flex-start;gap:12px;padding:14px;background:#f9fafb;border-radius:10px;cursor:pointer;border:2px solid transparent;transition:all .2s}
+        .assignment-mode:hover{background:#f3f4f6}
+        .assignment-mode:has(input:checked){background:#f0fdf4;border-color:#22c55e}
+        .assignment-mode input{margin-top:2px;accent-color:#22c55e}
+        .assignment-mode-content{flex:1}
+        .assignment-mode-title{font-size:14px;font-weight:600;color:#1f2937}
+        .assignment-mode-desc{font-size:12px;color:#6b7280;margin-top:2px}
+        
+        /* Round-robin Queue */
+        .rr-queue-section{margin-top:16px;padding-top:16px;border-top:1px solid #e5e7eb}
+        .rr-queue-title{font-size:13px;font-weight:600;color:#374151;margin-bottom:10px}
+        .rr-queue-list{display:flex;flex-direction:column;gap:6px}
+        .rr-queue-item{display:flex;align-items:center;gap:10px;padding:10px 12px;background:#f9fafb;border-radius:8px}
+        .rr-queue-item.current{background:#f0fdf4;border:1px solid #22c55e}
+        .rr-queue-avatar{width:32px;height:32px;background:#e5e7eb;border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:13px;color:#374151}
+        .rr-queue-info{flex:1}
+        .rr-queue-name{font-size:13px;font-weight:500;color:#1f2937}
+        .rr-queue-count{font-size:11px;color:#6b7280}
+        .rr-queue-toggle{width:20px;height:20px;border:none;background:transparent;cursor:pointer;color:#9ca3af}
+        .rr-queue-toggle:hover{color:#374151}
+        .rr-queue-toggle.active{color:#22c55e}
+        
+        /* Funnel Selector in Header */
+        .funnel-selector{position:relative}
+        .funnel-selector-btn{display:flex;align-items:center;gap:6px;padding:6px 12px;background:#f3f4f6;border:none;border-radius:6px;font-size:13px;color:#374151;cursor:pointer}
+        .funnel-selector-btn:hover{background:#e5e7eb}
+        .funnel-selector-btn svg{width:14px;height:14px}
+        .funnel-dropdown{position:absolute;top:100%;left:0;margin-top:4px;background:#fff;border:1px solid #e5e7eb;border-radius:10px;box-shadow:0 10px 40px rgba(0,0,0,0.15);min-width:200px;z-index:200;display:none}
+        .funnel-dropdown.active{display:block}
+        .funnel-dropdown-item{display:flex;align-items:center;gap:10px;padding:10px 14px;cursor:pointer;font-size:13px;color:#374151}
+        .funnel-dropdown-item:hover{background:#f3f4f6}
+        .funnel-dropdown-item.active{background:#f0fdf4;color:#16a34a;font-weight:500}
+        .funnel-dropdown-item svg{width:16px;height:16px}
+        
+        /* Assignee in Cards */
+        .assignee-badge{display:flex;align-items:center;gap:4px;font-size:11px;color:#6b7280}
+        .assignee-avatar{width:18px;height:18px;background:#e5e7eb;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:600;color:#374151}
+        
         /* Color Picker */
         .color-picker-popup{position:absolute;background:#fff;border-radius:12px;box-shadow:0 10px 40px rgba(0,0,0,0.2);padding:12px;z-index:500;display:none}
         .color-picker-popup.active{display:block}
@@ -194,6 +247,10 @@
         .container{max-width:1600px;margin:0 auto;padding:12px 16px}
         .view{display:none}
         .view.active{display:block}
+        
+        /* Funnel Bar */
+        .funnel-bar{display:flex;gap:12px;margin-bottom:16px;padding:12px 16px;background:#fff;border-radius:10px;border:1px solid #e5e7eb;align-items:center;flex-wrap:wrap}
+        .funnel-dropdown-divider{height:1px;background:#e5e7eb;margin:4px 0}
         
         /* Tasks - Focus on Date/Time/Action */
         .tasks-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid #e5e7eb}
@@ -716,6 +773,37 @@
     </header>
     
     <main class="container">
+        <!-- Funnel Selector Bar -->
+        <div class="funnel-bar" id="funnel-bar" style="display:none">
+            <div class="funnel-selector" id="funnel-selector">
+                <button class="funnel-selector-btn" onclick="toggleFunnelDropdown()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+                    <span id="current-funnel-label">Всі воронки</span>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                </button>
+                <div class="funnel-dropdown" id="funnel-dropdown">
+                    <div class="funnel-dropdown-item active" onclick="selectFunnel(null)">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
+                        Всі воронки
+                    </div>
+                    <div id="funnel-dropdown-list"></div>
+                </div>
+            </div>
+            <div class="assignee-filter" id="assignee-filter">
+                <button class="funnel-selector-btn" onclick="toggleAssigneeDropdown()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                    <span id="current-assignee-label">Всі</span>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                </button>
+                <div class="funnel-dropdown" id="assignee-dropdown">
+                    <div class="funnel-dropdown-item active" onclick="selectAssignee(null)">Всі</div>
+                    <div class="funnel-dropdown-item" onclick="selectAssignee('mine')">Мої ліди</div>
+                    <div class="funnel-dropdown-divider"></div>
+                    <div id="assignee-dropdown-list"></div>
+                </div>
+            </div>
+        </div>
+        
         <!-- Tasks View -->
         <div class="view active" id="v-tasks">
             <div class="tasks-header">
@@ -809,18 +897,24 @@
                     <input type="hidden" id="f-id">
                     <div class="form-row">
                         <div class="form-group">
+                            <label class="form-label">Воронка</label>
+                            <select class="form-select" id="f-funnel" onchange="onFunnelChange()">
+                                <!-- Воронки генеруються динамічно -->
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Відповідальний</label>
+                            <select class="form-select" id="f-assignee">
+                                <option value="">Не призначено</option>
+                                <!-- Члени команди генеруються динамічно -->
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
                             <label class="form-label">Статус</label>
                             <select class="form-select" id="f-status" onchange="onStatusChange()">
-                                <option value="">—</option>
-                                <option value="new">Новий лід</option>
-                                <option value="scheduled">Консультація призначена</option>
-                                <option value="completed">Консультація проведена</option>
-                                <option value="report_sent">Звіт відправлений</option>
-                                <option value="repeat">Повторна консультація</option>
-                                <option value="deposit">Завдаток</option>
-                                <option value="paid">Оплачено</option>
-                                <option value="failed">Неуспішна угода</option>
-                                <option value="reactivation">Реактивація</option>
+                                <!-- Статуси генеруються динамічно -->
                             </select>
                         </div>
                         <div class="form-group">
@@ -1214,11 +1308,26 @@
         </button>
     </div>
     <div class="settings-body">
-        <!-- Status Editor Section -->
+        <!-- Funnels Section -->
         <div class="settings-section">
             <div class="settings-section-title">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+                Воронки продажів
+            </div>
+            <div class="funnel-list" id="funnel-list">
+                <!-- Воронки генеруються динамічно -->
+            </div>
+            <button class="status-add-btn" onclick="addNewFunnel()">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                Додати воронку
+            </button>
+        </div>
+        
+        <!-- Status Editor Section (for selected funnel) -->
+        <div class="settings-section" id="statuses-section">
+            <div class="settings-section-title">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>
-                Статуси воронки
+                Статуси воронки: <span id="current-funnel-name">—</span>
             </div>
             <div class="status-list" id="status-list">
                 <!-- Статуси генеруються динамічно -->
@@ -1229,12 +1338,40 @@
             </button>
         </div>
         
-        <!-- Future: Funnels Section -->
-        <div class="settings-section" style="opacity:0.5">
+        <!-- Assignment Settings -->
+        <div class="settings-section">
             <div class="settings-section-title">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
-                Воронки продажів
-                <span style="font-size:11px;background:#e5e7eb;padding:2px 8px;border-radius:4px;margin-left:auto">Скоро</span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                Розподіл лідів
+            </div>
+            <div class="assignment-modes">
+                <label class="assignment-mode">
+                    <input type="radio" name="assignment-mode" value="manual" onchange="setAssignmentMode('manual')">
+                    <div class="assignment-mode-content">
+                        <div class="assignment-mode-title">Ручний</div>
+                        <div class="assignment-mode-desc">Призначати вручну кожного ліда</div>
+                    </div>
+                </label>
+                <label class="assignment-mode">
+                    <input type="radio" name="assignment-mode" value="round-robin" onchange="setAssignmentMode('round-robin')">
+                    <div class="assignment-mode-content">
+                        <div class="assignment-mode-title">Round-robin</div>
+                        <div class="assignment-mode-desc">Автоматично по черзі між менеджерами</div>
+                    </div>
+                </label>
+                <label class="assignment-mode">
+                    <input type="radio" name="assignment-mode" value="by-funnel" onchange="setAssignmentMode('by-funnel')">
+                    <div class="assignment-mode-content">
+                        <div class="assignment-mode-title">По воронках</div>
+                        <div class="assignment-mode-desc">Дефолтний відповідальний для кожної воронки</div>
+                    </div>
+                </label>
+            </div>
+            
+            <!-- Round-robin queue (shown when round-robin selected) -->
+            <div class="rr-queue-section" id="rr-queue-section" style="display:none">
+                <div class="rr-queue-title">Черга розподілу:</div>
+                <div class="rr-queue-list" id="rr-queue-list"></div>
             </div>
         </div>
     </div>
@@ -1270,6 +1407,12 @@ let currentRole = null;     // owner | manager | employee | superadmin
 let organizations = [];     // Список організацій (для superadmin)
 let isAuthMode = 'login';
 let unsubscribe = null;
+
+// Funnel & Assignment state
+let currentFunnelId = null;     // null = всі воронки
+let currentAssigneeFilter = null; // null = всі, 'mine' = мої, userId = конкретний
+let selectedFunnelForEdit = null; // Воронка яку редагуємо в налаштуваннях
+let teamMembers = [];           // Кешований список членів команди
 
 // ===== HELPER: Check if Super Admin =====
 function isSuperAdmin(email) {
@@ -1436,6 +1579,15 @@ async function initUserMode(){
             if(currentRole === 'owner'){
                 document.getElementById('settings-btn').style.display = 'inline-flex';
             }
+            
+            // Показуємо funnel-bar
+            document.getElementById('funnel-bar').style.display = 'flex';
+            
+            // Завантажуємо команду для фільтрів
+            loadTeamMembersForSettings();
+            
+            // Рендеримо dropdown воронок
+            renderFunnelDropdown();
             
             initFirestoreListener();
         } else {
@@ -2196,6 +2348,463 @@ function dragStatusEnd(e){
     draggedStatusId = null;
 }
 
+// ===== FUNNELS MANAGEMENT =====
+function getOrgFunnels(){
+    if(currentOrg?.settings?.funnels && currentOrg.settings.funnels.length > 0){
+        return currentOrg.settings.funnels;
+    }
+    // Дефолтна воронка
+    return [{
+        id: 'default',
+        name: 'Основна воронка',
+        statuses: getDefaultStatuses(),
+        isDefault: true
+    }];
+}
+
+function openSettingsPanel(){
+    if(!currentOrg) return;
+    
+    // Завантажуємо членів команди
+    loadTeamMembersForSettings();
+    
+    // Рендеримо воронки
+    renderFunnelList();
+    
+    // Вибираємо першу воронку для редагування
+    const funnels = getOrgFunnels();
+    if(funnels.length > 0 && !selectedFunnelForEdit){
+        selectedFunnelForEdit = funnels[0].id;
+    }
+    renderStatusList();
+    
+    // Рендеримо режим розподілу
+    renderAssignmentMode();
+    
+    renderColorPicker();
+    
+    document.getElementById('settings-overlay').classList.add('active');
+    document.getElementById('settings-panel').classList.add('active');
+}
+
+function renderFunnelList(){
+    const container = document.getElementById('funnel-list');
+    if(!container) return;
+    
+    const funnels = getOrgFunnels();
+    
+    container.innerHTML = funnels.map(funnel => {
+        const statusCount = funnel.statuses ? Object.keys(funnel.statuses).length : 0;
+        const leadsCount = leads.filter(l => l.funnelId === funnel.id || (!l.funnelId && funnel.isDefault)).length;
+        const isActive = selectedFunnelForEdit === funnel.id;
+        
+        return `
+            <div class="funnel-item ${isActive ? 'active' : ''}" onclick="selectFunnelForEdit('${funnel.id}')">
+                <div class="funnel-item-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+                </div>
+                <div class="funnel-item-info">
+                    <div class="funnel-item-name">
+                        ${funnel.name}
+                        ${funnel.isDefault ? '<span class="funnel-default-badge">За замовч.</span>' : ''}
+                    </div>
+                    <div class="funnel-item-meta">
+                        <span>${statusCount} статусів</span>
+                        <span>${leadsCount} лідів</span>
+                    </div>
+                </div>
+                <div class="funnel-item-actions" onclick="event.stopPropagation()">
+                    ${!funnel.isDefault ? `
+                        <button class="status-action-btn delete" onclick="deleteFunnel('${funnel.id}')" title="Видалити">
+                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+                        </button>
+                    ` : ''}
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+function selectFunnelForEdit(funnelId){
+    selectedFunnelForEdit = funnelId;
+    renderFunnelList();
+    renderStatusList();
+    
+    // Оновлюємо назву в заголовку секції статусів
+    const funnels = getOrgFunnels();
+    const funnel = funnels.find(f => f.id === funnelId);
+    const nameEl = document.getElementById('current-funnel-name');
+    if(nameEl) nameEl.textContent = funnel?.name || '—';
+}
+
+function addNewFunnel(){
+    const name = prompt('Назва нової воронки:', 'Нова воронка');
+    if(!name) return;
+    
+    const funnels = getOrgFunnels();
+    const newFunnel = {
+        id: 'funnel_' + Date.now(),
+        name: name.trim(),
+        statuses: getDefaultStatuses(),
+        isDefault: false
+    };
+    
+    funnels.push(newFunnel);
+    saveFunnels(funnels);
+    
+    selectedFunnelForEdit = newFunnel.id;
+    renderFunnelList();
+    renderStatusList();
+}
+
+function deleteFunnel(funnelId){
+    const funnels = getOrgFunnels();
+    const funnel = funnels.find(f => f.id === funnelId);
+    
+    if(funnel?.isDefault){
+        alert('Неможливо видалити основну воронку');
+        return;
+    }
+    
+    const leadsInFunnel = leads.filter(l => l.funnelId === funnelId);
+    if(leadsInFunnel.length > 0){
+        alert(`Неможливо видалити: ${leadsInFunnel.length} лідів в цій воронці`);
+        return;
+    }
+    
+    if(!confirm(`Видалити воронку "${funnel?.name}"?`)) return;
+    
+    const newFunnels = funnels.filter(f => f.id !== funnelId);
+    saveFunnels(newFunnels);
+    
+    if(selectedFunnelForEdit === funnelId){
+        selectedFunnelForEdit = newFunnels[0]?.id;
+    }
+    
+    renderFunnelList();
+    renderStatusList();
+}
+
+async function saveFunnels(funnels){
+    if(!currentOrg) return;
+    
+    try {
+        await db.collection('organizations').doc(currentOrg.id).update({
+            'settings.funnels': funnels
+        });
+        
+        if(!currentOrg.settings) currentOrg.settings = {};
+        currentOrg.settings.funnels = funnels;
+        
+        // Оновлюємо UI
+        renderFunnelDropdown();
+        render();
+        
+    } catch(err){
+        console.error('Error saving funnels:', err);
+        alert('Помилка: ' + err.message);
+    }
+}
+
+// Оновлюємо getOrgStatuses для роботи з вибраною воронкою
+function getOrgStatuses(){
+    const funnels = getOrgFunnels();
+    
+    // Якщо редагуємо конкретну воронку
+    if(selectedFunnelForEdit){
+        const funnel = funnels.find(f => f.id === selectedFunnelForEdit);
+        if(funnel?.statuses){
+            return funnel.statuses;
+        }
+    }
+    
+    // Повертаємо статуси першої/дефолтної воронки
+    const defaultFunnel = funnels.find(f => f.isDefault) || funnels[0];
+    if(defaultFunnel?.statuses){
+        return defaultFunnel.statuses;
+    }
+    
+    return getDefaultStatuses();
+}
+
+// Оновлюємо saveStatuses для роботи з воронками
+async function saveStatuses(){
+    if(!currentOrg) return;
+    
+    const funnels = getOrgFunnels();
+    const statuses = getOrgStatuses();
+    
+    // Оновлюємо статуси у вибраній воронці
+    const funnelIndex = funnels.findIndex(f => f.id === selectedFunnelForEdit);
+    if(funnelIndex >= 0){
+        funnels[funnelIndex].statuses = statuses;
+    }
+    
+    try {
+        await db.collection('organizations').doc(currentOrg.id).update({
+            'settings.funnels': funnels
+        });
+        
+        if(!currentOrg.settings) currentOrg.settings = {};
+        currentOrg.settings.funnels = funnels;
+        
+        render();
+        
+    } catch(err){
+        console.error('Error saving statuses:', err);
+        alert('Помилка збереження: ' + err.message);
+    }
+}
+
+// ===== ASSIGNMENT MODE =====
+function renderAssignmentMode(){
+    const mode = currentOrg?.settings?.assignmentMode || 'manual';
+    
+    document.querySelectorAll('input[name="assignment-mode"]').forEach(input => {
+        input.checked = input.value === mode;
+    });
+    
+    // Показуємо/ховаємо round-robin секцію
+    const rrSection = document.getElementById('rr-queue-section');
+    if(rrSection){
+        rrSection.style.display = mode === 'round-robin' ? 'block' : 'none';
+        if(mode === 'round-robin'){
+            renderRoundRobinQueue();
+        }
+    }
+}
+
+async function setAssignmentMode(mode){
+    if(!currentOrg) return;
+    
+    try {
+        await db.collection('organizations').doc(currentOrg.id).update({
+            'settings.assignmentMode': mode
+        });
+        
+        if(!currentOrg.settings) currentOrg.settings = {};
+        currentOrg.settings.assignmentMode = mode;
+        
+        renderAssignmentMode();
+        
+    } catch(err){
+        console.error('Error setting assignment mode:', err);
+        alert('Помилка: ' + err.message);
+    }
+}
+
+async function loadTeamMembersForSettings(){
+    if(!currentOrg) return;
+    
+    try {
+        const snapshot = await db.collection('users')
+            .where('organizationId', '==', currentOrg.id)
+            .get();
+        
+        teamMembers = [];
+        snapshot.forEach(doc => {
+            teamMembers.push({ id: doc.id, ...doc.data() });
+        });
+        
+        renderRoundRobinQueue();
+        renderAssigneeDropdown();
+        
+    } catch(err){
+        console.error('Error loading team:', err);
+    }
+}
+
+function renderRoundRobinQueue(){
+    const container = document.getElementById('rr-queue-list');
+    if(!container) return;
+    
+    const queue = currentOrg?.settings?.roundRobinQueue || [];
+    const currentIndex = currentOrg?.settings?.roundRobinIndex || 0;
+    
+    // Фільтруємо тільки активних членів (не employee якщо потрібно)
+    const activeMembers = teamMembers.filter(m => m.role === 'owner' || m.role === 'manager');
+    
+    container.innerHTML = activeMembers.map((member, index) => {
+        const inQueue = queue.includes(member.id);
+        const isCurrent = queue[currentIndex] === member.id;
+        const leadsAssigned = leads.filter(l => l.assignedTo === member.id).length;
+        
+        return `
+            <div class="rr-queue-item ${isCurrent ? 'current' : ''}">
+                <div class="rr-queue-avatar">${member.email?.[0]?.toUpperCase() || '?'}</div>
+                <div class="rr-queue-info">
+                    <div class="rr-queue-name">${member.email}</div>
+                    <div class="rr-queue-count">${leadsAssigned} лідів</div>
+                </div>
+                <button class="rr-queue-toggle ${inQueue ? 'active' : ''}" onclick="toggleRoundRobinMember('${member.id}')" title="${inQueue ? 'Видалити з черги' : 'Додати в чергу'}">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="${inQueue ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2">
+                        <polyline points="20 6 9 17 4 12"/>
+                    </svg>
+                </button>
+            </div>
+        `;
+    }).join('');
+}
+
+async function toggleRoundRobinMember(memberId){
+    if(!currentOrg) return;
+    
+    let queue = currentOrg?.settings?.roundRobinQueue || [];
+    
+    if(queue.includes(memberId)){
+        queue = queue.filter(id => id !== memberId);
+    } else {
+        queue.push(memberId);
+    }
+    
+    try {
+        await db.collection('organizations').doc(currentOrg.id).update({
+            'settings.roundRobinQueue': queue
+        });
+        
+        if(!currentOrg.settings) currentOrg.settings = {};
+        currentOrg.settings.roundRobinQueue = queue;
+        
+        renderRoundRobinQueue();
+        
+    } catch(err){
+        console.error('Error updating queue:', err);
+    }
+}
+
+// ===== FUNNEL FILTER UI =====
+function renderFunnelDropdown(){
+    const list = document.getElementById('funnel-dropdown-list');
+    if(!list) return;
+    
+    const funnels = getOrgFunnels();
+    
+    list.innerHTML = funnels.map(funnel => `
+        <div class="funnel-dropdown-item ${currentFunnelId === funnel.id ? 'active' : ''}" onclick="selectFunnel('${funnel.id}')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+            ${funnel.name}
+        </div>
+    `).join('');
+}
+
+function toggleFunnelDropdown(){
+    document.getElementById('funnel-dropdown')?.classList.toggle('active');
+    document.getElementById('assignee-dropdown')?.classList.remove('active');
+}
+
+function selectFunnel(funnelId){
+    currentFunnelId = funnelId;
+    
+    const funnels = getOrgFunnels();
+    const funnel = funnels.find(f => f.id === funnelId);
+    
+    document.getElementById('current-funnel-label').textContent = funnel?.name || 'Всі воронки';
+    document.getElementById('funnel-dropdown')?.classList.remove('active');
+    
+    // Оновлюємо фільтр
+    render();
+}
+
+function renderAssigneeDropdown(){
+    const list = document.getElementById('assignee-dropdown-list');
+    if(!list) return;
+    
+    const managers = teamMembers.filter(m => m.role === 'owner' || m.role === 'manager');
+    
+    list.innerHTML = managers.map(member => `
+        <div class="funnel-dropdown-item ${currentAssigneeFilter === member.id ? 'active' : ''}" onclick="selectAssignee('${member.id}')">
+            ${member.email}
+        </div>
+    `).join('');
+}
+
+function toggleAssigneeDropdown(){
+    document.getElementById('assignee-dropdown')?.classList.toggle('active');
+    document.getElementById('funnel-dropdown')?.classList.remove('active');
+}
+
+function selectAssignee(filter){
+    currentAssigneeFilter = filter;
+    
+    let label = 'Всі';
+    if(filter === 'mine'){
+        label = 'Мої ліди';
+    } else if(filter){
+        const member = teamMembers.find(m => m.id === filter);
+        label = member?.email || filter;
+    }
+    
+    document.getElementById('current-assignee-label').textContent = label;
+    document.getElementById('assignee-dropdown')?.classList.remove('active');
+    
+    render();
+}
+
+// Оновлюємо filterLeads для підтримки воронок та відповідальних
+function filterLeadsWithFunnelAndAssignee(leadsArray){
+    let filtered = leadsArray;
+    
+    // Фільтр по воронці
+    if(currentFunnelId){
+        filtered = filtered.filter(l => l.funnelId === currentFunnelId || (!l.funnelId && currentFunnelId === 'default'));
+    }
+    
+    // Фільтр по відповідальному
+    if(currentAssigneeFilter === 'mine'){
+        filtered = filtered.filter(l => l.assignedTo === currentUser?.uid);
+    } else if(currentAssigneeFilter){
+        filtered = filtered.filter(l => l.assignedTo === currentAssigneeFilter);
+    }
+    
+    return filtered;
+}
+
+// ===== AUTO-ASSIGNMENT =====
+function getNextAssignee(){
+    const mode = currentOrg?.settings?.assignmentMode || 'manual';
+    
+    if(mode === 'manual'){
+        return null;
+    }
+    
+    if(mode === 'round-robin'){
+        const queue = currentOrg?.settings?.roundRobinQueue || [];
+        if(queue.length === 0) return null;
+        
+        const currentIndex = currentOrg?.settings?.roundRobinIndex || 0;
+        return queue[currentIndex % queue.length];
+    }
+    
+    if(mode === 'by-funnel'){
+        const funnels = getOrgFunnels();
+        const defaultFunnel = funnels.find(f => f.isDefault) || funnels[0];
+        return defaultFunnel?.defaultAssignee || null;
+    }
+    
+    return null;
+}
+
+async function incrementRoundRobinIndex(){
+    if(currentOrg?.settings?.assignmentMode !== 'round-robin') return;
+    
+    const queue = currentOrg?.settings?.roundRobinQueue || [];
+    if(queue.length === 0) return;
+    
+    const currentIndex = currentOrg?.settings?.roundRobinIndex || 0;
+    const nextIndex = (currentIndex + 1) % queue.length;
+    
+    try {
+        await db.collection('organizations').doc(currentOrg.id).update({
+            'settings.roundRobinIndex': nextIndex
+        });
+        
+        currentOrg.settings.roundRobinIndex = nextIndex;
+        
+    } catch(err){
+        console.error('Error incrementing RR index:', err);
+    }
+}
+
 // ===== FIRESTORE SYNC (Organization-based) =====
 function initFirestoreListener(){
     if(unsubscribe) unsubscribe();
@@ -2274,9 +2883,28 @@ function setSyncStatus(status, text){
 
 // ===== CONSTANTS =====
 const ST_DEFAULT={new:'Новий лід',contacted:'Контакт',scheduled:'Призначена',completed:'Проведена',report_sent:'Звіт відправлено',repeat:'Повторна',deposit:'Завдаток',paid:'Оплачено',failed:'Відмова',frozen:'Заморожений'};
-function getStatusName(statusId){ const statuses = currentOrg?.settings?.statuses || ST_DEFAULT; return statuses[statusId]?.name || ST_DEFAULT[statusId] || statusId; }
-function getStatusColor(statusId){ const statuses = currentOrg?.settings?.statuses; return statuses?.[statusId]?.color || '#6b7280'; }
-function getStatusIds(){ const statuses = currentOrg?.settings?.statuses || ST_DEFAULT; return Object.entries(statuses).sort((a,b) => (a[1].order||0) - (b[1].order||0)).map(([id]) => id); }
+
+function getStatusName(statusId, funnelId){ 
+    const funnels = getOrgFunnels();
+    const funnel = funnels.find(f => f.id === (funnelId || currentFunnelId || 'default')) || funnels.find(f => f.isDefault) || funnels[0];
+    const statuses = funnel?.statuses || ST_DEFAULT;
+    return statuses[statusId]?.name || ST_DEFAULT[statusId] || statusId; 
+}
+
+function getStatusColor(statusId, funnelId){ 
+    const funnels = getOrgFunnels();
+    const funnel = funnels.find(f => f.id === (funnelId || currentFunnelId || 'default')) || funnels.find(f => f.isDefault) || funnels[0];
+    const statuses = funnel?.statuses;
+    return statuses?.[statusId]?.color || '#6b7280'; 
+}
+
+function getStatusIds(funnelId){ 
+    const funnels = getOrgFunnels();
+    const funnel = funnels.find(f => f.id === (funnelId || currentFunnelId || 'default')) || funnels.find(f => f.isDefault) || funnels[0];
+    const statuses = funnel?.statuses || ST_DEFAULT;
+    return Object.entries(statuses).sort((a,b) => (a[1].order||0) - (b[1].order||0)).map(([id]) => id); 
+}
+
 const ST = ST_DEFAULT; // Legacy compatibility
 const SRC={bot:'Бот',mk_clinic:'МК Клініки',mk_prod:'МК Виробництво',ads:'Реклама',ref:'Рекомендація',consult_clinic:'Консультація'};
 const CUR={UAH:'₴',USD:'$',EUR:'€'};
@@ -2896,14 +3524,17 @@ function setFilter(f){
 }
 
 function filterLeads(arr){
+    // Спочатку фільтр по воронці та відповідальному
+    let filtered = filterLeadsWithFunnelAndAssignee(arr);
+    
     const t=today(),tm=tomorrow();
     switch(currentFilter){
-        case'critical':return arr.filter(l=>getAlert(l)?.crit);
-        case'today':return arr.filter(l=>l.consult&&l.consult.split('T')[0]===t);
-        case'tomorrow':return arr.filter(l=>l.consult&&l.consult.split('T')[0]===tm);
-        case'action':return arr.filter(l=>l.nextDate===t);
-        case'money':return arr.filter(l=>l.status==='deposit'||(l.status==='report_sent'&&l.calls>=2));
-        default:return arr;
+        case'critical':return filtered.filter(l=>getAlert(l)?.crit);
+        case'today':return filtered.filter(l=>l.consult&&l.consult.split('T')[0]===t);
+        case'tomorrow':return filtered.filter(l=>l.consult&&l.consult.split('T')[0]===tm);
+        case'action':return filtered.filter(l=>l.nextDate===t);
+        case'money':return filtered.filter(l=>l.status==='deposit'||(l.status==='report_sent'&&l.calls>=2));
+        default:return filtered;
     }
 }
 
@@ -3326,10 +3957,61 @@ function openModal(id){
     document.getElementById('modal-title').textContent=id?'Редагувати':'Новий лід';
     document.getElementById('del-btn').style.display=id?'block':'none';
     document.getElementById('quick-actions').style.display=id?'flex':'none';
+    
+    // Заповнюємо dropdowns для воронок та відповідальних
+    populateFunnelDropdown();
+    populateAssigneeDropdown();
+    populateStatusDropdown();
+    
     resetForm();
     if(id){const l=leads.find(x=>x.id===id);if(l)fillForm(l);}
     switchTab('main');
 }
+
+function populateFunnelDropdown(){
+    const select = document.getElementById('f-funnel');
+    if(!select) return;
+    
+    const funnels = getOrgFunnels();
+    select.innerHTML = funnels.map(f => 
+        `<option value="${f.id}">${f.name}${f.isDefault ? ' (за замовч.)' : ''}</option>`
+    ).join('');
+}
+
+function populateAssigneeDropdown(){
+    const select = document.getElementById('f-assignee');
+    if(!select) return;
+    
+    select.innerHTML = '<option value="">Не призначено</option>' +
+        teamMembers.filter(m => m.role === 'owner' || m.role === 'manager')
+            .map(m => `<option value="${m.id}">${m.email}</option>`)
+            .join('');
+}
+
+function populateStatusDropdown(funnelId){
+    const select = document.getElementById('f-status');
+    if(!select) return;
+    
+    const statusIds = getStatusIds(funnelId || document.getElementById('f-funnel')?.value);
+    select.innerHTML = '<option value="">—</option>' + 
+        statusIds.map(id => `<option value="${id}">${getStatusName(id, funnelId)}</option>`).join('');
+}
+
+function onFunnelChange(){
+    const funnelId = document.getElementById('f-funnel')?.value;
+    populateStatusDropdown(funnelId);
+    
+    // Якщо режим "по воронках" - встановлюємо дефолтного відповідального
+    const mode = currentOrg?.settings?.assignmentMode;
+    if(mode === 'by-funnel'){
+        const funnels = getOrgFunnels();
+        const funnel = funnels.find(f => f.id === funnelId);
+        if(funnel?.defaultAssignee){
+            document.getElementById('f-assignee').value = funnel.defaultAssignee;
+        }
+    }
+}
+
 function closeModal(){document.getElementById('modal').classList.remove('active');editing=null;}
 function switchTab(t){
     document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
@@ -3343,11 +4025,31 @@ function resetForm(){
     });
     document.getElementById('f-next-time').value='10:00';
     document.getElementById('f-primary-channel').value='phone';
+    
+    // Дефолтна воронка
+    const funnels = getOrgFunnels();
+    const defaultFunnel = funnels.find(f => f.isDefault) || funnels[0];
+    if(defaultFunnel){
+        document.getElementById('f-funnel').value = defaultFunnel.id;
+        populateStatusDropdown(defaultFunnel.id);
+    }
+    
+    // Автопризначення для нових лідів
+    const nextAssignee = getNextAssignee();
+    if(nextAssignee){
+        document.getElementById('f-assignee').value = nextAssignee;
+    } else {
+        document.getElementById('f-assignee').value = '';
+    }
+    
     document.getElementById('comm-log').innerHTML='<div style="color:var(--g);text-align:center;padding:20px">Історія порожня</div>';
     document.getElementById('fail-group').style.display='none';
 }
 function fillForm(l){
     document.getElementById('f-id').value=l.id;
+    document.getElementById('f-funnel').value=l.funnelId||'default';
+    populateStatusDropdown(l.funnelId);
+    document.getElementById('f-assignee').value=l.assignedTo||'';
     document.getElementById('f-status').value=l.status||'';
     document.getElementById('f-noshow').value=l.noshow||'0';
     document.getElementById('f-tg').value=l.tg||'';
@@ -3389,8 +4091,13 @@ function saveLeadForm(){
     const status=document.getElementById('f-status').value;
     if(status==='failed'&&!document.getElementById('f-fail').value){alert('Вкажіть причину');return;}
     
+    const funnelId = document.getElementById('f-funnel')?.value || 'default';
+    const assignedTo = document.getElementById('f-assignee')?.value || null;
+    
     const data={
         id:document.getElementById('f-id').value||genId(),
+        funnelId,
+        assignedTo,
         status,
         noshow:+document.getElementById('f-noshow').value||0,
         tg,phone,
@@ -3423,17 +4130,37 @@ function saveLeadForm(){
     };
     
     const idx=leads.findIndex(l=>l.id===data.id);
+    const isNew = idx < 0;
+    
     if(idx>=0){
         data.created=leads[idx].created;
+        data.createdAt=leads[idx].createdAt;
         data.log=leads[idx].log||[];
-        if(leads[idx].status!==data.status){data.stageDate=new Date().toISOString();addLog(data,'status','→ '+ST[data.status]);}
+        if(leads[idx].status!==data.status){data.stageDate=new Date().toISOString();addLog(data,'status','→ '+getStatusName(data.status, data.funnelId));}
         else data.stageDate=leads[idx].stageDate;
+        
+        // Якщо змінився відповідальний
+        if(leads[idx].assignedTo !== data.assignedTo && data.assignedTo){
+            const assignee = teamMembers.find(m => m.id === data.assignedTo);
+            addLog(data, 'assign', 'Призначено: ' + (assignee?.email || data.assignedTo));
+            data.assignedAt = new Date().toISOString();
+        }
     }else{
         data.created=new Date().toISOString();
+        data.createdAt=new Date().toISOString();
         data.stageDate=new Date().toISOString();
         data.log=[];
         if(!data.status)data.status='new';
         if(!data.nextDate){data.nextDate=today();data.nextTime='10:00';data.nextAction='Подзвонити';}
+        
+        // Для round-robin - інкрементуємо індекс
+        if(data.assignedTo && currentOrg?.settings?.assignmentMode === 'round-robin'){
+            incrementRoundRobinIndex();
+        }
+        
+        if(data.assignedTo){
+            data.assignedAt = new Date().toISOString();
+        }
     }
     if(data.status==='failed'&&!data.reactDate)data.reactDate=addDays(today(),90);
     
