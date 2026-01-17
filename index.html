@@ -708,19 +708,29 @@
             .tasks-filters{gap:6px;margin-bottom:10px;padding-bottom:8px;-webkit-overflow-scrolling:touch}
             .filter-pill{padding:6px 12px;font-size:12px;white-space:nowrap}
             
-            /* Task cards */
-            .task-card{padding:12px;margin-bottom:8px}
-            .task-main{gap:10px}
-            .task-datetime{min-width:60px;padding:8px 10px}
-            .task-date{font-size:13px}
-            .task-time{font-size:18px}
-            .task-content{gap:6px}
-            .task-name{font-size:14px}
-            .task-biz{font-size:12px}
-            .task-action{font-size:12px;padding:6px 10px}
-            .task-status-btn{padding:6px 10px;font-size:11px}
-            .task-actions{gap:4px}
-            .task-action-btn{width:32px;height:32px}
+            /* Task rows - mobile optimized */
+            .task-row{flex-direction:column;align-items:stretch;gap:10px;padding:12px}
+            .task-time{flex-direction:row;justify-content:space-between;align-items:center;min-width:auto;padding:0}
+            .task-time-value{font-size:13px}
+            .task-time-date{font-size:11px}
+            .task-main-info{flex-wrap:wrap;gap:6px}
+            .task-action-text{font-size:13px;width:100%;margin-bottom:2px}
+            .task-contact-link{font-size:11px;padding:4px 8px}
+            .task-biz{font-size:11px}
+            .task-score{font-size:9px;padding:2px 5px}
+            .task-status-wrap{width:100%;margin-top:8px}
+            .task-status-btn{width:100%;justify-content:center;padding:8px 12px;font-size:11px}
+            .task-status-dropdown{left:0;right:0;min-width:auto}
+            .task-actions{position:absolute;top:12px;right:12px;gap:6px}
+            .task-action-btn{width:36px;height:36px}
+            .task-action-btn svg{width:16px;height:16px}
+            
+            /* Task card relative for absolute actions */
+            .task-row{position:relative;padding-right:90px}
+            
+            /* Sections styling */
+            .task-section{margin-bottom:16px}
+            .task-section-header{font-size:11px;padding:6px 10px}
             
             /* Kanban - horizontal scroll */
             .kanban{overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:16px;gap:10px;scroll-snap-type:x mandatory}
@@ -2671,9 +2681,21 @@ function dragStatusEnd(e){
 
 // ===== FUNNELS MANAGEMENT =====
 function getOrgFunnels(){
+    // Якщо є нова структура воронок
     if(currentOrg?.settings?.funnels && currentOrg.settings.funnels.length > 0){
         return currentOrg.settings.funnels;
     }
+    
+    // Міграція: якщо є стара структура statuses, конвертуємо в воронку
+    if(currentOrg?.settings?.statuses && Object.keys(currentOrg.settings.statuses).length > 0){
+        return [{
+            id: 'default',
+            name: 'Основна воронка',
+            statuses: currentOrg.settings.statuses,
+            isDefault: true
+        }];
+    }
+    
     // Дефолтна воронка
     return [{
         id: 'default',
@@ -5100,29 +5122,29 @@ function renderPrimaryContact(l) {
     
     switch(channel) {
         case 'tg':
-            value = l.tg;
+            value = l.tg || '';
             link = getTelegramLink(l.tg);
-            displayValue = l.tg;
+            displayValue = l.tg || '';
             break;
         case 'viber':
-            value = l.viber || l.phone;
+            value = l.viber || l.phone || '';
             link = getViberLink(l.viber || l.phone);
-            displayValue = l.viber || l.phone;
+            displayValue = l.viber || l.phone || '';
             break;
         case 'whatsapp':
-            value = l.whatsapp || l.phone;
+            value = l.whatsapp || l.phone || '';
             link = getWhatsAppLink(l.whatsapp || l.phone);
-            displayValue = l.whatsapp || l.phone;
+            displayValue = l.whatsapp || l.phone || '';
             break;
         case 'email':
-            value = l.email;
+            value = l.email || '';
             link = getEmailLink(l.email);
-            displayValue = l.email;
+            displayValue = l.email || '';
             break;
         default: // phone
-            value = l.phone;
+            value = l.phone || '';
             link = getPhoneLink(l.phone);
-            displayValue = l.phone;
+            displayValue = l.phone || '';
     }
     
     // Fallback to any available contact
@@ -5133,8 +5155,11 @@ function renderPrimaryContact(l) {
         else return '<span class="task-contact-link">—</span>';
     }
     
-    return `<a href="${link}" target="_blank" class="task-contact-link ${classes[channel]}" onclick="event.stopPropagation()" title="${channel.toUpperCase()}">
-        ${icons[channel]}
+    // Final safety check
+    if(!displayValue || displayValue === 'undefined') displayValue = '—';
+    
+    return `<a href="${link || '#'}" target="_blank" class="task-contact-link ${classes[channel] || ''}" onclick="event.stopPropagation()" title="${channel ? channel.toUpperCase() : ''}">
+        ${icons[channel] || ''}
         ${displayValue}
     </a>`;
 }
