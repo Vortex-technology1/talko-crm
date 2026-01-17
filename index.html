@@ -5705,249 +5705,177 @@ function downloadScript(orgId, orgName){
 }
 
 function generateSyncScript(orgId){
-    return \`// ===== TALKO CRM - Google Sheets Sync Script =====
-// Організація ID: \${orgId}
-// Згенеровано: \${new Date().toLocaleDateString('uk-UA')}
-
-const CONFIG = {
-  FIREBASE_PROJECT_ID: 'talko-crm',
-  ORGANIZATION_ID: '\${orgId}',
-  
-  // Листи для синхронізації (змініть під ваші потреби)
-  SHEETS: [
-    { name: 'consult_clinic', source: 'consult_clinic' },
-    { name: 'consult_production', source: 'consult_production' }
-  ],
-  
-  // Колонки (A=1, B=2, C=3...)
-  COLUMNS: {
-    DATE: 1,      // A - Дата
-    TELEGRAM: 2,  // B - Telegram/Нік  
-    PHONE: 3      // C - Телефон
-  }
-};
-
-// ===== ГОЛОВНА ФУНКЦІЯ СИНХРОНІЗАЦІЇ =====
-function syncToFirestore() {
-  let totalSynced = 0;
-  let totalSkipped = 0;
-  
-  CONFIG.SHEETS.forEach(sheetConfig => {
-    const result = syncSheet(sheetConfig.name, sheetConfig.source);
-    totalSynced += result.synced;
-    totalSkipped += result.skipped;
-  });
-  
-  Logger.log(\\\`✅ ВСЬОГО: \\\${totalSynced} нових, \\\${totalSkipped} пропущено\\\`);
+    const script = [
+        '// ===== TALKO CRM - Google Sheets Sync Script =====',
+        '// Організація ID: ' + orgId,
+        '// Згенеровано: ' + new Date().toLocaleDateString('uk-UA'),
+        '',
+        'const CONFIG = {',
+        "  FIREBASE_PROJECT_ID: 'talko-crm',",
+        "  ORGANIZATION_ID: '" + orgId + "',",
+        '  ',
+        '  // Листи для синхронізації',
+        '  SHEETS: [',
+        "    { name: 'consult_clinic', source: 'consult_clinic' },",
+        "    { name: 'consult_production', source: 'consult_production' }",
+        '  ],',
+        '  ',
+        '  // Колонки (A=1, B=2, C=3...)',
+        '  COLUMNS: {',
+        '    DATE: 1,      // A - Дата',
+        '    TELEGRAM: 2,  // B - Telegram/Нік',
+        '    PHONE: 3      // C - Телефон',
+        '  }',
+        '};',
+        '',
+        '// ===== ГОЛОВНА ФУНКЦІЯ =====',
+        'function syncToFirestore() {',
+        '  let totalSynced = 0, totalSkipped = 0;',
+        '  CONFIG.SHEETS.forEach(s => {',
+        '    const r = syncSheet(s.name, s.source);',
+        '    totalSynced += r.synced; totalSkipped += r.skipped;',
+        '  });',
+        '  Logger.log("✅ ВСЬОГО: " + totalSynced + " нових, " + totalSkipped + " пропущено");',
+        '}',
+        '',
+        'function syncSheet(sheetName, sourceName) {',
+        '  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(sheetName);',
+        '  if (!sheet) { Logger.log("❌ Лист не знайдено: " + sheetName); return {synced:0,skipped:0}; }',
+        '  const data = sheet.getDataRange().getValues();',
+        '  let synced = 0, skipped = 0;',
+        '  for (let i = 1; i < data.length; i++) {',
+        '    const row = data[i];',
+        '    const telegram = normalizeTelegram(row[CONFIG.COLUMNS.TELEGRAM - 1]);',
+        '    const phone = normalizePhone(row[CONFIG.COLUMNS.PHONE - 1]);',
+        '    if (!telegram && !phone) continue;',
+        '    if (leadExists(telegram, phone)) { skipped++; continue; }',
+        '    const lead = {',
+        '      id: "l" + Date.now() + Math.random().toString(36).substr(2,5),',
+        '      tg: telegram || "", phone: phone || "",',
+        '      viber: "", whatsapp: "", email: "",',
+        '      primaryChannel: (telegram && telegram.startsWith("@")) ? "tg" : "phone",',
+        '      source: sourceName, status: "new",',
+        '      nextAction: "Подзвонити", nextDate: getToday(), nextTime: "10:00",',
+        '      name: "", biz: "", notes: "",',
+        '      createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),',
+        '      calls: 0, noshow: 0, deposit: 0, amount: 0,',
+        '      consult: "", consultDate: "", consultTime: "",',
+        '      paidAt: "", failReason: "", reactDate: "",',
+        '      log: [{date: new Date().toISOString(), type: "system", text: "Створено з Google Sheets"}]',
+        '    };',
+        '    if (saveLeadToFirestore(lead)) synced++;',
+        '  }',
+        '  Logger.log("📊 " + sheetName + ": " + synced + " нових, " + skipped + " пропущено");',
+        '  return {synced, skipped};',
+        '}',
+        '',
+        '// ===== FIRESTORE =====',
+        'function saveLeadToFirestore(lead) {',
+        '  const url = "https://firestore.googleapis.com/v1/projects/" + CONFIG.FIREBASE_PROJECT_ID + "/databases/(default)/documents/organizations/" + CONFIG.ORGANIZATION_ID + "/leads/" + lead.id;',
+        '  const firestoreData = {',
+        '    fields: {',
+        '      id: {stringValue: lead.id}, tg: {stringValue: lead.tg}, phone: {stringValue: lead.phone},',
+        '      viber: {stringValue: lead.viber}, whatsapp: {stringValue: lead.whatsapp}, email: {stringValue: lead.email},',
+        '      primaryChannel: {stringValue: lead.primaryChannel}, source: {stringValue: lead.source},',
+        '      status: {stringValue: lead.status}, nextAction: {stringValue: lead.nextAction},',
+        '      nextDate: {stringValue: lead.nextDate}, nextTime: {stringValue: lead.nextTime},',
+        '      name: {stringValue: lead.name}, biz: {stringValue: lead.biz}, notes: {stringValue: lead.notes},',
+        '      createdAt: {stringValue: lead.createdAt}, updatedAt: {stringValue: lead.updatedAt},',
+        '      calls: {integerValue: lead.calls}, noshow: {integerValue: lead.noshow},',
+        '      deposit: {integerValue: lead.deposit}, amount: {integerValue: lead.amount},',
+        '      consult: {stringValue: lead.consult}, consultDate: {stringValue: lead.consultDate},',
+        '      consultTime: {stringValue: lead.consultTime}, paidAt: {stringValue: lead.paidAt},',
+        '      failReason: {stringValue: lead.failReason}, reactDate: {stringValue: lead.reactDate},',
+        '      log: {arrayValue: {values: lead.log.map(e => ({mapValue: {fields: {date: {stringValue: e.date}, type: {stringValue: e.type}, text: {stringValue: e.text}}}}))}}',
+        '    }',
+        '  };',
+        '  const options = {',
+        '    method: "patch", contentType: "application/json",',
+        '    headers: {"Authorization": "Bearer " + ScriptApp.getOAuthToken()},',
+        '    payload: JSON.stringify(firestoreData), muteHttpExceptions: true',
+        '  };',
+        '  try {',
+        '    const response = UrlFetchApp.fetch(url, options);',
+        '    if (response.getResponseCode() === 200) { Logger.log("✅ " + (lead.tg || lead.phone)); return true; }',
+        '    Logger.log("❌ " + response.getContentText()); return false;',
+        '  } catch (e) { Logger.log("❌ " + e.toString()); return false; }',
+        '}',
+        '',
+        'function leadExists(telegram, phone) {',
+        '  if (telegram && checkField("tg", telegram)) return true;',
+        '  if (phone && checkField("phone", phone)) return true;',
+        '  return false;',
+        '}',
+        '',
+        'function checkField(field, value) {',
+        '  const url = "https://firestore.googleapis.com/v1/projects/" + CONFIG.FIREBASE_PROJECT_ID + "/databases/(default)/documents:runQuery";',
+        '  const options = {',
+        '    method: "post", contentType: "application/json",',
+        '    headers: {"Authorization": "Bearer " + ScriptApp.getOAuthToken()},',
+        '    payload: JSON.stringify({',
+        '      structuredQuery: {',
+        '        from: [{collectionId: "leads"}],',
+        '        where: {fieldFilter: {field: {fieldPath: field}, op: "EQUAL", value: {stringValue: value}}},',
+        '        limit: 1',
+        '      },',
+        '      parent: "projects/" + CONFIG.FIREBASE_PROJECT_ID + "/databases/(default)/documents/organizations/" + CONFIG.ORGANIZATION_ID',
+        '    }),',
+        '    muteHttpExceptions: true',
+        '  };',
+        '  try {',
+        '    const results = JSON.parse(UrlFetchApp.fetch(url, options).getContentText());',
+        '    return results && results.length > 0 && results[0].document;',
+        '  } catch (e) { return false; }',
+        '}',
+        '',
+        '// ===== ДОПОМІЖНІ =====',
+        'function normalizeTelegram(value) {',
+        '  if (!value) return "";',
+        '  let tg = String(value).trim();',
+        '  if (tg && !tg.startsWith("@") && !tg.match(/^\\\\d+$/)) tg = "@" + tg;',
+        '  return tg;',
+        '}',
+        '',
+        'function normalizePhone(value) {',
+        '  if (!value) return "";',
+        '  let phone = String(value).replace(/[^\\\\d+]/g, "");',
+        '  if (phone.length === 9) phone = "+380" + phone;',
+        '  else if (phone.length === 10 && phone.startsWith("0")) phone = "+38" + phone;',
+        '  else if (phone.length === 12 && phone.startsWith("380")) phone = "+" + phone;',
+        '  if (phone.length >= 10 && !phone.startsWith("+")) phone = "+" + phone;',
+        '  return phone;',
+        '}',
+        '',
+        'function getToday() {',
+        '  const now = new Date();',
+        '  return now.getFullYear() + "-" + String(now.getMonth()+1).padStart(2,"0") + "-" + String(now.getDate()).padStart(2,"0");',
+        '}',
+        '',
+        '// ===== ТРИГЕРИ =====',
+        'function createTimeTrigger() {',
+        '  ScriptApp.getProjectTriggers().forEach(t => { if (t.getHandlerFunction() === "syncToFirestore") ScriptApp.deleteTrigger(t); });',
+        '  ScriptApp.newTrigger("syncToFirestore").timeBased().everyMinutes(5).create();',
+        '  Logger.log("✅ Автосинхронізація: кожні 5 хвилин");',
+        '}',
+        '',
+        'function removeAllTriggers() {',
+        '  ScriptApp.getProjectTriggers().forEach(t => ScriptApp.deleteTrigger(t));',
+        '  Logger.log("✅ Тригери видалено");',
+        '}',
+        '',
+        '// ===== МЕНЮ =====',
+        'function onOpen() {',
+        '  SpreadsheetApp.getUi()',
+        '    .createMenu("🚀 TALKO CRM")',
+        '    .addItem("▶️ Синхронізувати", "syncToFirestore")',
+        '    .addSeparator()',
+        '    .addItem("⏰ Увімкнути автосинхронізацію", "createTimeTrigger")',
+        '    .addItem("🛑 Вимкнути автосинхронізацію", "removeAllTriggers")',
+        '    .addToUi();',
+        '}'
+    ];
+    return script.join('\n');
 }
-
-function syncSheet(sheetName, sourceName) {
-  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(sheetName);
-  if (!sheet) {
-    Logger.log('❌ Лист не знайдено: ' + sheetName);
-    return { synced: 0, skipped: 0 };
-  }
-  
-  const data = sheet.getDataRange().getValues();
-  let synced = 0;
-  let skipped = 0;
-  
-  for (let i = 1; i < data.length; i++) {
-    const row = data[i];
-    
-    const telegram = normalizeTelegram(row[CONFIG.COLUMNS.TELEGRAM - 1]);
-    const phone = normalizePhone(row[CONFIG.COLUMNS.PHONE - 1]);
-    const dateValue = row[CONFIG.COLUMNS.DATE - 1];
-    
-    if (!telegram && !phone) continue;
-    
-    if (leadExists(telegram, phone)) {
-      skipped++;
-      continue;
-    }
-    
-    const hasTelegram = telegram && telegram.startsWith('@');
-    
-    const lead = {
-      id: generateId(),
-      tg: telegram || '',
-      phone: phone || '',
-      viber: '',
-      whatsapp: '',
-      email: '',
-      primaryChannel: hasTelegram ? 'tg' : 'phone',
-      source: sourceName,
-      status: 'new',
-      nextAction: 'Подзвонити',
-      nextDate: getToday(),
-      nextTime: '10:00',
-      name: '',
-      biz: '',
-      notes: '',
-      createdAt: formatDate(dateValue) || new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      calls: 0,
-      noshow: 0,
-      deposit: 0,
-      amount: 0,
-      consult: '',
-      consultDate: '',
-      consultTime: '',
-      paidAt: '',
-      failReason: '',
-      reactDate: '',
-      log: [{ date: new Date().toISOString(), type: 'system', text: 'Створено з Google Sheets' }]
-    };
-    
-    if (saveLeadToFirestore(lead)) synced++;
-  }
-  
-  Logger.log(\\\`📊 \\\${sheetName}: \\\${synced} нових, \\\${skipped} пропущено\\\`);
-  return { synced, skipped };
-}
-
-// ===== FIRESTORE =====
-function saveLeadToFirestore(lead) {
-  const url = \\\`https://firestore.googleapis.com/v1/projects/\\\${CONFIG.FIREBASE_PROJECT_ID}/databases/(default)/documents/organizations/\\\${CONFIG.ORGANIZATION_ID}/leads/\\\${lead.id}\\\`;
-  
-  const firestoreData = {
-    fields: {
-      id: { stringValue: lead.id },
-      tg: { stringValue: lead.tg },
-      phone: { stringValue: lead.phone },
-      viber: { stringValue: lead.viber },
-      whatsapp: { stringValue: lead.whatsapp },
-      email: { stringValue: lead.email },
-      primaryChannel: { stringValue: lead.primaryChannel },
-      source: { stringValue: lead.source },
-      status: { stringValue: lead.status },
-      nextAction: { stringValue: lead.nextAction },
-      nextDate: { stringValue: lead.nextDate },
-      nextTime: { stringValue: lead.nextTime },
-      name: { stringValue: lead.name },
-      biz: { stringValue: lead.biz },
-      notes: { stringValue: lead.notes },
-      createdAt: { stringValue: lead.createdAt },
-      updatedAt: { stringValue: lead.updatedAt },
-      calls: { integerValue: lead.calls },
-      noshow: { integerValue: lead.noshow },
-      deposit: { integerValue: lead.deposit },
-      amount: { integerValue: lead.amount },
-      consult: { stringValue: lead.consult },
-      consultDate: { stringValue: lead.consultDate },
-      consultTime: { stringValue: lead.consultTime },
-      paidAt: { stringValue: lead.paidAt },
-      failReason: { stringValue: lead.failReason },
-      reactDate: { stringValue: lead.reactDate },
-      log: { arrayValue: { values: lead.log.map(e => ({ mapValue: { fields: { date: { stringValue: e.date }, type: { stringValue: e.type }, text: { stringValue: e.text } } } })) } }
-    }
-  };
-  
-  const options = {
-    method: 'patch',
-    contentType: 'application/json',
-    headers: { 'Authorization': 'Bearer ' + ScriptApp.getOAuthToken() },
-    payload: JSON.stringify(firestoreData),
-    muteHttpExceptions: true
-  };
-  
-  try {
-    const response = UrlFetchApp.fetch(url, options);
-    if (response.getResponseCode() === 200) {
-      Logger.log('✅ ' + (lead.tg || lead.phone));
-      return true;
-    }
-    Logger.log('❌ ' + response.getContentText());
-    return false;
-  } catch (e) {
-    Logger.log('❌ ' + e.toString());
-    return false;
-  }
-}
-
-function leadExists(telegram, phone) {
-  if (telegram && checkField('tg', telegram)) return true;
-  if (phone && checkField('phone', phone)) return true;
-  return false;
-}
-
-function checkField(field, value) {
-  const url = \\\`https://firestore.googleapis.com/v1/projects/\\\${CONFIG.FIREBASE_PROJECT_ID}/databases/(default)/documents:runQuery\\\`;
-  const options = {
-    method: 'post',
-    contentType: 'application/json',
-    headers: { 'Authorization': 'Bearer ' + ScriptApp.getOAuthToken() },
-    payload: JSON.stringify({
-      structuredQuery: {
-        from: [{ collectionId: 'leads' }],
-        where: { fieldFilter: { field: { fieldPath: field }, op: 'EQUAL', value: { stringValue: value } } },
-        limit: 1
-      },
-      parent: \\\`projects/\\\${CONFIG.FIREBASE_PROJECT_ID}/databases/(default)/documents/organizations/\\\${CONFIG.ORGANIZATION_ID}\\\`
-    }),
-    muteHttpExceptions: true
-  };
-  
-  try {
-    const results = JSON.parse(UrlFetchApp.fetch(url, options).getContentText());
-    return results && results.length > 0 && results[0].document;
-  } catch (e) { return false; }
-}
-
-// ===== ДОПОМІЖНІ ФУНКЦІЇ =====
-function normalizeTelegram(value) {
-  if (!value) return '';
-  let tg = String(value).trim();
-  if (tg && !tg.startsWith('@') && !tg.match(/^\\\\d+$/)) tg = '@' + tg;
-  return tg;
-}
-
-function normalizePhone(value) {
-  if (!value) return '';
-  let phone = String(value).replace(/[^\\\\d+]/g, '');
-  if (phone.length === 9) phone = '+380' + phone;
-  else if (phone.length === 10 && phone.startsWith('0')) phone = '+38' + phone;
-  else if (phone.length === 12 && phone.startsWith('380')) phone = '+' + phone;
-  if (phone.length >= 10 && !phone.startsWith('+')) phone = '+' + phone;
-  return phone;
-}
-
-function formatDate(value) {
-  if (!value) return '';
-  try { return value instanceof Date ? value.toISOString() : new Date(value).toISOString(); }
-  catch (e) { return ''; }
-}
-
-function generateId() { return 'l' + Date.now() + Math.random().toString(36).substr(2, 5); }
-
-function getToday() {
-  const now = new Date();
-  return \\\`\\\${now.getFullYear()}-\\\${String(now.getMonth()+1).padStart(2,'0')}-\\\${String(now.getDate()).padStart(2,'0')}\\\`;
-}
-
-// ===== ТРИГЕРИ =====
-function createTimeTrigger() {
-  ScriptApp.getProjectTriggers().forEach(t => { if (t.getHandlerFunction() === 'syncToFirestore') ScriptApp.deleteTrigger(t); });
-  ScriptApp.newTrigger('syncToFirestore').timeBased().everyMinutes(5).create();
-  Logger.log('✅ Автосинхронізація: кожні 5 хвилин');
-}
-
-function removeAllTriggers() {
-  ScriptApp.getProjectTriggers().forEach(t => ScriptApp.deleteTrigger(t));
-  Logger.log('✅ Тригери видалено');
-}
-
-// ===== МЕНЮ =====
-function onOpen() {
-  SpreadsheetApp.getUi()
-    .createMenu('🚀 TALKO CRM')
-    .addItem('▶️ Синхронізувати', 'syncToFirestore')
-    .addSeparator()
-    .addItem('⏰ Увімкнути автосинхронізацію', 'createTimeTrigger')
-    .addItem('🛑 Вимкнути автосинхронізацію', 'removeAllTriggers')
-    .addToUi();
-}
-\`;
 }
 
 function copyClientInstructions(orgId, orgName, ownerEmail){
