@@ -709,22 +709,63 @@
             .tasks-filters{gap:6px;margin-bottom:10px;padding-bottom:8px;-webkit-overflow-scrolling:touch;overflow-x:auto}
             .filter-pill{padding:6px 12px;font-size:12px;white-space:nowrap;flex-shrink:0}
             
-            /* Task rows - mobile optimized */
-            .task-row{flex-wrap:wrap;gap:8px;padding:12px;position:relative}
-            .task-time{min-width:55px;padding:0;flex-direction:column;align-items:flex-start}
-            .task-time-value{font-size:12px}
-            .task-time-date{font-size:10px}
-            .task-main-info{flex:1;min-width:0;flex-wrap:wrap;gap:4px;padding-right:80px}
-            .task-action-text{font-size:13px;font-weight:500}
-            .task-contact-link{font-size:11px;padding:3px 6px}
-            .task-biz{font-size:10px;width:100%}
-            .task-score{font-size:9px;padding:2px 4px}
-            .task-status-wrap{width:100%;order:10;margin-top:4px}
-            .task-status-btn{width:100%;justify-content:center;padding:8px 12px;font-size:11px}
+            /* Task rows - mobile redesign */
+            .task-row{
+                display:grid;
+                grid-template-columns:1fr auto;
+                grid-template-rows:auto auto auto;
+                gap:6px 8px;
+                padding:12px;
+                align-items:center;
+            }
+            .task-time{
+                grid-column:1;
+                grid-row:1;
+                display:flex;
+                align-items:center;
+                gap:8px;
+                min-width:0;
+                padding:0;
+            }
+            .task-time-value{font-size:13px;font-weight:600;white-space:nowrap}
+            .task-time-date{font-size:11px;color:#8e8e93}
+            
+            .task-actions{
+                grid-column:2;
+                grid-row:1;
+                display:flex;
+                gap:6px;
+                justify-content:flex-end;
+            }
+            .task-action-btn{width:34px;height:34px}
+            .task-action-btn svg{width:16px;height:16px}
+            
+            .task-main-info{
+                grid-column:1/-1;
+                grid-row:2;
+                display:flex;
+                flex-wrap:wrap;
+                align-items:center;
+                gap:6px;
+            }
+            .task-action-text{font-size:14px;font-weight:500;margin-right:4px}
+            .task-contact-link{font-size:12px;padding:4px 8px}
+            .task-biz{font-size:11px;color:#8e8e93}
+            .task-score{font-size:11px;padding:3px 6px;margin-left:auto}
+            
+            .task-status-wrap{
+                grid-column:1/-1;
+                grid-row:3;
+                margin-top:4px;
+            }
+            .task-status-btn{
+                width:100%;
+                justify-content:center;
+                padding:10px 14px;
+                font-size:12px;
+                border-radius:8px;
+            }
             .task-status-dropdown{left:0;right:0;min-width:auto}
-            .task-actions{position:absolute;top:10px;right:10px;flex-direction:column;gap:4px}
-            .task-action-btn{width:32px;height:32px}
-            .task-action-btn svg{width:14px;height:14px}
             
             /* Sections styling */
             .task-section{margin-bottom:12px}
@@ -846,6 +887,10 @@
             .ai-panel{width:100%;max-width:100vw}
             .ai-panel-body{padding:16px}
             .ai-suggestion{padding:14px}
+            
+            /* Floating buttons - above mobile nav */
+            .ai-fab{bottom:90px;right:16px;width:46px;height:46px}
+            .help-btn{bottom:145px;right:16px;width:46px;height:46px}
             
             /* Hide non-essential on very small screens */
             .score-bar{display:none}
