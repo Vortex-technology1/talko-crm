@@ -2704,7 +2704,7 @@ function getEmailLink(email) {
 
 // Render primary contact based on primaryChannel setting
 function renderPrimaryContact(l) {
-    const channel = l.primaryChannel || 'phone';
+    let channel = l.primaryChannel || 'phone';
     
     // Channel icons (SVG)
     const icons = {
