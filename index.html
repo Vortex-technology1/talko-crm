@@ -122,6 +122,12 @@
         .task-contact-link.tg:hover{background:#bbdefb}
         .task-contact-link.phone{background:#f3f4f6;color:#1d1d1f}
         .task-contact-link.phone:hover{background:#e5e7eb}
+        .task-contact-link.viber{background:#f3e5f5;color:#7360f2}
+        .task-contact-link.viber:hover{background:#e1bee7}
+        .task-contact-link.whatsapp{background:#e8f5e9;color:#25d366}
+        .task-contact-link.whatsapp:hover{background:#c8e6c9}
+        .task-contact-link.email{background:#fff3e0;color:#f57c00}
+        .task-contact-link.email:hover{background:#ffe0b2}
         .task-biz{font-size:12px;color:#8e8e93}
         .task-score{font-size:10px;padding:2px 6px;border-radius:4px;font-weight:600}
         .task-score.hot{background:#ffebee;color:#c62828}
@@ -134,7 +140,7 @@
         .task-status-btn:hover{filter:brightness(0.95)}
         .task-status-btn svg{width:12px;height:12px;opacity:0.6}
         .task-status-btn.st-new{background:#e3f2fd;color:#1565c0}
-        .task-status-btn.st-contacted{background:#fff3e0;color:#ef6c00}
+        .task-status-btn.st-contacted{background:#e8eaf6;color:#3949ab}
         .task-status-btn.st-scheduled{background:#e8f5e9;color:#2e7d32}
         .task-status-btn.st-completed{background:#f3e5f5;color:#7b1fa2}
         .task-status-btn.st-report_sent{background:#e0f2f1;color:#00695c}
@@ -142,6 +148,7 @@
         .task-status-btn.st-paid{background:#e8f5e9;color:#1b5e20}
         .task-status-btn.st-failed{background:#ffebee;color:#c62828}
         .task-status-btn.st-repeat{background:#ede7f6;color:#512da8}
+        .task-status-btn.st-frozen{background:#eceff1;color:#546e7a}
         
         .task-status-dropdown{position:absolute;top:100%;right:0;margin-top:4px;background:#fff;border-radius:8px;box-shadow:0 4px 20px rgba(0,0,0,0.15);z-index:50;min-width:160px;padding:6px 0;display:none}
         .task-status-dropdown.active{display:block}
@@ -149,7 +156,7 @@
         .task-status-option:hover{background:#f5f5f5}
         .task-status-option .dot{width:8px;height:8px;border-radius:50%}
         .task-status-option .dot.new{background:#1565c0}
-        .task-status-option .dot.contacted{background:#ef6c00}
+        .task-status-option .dot.contacted{background:#3949ab}
         .task-status-option .dot.scheduled{background:#2e7d32}
         .task-status-option .dot.completed{background:#7b1fa2}
         .task-status-option .dot.report_sent{background:#00695c}
@@ -157,6 +164,7 @@
         .task-status-option .dot.paid{background:#1b5e20}
         .task-status-option .dot.failed{background:#c62828}
         .task-status-option .dot.repeat{background:#512da8}
+        .task-status-option .dot.frozen{background:#546e7a}
         
         /* Actions */
         .task-actions{display:flex;gap:4px}
@@ -713,6 +721,32 @@
                     </div>
                     <div class="form-row">
                         <div class="form-group">
+                            <label class="form-label">Viber</label>
+                            <input class="form-input" id="f-viber" placeholder="+380... (якщо інший)">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">WhatsApp</label>
+                            <input class="form-input" id="f-whatsapp" placeholder="+380... (якщо інший)">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Email</label>
+                            <input class="form-input" id="f-email" type="email" placeholder="email@example.com">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Основний канал</label>
+                            <select class="form-select" id="f-primary-channel">
+                                <option value="phone">📞 Телефон</option>
+                                <option value="tg">✈️ Telegram</option>
+                                <option value="viber">💜 Viber</option>
+                                <option value="whatsapp">💚 WhatsApp</option>
+                                <option value="email">📧 Email</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
                             <label class="form-label">Бізнес</label>
                             <input class="form-input" id="f-biz" placeholder="Стоматологія-15">
                         </div>
@@ -1195,8 +1229,8 @@ async function deleteLead(leadId){
 }
 
 // ===== CONSTANTS =====
-const ST={new:'Новий лід',scheduled:'Призначена',completed:'Проведена',report_sent:'Звіт відправлено',repeat:'Повторна',deposit:'Завдаток',paid:'Оплачено',failed:'Неуспішна',reactivation:'Реактивація'};
-const SRC={bot:'Бот',mk_clinic:'МК Клініки',mk_prod:'МК Виробництво',ads:'Реклама',ref:'Рекомендація'};
+const ST={new:'Новий лід',contacted:'Контакт',scheduled:'Призначена',completed:'Проведена',report_sent:'Звіт відправлено',repeat:'Повторна',deposit:'Завдаток',paid:'Оплачено',failed:'Відмова',frozen:'Заморожений'};
+const SRC={bot:'Бот',mk_clinic:'МК Клініки',mk_prod:'МК Виробництво',ads:'Реклама',ref:'Рекомендація',consult_clinic:'Консультація'};
 const CUR={UAH:'₴',USD:'$',EUR:'€'};
 let leads=[];
 let editing=null;
@@ -1236,44 +1270,141 @@ function render(){
 // ===== TASKS =====
 function getTasks(){
     const t=today(),tm=tomorrow(),tasks=[];
+    const now = new Date();
+    const currentHour = now.getHours();
+    
     leads.forEach(l=>{
-        if(['paid','failed'].includes(l.status)){
-            if(l.status==='failed'&&l.reactDate&&l.reactDate<=t){
-                tasks.push({l,p:'info',msg:'Реактивація — подзвонити',btns:[{t:'success',l:'Цікаво',a:'react_ok'},{t:'secondary',l:'+3 міс',a:'react_later'}]});
+        // Оплачені - виключаємо з активних задач
+        if(l.status==='paid') return;
+        
+        // Заморожені та Відмова - перевіряємо дату реактивації
+        if(['failed','frozen'].includes(l.status)){
+            if(l.reactDate && l.reactDate <= t){
+                tasks.push({l, p:'info', msg:'🔄 Реактивація — час повернутися', btns:[
+                    {t:'success',l:'Цікаво',a:'react_ok'},
+                    {t:'secondary',l:'+3 міс',a:'react_later'},
+                    {t:'secondary',l:'+1 рік',a:'react_year'}
+                ]});
             }
             return;
         }
-        if(l.status==='reactivation'&&(!l.reactDate||l.reactDate<=t)){
-            tasks.push({l,p:'info',msg:'Реактивація — подзвонити',btns:[{t:'success',l:'Цікаво',a:'react_ok'},{t:'secondary',l:'+3 міс',a:'react_later'}]});
-            return;
-        }
-        if(!l.status){tasks.push({l,p:'critical',msg:'Немає статусу!',btns:[{t:'warn',l:'Відкрити',a:'open'}]});return;}
         
-        if(l.status==='new'){
-            if(l.calls>=3){tasks.push({l,p:'critical',msg:'3 дзвінки — Неуспішна?',btns:[{t:'danger',l:'Неуспішна',a:'fail'},{t:'secondary',l:'Ще раз',a:'call'}]});}
-            else if(!l.nextDate||l.nextDate<=t){tasks.push({l,p:l.nextDate<t?'critical':'warning',msg:`Подзвонити (${l.calls||0}/3)`,btns:[{t:'success',l:'Призначити',a:'schedule'},{t:'secondary',l:'Не взяв',a:'call_later'},{t:'danger',l:'Відмова',a:'fail'}]});}
+        if(!l.status){tasks.push({l,p:'critical',msg:'⚠️ Немає статусу!',btns:[{t:'warn',l:'Відкрити',a:'open'}]});return;}
+        
+        // Новий лід
+        if(l.status==='new' || l.status==='contacted'){
+            if(l.calls>=3){
+                tasks.push({l,p:'critical',msg:'📞 3 дзвінки без відповіді',btns:[
+                    {t:'warn',l:'Заморозити',a:'freeze'},
+                    {t:'secondary',l:'Ще раз',a:'call'}
+                ]});
+            }
+            else if(!l.nextDate||l.nextDate<=t){
+                tasks.push({l,p:l.nextDate<t?'critical':'warning',msg:`📞 Подзвонити (${l.calls||0}/3)`,btns:[
+                    {t:'success',l:'Призначити',a:'schedule'},
+                    {t:'secondary',l:'Не взяв',a:'call_later'},
+                    {t:'warn',l:'Заморозити',a:'freeze'}
+                ]});
+            }
         }
+        
+        // Призначена консультація
         if(l.status==='scheduled'||l.status==='repeat'){
-            const cd=l.consult?l.consult.split('T')[0]:null;
-            if(l.noshow>=3){tasks.push({l,p:'critical',msg:'3 неявки — Неуспішна?',btns:[{t:'danger',l:'Неуспішна',a:'fail'}]});}
-            else if(l.noshow>0){tasks.push({l,p:'warning',msg:`Не прийшов (${l.noshow}/3)`,btns:[{t:'success',l:'Перенесли',a:'reschedule'},{t:'danger',l:'Відмова',a:'fail'}]});}
-            else if(cd===tm){tasks.push({l,p:'warning',msg:'Консультація завтра — підтвердити',btns:[{t:'success',l:'Підтвердив',a:'confirm'},{t:'secondary',l:'SMS',a:'confirm_sms'}]});}
-            else if(cd===t){tasks.push({l,p:'info',msg:'Консультація сьогодні',btns:[{t:'success',l:'Проведена',a:'complete'},{t:'danger',l:'Не прийшов',a:'noshow'}]});}
+            const cd = l.consult ? l.consult.split('T')[0] : null;
+            const consultTime = l.consult ? l.consult.split('T')[1] : null;
+            
+            // Консультація пройшла (дата в минулому) і статус досі "Призначена"
+            if(cd && cd < t){
+                tasks.push({l, p:'critical', msg:'❓ Консультація відбулась?', btns:[
+                    {t:'success',l:'✓ Проведена',a:'complete'},
+                    {t:'danger',l:'Не прийшов',a:'noshow'},
+                    {t:'secondary',l:'Перенесли',a:'reschedule'}
+                ]});
+            }
+            // Консультація сьогодні
+            else if(cd === t){
+                // Ранок (до 12:00) - нагадування підтвердити
+                if(currentHour < 12 && !l.confirmedToday){
+                    tasks.push({l, p:'warning', msg:'📅 Сьогодні консультація — підтвердити!', btns:[
+                        {t:'success',l:'Підтвердив',a:'confirm_today'},
+                        {t:'secondary',l:'SMS',a:'confirm_sms'}
+                    ]});
+                }
+                // Після часу консультації
+                else if(consultTime && currentHour >= parseInt(consultTime.split(':')[0])){
+                    tasks.push({l, p:'info', msg:'🕐 Консультація зараз/була', btns:[
+                        {t:'success',l:'✓ Проведена',a:'complete'},
+                        {t:'danger',l:'Не прийшов',a:'noshow'}
+                    ]});
+                }
+                else {
+                    tasks.push({l, p:'info', msg:`📅 Консультація сьогодні о ${consultTime || '—'}`, btns:[
+                        {t:'success',l:'✓ Проведена',a:'complete'},
+                        {t:'danger',l:'Не прийшов',a:'noshow'}
+                    ]});
+                }
+            }
+            // Консультація завтра
+            else if(cd === tm){
+                tasks.push({l, p:'warning', msg:'📅 Завтра консультація — підтвердити', btns:[
+                    {t:'success',l:'Підтвердив',a:'confirm'},
+                    {t:'secondary',l:'SMS',a:'confirm_sms'}
+                ]});
+            }
+            // No-show обробка
+            else if(l.noshow > 0){
+                const freezeAfter = l.noshow >= 3;
+                tasks.push({l, p:'warning', msg:`⚠️ Не прийшов ${l.noshow} раз(ів)`, btns:[
+                    {t:'success',l:'Перенесли',a:'reschedule'},
+                    {t:'warn',l:freezeAfter?'Заморозити':'Ще шанс',a:freezeAfter?'freeze':'reschedule'}
+                ]});
+            }
         }
-        if(l.status==='completed'){tasks.push({l,p:'warning',msg:'Чекає звіт від консультанта',btns:[{t:'success',l:'Звіт готовий',a:'send_report'}]});}
+        
+        // Проведена - чекає звіт
+        if(l.status==='completed'){
+            tasks.push({l, p:'warning', msg:'📝 Написати звіт', btns:[
+                {t:'success',l:'Звіт готовий',a:'send_report'}
+            ]});
+        }
+        
+        // Звіт відправлено - дожим
         if(l.status==='report_sent'){
-            if(l.calls>=3&&l.sms>=3){tasks.push({l,p:'critical',msg:'3+3 — Повторна чи Неуспішна?',btns:[{t:'warn',l:'Повторна',a:'repeat'},{t:'danger',l:'Неуспішна',a:'fail'}]});}
-            else if(!l.nextDate||l.nextDate<=t){tasks.push({l,p:l.nextDate<t?'critical':'warning',msg:`Дожати (дзв:${l.calls||0} sms:${l.sms||0})`,btns:[{t:'success',l:'Завдаток',a:'deposit'},{t:'secondary',l:'Думає',a:'followup'},{t:'warn',l:'Повторна',a:'repeat'},{t:'danger',l:'Відмова',a:'fail'}]});}
+            if(l.calls>=3 && l.sms>=3){
+                tasks.push({l, p:'critical', msg:'📊 3+3 контакти — рішення?', btns:[
+                    {t:'warn',l:'Повторна',a:'repeat'},
+                    {t:'secondary',l:'Заморозити',a:'freeze'}
+                ]});
+            }
+            else if(!l.nextDate || l.nextDate<=t){
+                tasks.push({l, p:l.nextDate<t?'critical':'warning', msg:`💰 Дожати (дзв:${l.calls||0} sms:${l.sms||0})`, btns:[
+                    {t:'success',l:'Завдаток',a:'deposit'},
+                    {t:'secondary',l:'Думає',a:'followup'},
+                    {t:'warn',l:'Повторна',a:'repeat'}
+                ]});
+            }
         }
+        
+        // Завдаток
         if(l.status==='deposit'){
-            const days=l.finDepDate?Math.floor((new Date()-new Date(l.finDepDate))/864e5):0;
-            if(days>=7||l.nextDate&&l.nextDate<=t){tasks.push({l,p:days>=14?'critical':'warning',msg:`Завдаток ${days}дн — повна оплата?`,btns:[{t:'success',l:'Оплатив',a:'paid'},{t:'secondary',l:'+тиждень',a:'dep_later'}]});}
+            const days = l.finDepDate ? Math.floor((new Date()-new Date(l.finDepDate))/864e5) : 0;
+            if(days>=7 || (l.nextDate && l.nextDate<=t)){
+                tasks.push({l, p:days>=14?'critical':'warning', msg:`💳 Завдаток ${days}дн — повна оплата?`, btns:[
+                    {t:'success',l:'Оплатив',a:'paid'},
+                    {t:'secondary',l:'+тиждень',a:'dep_later'}
+                ]});
+            }
         }
-        if(l.nextDate&&l.nextDate<t&&!tasks.find(x=>x.l.id===l.id)){
-            const d=Math.floor((new Date(t)-new Date(l.nextDate))/864e5);
-            tasks.push({l,p:'critical',msg:`Протерміновано ${d}дн`,btns:[{t:'warn',l:'Відкрити',a:'open'}]});
+        
+        // Загальна перевірка протермінування
+        if(l.nextDate && l.nextDate<t && !tasks.find(x=>x.l.id===l.id)){
+            const d = Math.floor((new Date(t)-new Date(l.nextDate))/864e5);
+            tasks.push({l, p:'critical', msg:`⏰ Протерміновано ${d}дн`, btns:[
+                {t:'warn',l:'Відкрити',a:'open'}
+            ]});
         }
     });
+    
     tasks.sort((a,b)=>({critical:0,warning:1,info:2}[a.p])-({critical:0,warning:1,info:2}[b.p]));
     return tasks;
 }
@@ -1466,14 +1597,7 @@ function renderTaskRow(t, status) {
         </div>
         <div class="task-main-info">
             <span class="task-action-text">${action}</span>
-            ${t.l.tg ? `<a href="${getTelegramLink(t.l.tg)}" target="_blank" class="task-contact-link tg" onclick="event.stopPropagation()" title="Telegram">
-                <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>
-                ${t.l.tg}
-            </a>` : ''}
-            ${t.l.phone ? `<a href="tel:+${t.l.phone.replace(/\\D/g,'')}" class="task-contact-link phone" onclick="event.stopPropagation()" title="Зателефонувати">
-                <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-                ${t.l.phone}
-            </a>` : ''}
+            ${renderPrimaryContact(t.l)}
             ${t.l.biz ? `<span class="task-biz">${t.l.biz}</span>` : ''}
             <span class="task-score ${scoreClass}">${score}</span>
         </div>
@@ -1507,23 +1631,157 @@ function taskAction(id,a){
     const updatedLead = {...l}; // clone
     switch(a){
         case'open':openModal(id);return;
-        case'schedule':updatedLead.status='scheduled';updatedLead.consult=prompt('Дата консультації (YYYY-MM-DDTHH:MM):',tomorrow()+'T14:00');updatedLead.noshow=0;updatedLead.nextDate=updatedLead.consult?addDays(updatedLead.consult.split('T')[0],-1):tomorrow();updatedLead.nextAction='Підтвердити';addLog(updatedLead,'status','Консультація призначена');break;
-        case'call_later':updatedLead.calls=(updatedLead.calls||0)+1;updatedLead.nextDate=tomorrow();addLog(updatedLead,'call','Не взяв');break;
-        case'call':updatedLead.calls=(updatedLead.calls||0)+1;addLog(updatedLead,'call','Ще спроба');break;
-        case'fail':updatedLead.status='failed';updatedLead.failReason=prompt('Причина:','');updatedLead.reactDate=addDays(today(),90);addLog(updatedLead,'status','Неуспішна: '+(updatedLead.failReason||''));break;
-        case'confirm':addLog(updatedLead,'call','Підтвердив');break;
-        case'confirm_sms':updatedLead.sms=(updatedLead.sms||0)+1;addLog(updatedLead,'sms','Підтвердження');break;
-        case'complete':updatedLead.status='completed';updatedLead.calls=0;updatedLead.sms=0;addLog(updatedLead,'status','Проведена');break;
-        case'noshow':updatedLead.noshow=(updatedLead.noshow||0)+1;addLog(updatedLead,'status','Не прийшов ('+updatedLead.noshow+'/3)');break;
-        case'reschedule':updatedLead.consult=prompt('Нова дата:',tomorrow()+'T14:00');updatedLead.noshow=0;updatedLead.nextDate=updatedLead.consult?addDays(updatedLead.consult.split('T')[0],-1):tomorrow();addLog(updatedLead,'status','Перенесено');break;
-        case'send_report':updatedLead.status='report_sent';updatedLead.reportDate=today();updatedLead.calls=0;updatedLead.sms=0;updatedLead.nextDate=tomorrow();updatedLead.nextAction='Дізнатись реакцію';addLog(updatedLead,'status','Звіт відправлено');break;
-        case'followup':updatedLead.calls=(updatedLead.calls||0)+1;updatedLead.nextDate=tomorrow();addLog(updatedLead,'call','Думає');break;
-        case'repeat':updatedLead.status='repeat';updatedLead.repeatCount=(updatedLead.repeatCount||0)+1;updatedLead.calls=0;updatedLead.sms=0;updatedLead.noshow=0;updatedLead.consult=prompt('Дата:',tomorrow()+'T14:00');addLog(updatedLead,'status','Повторна консультація');break;
-        case'deposit':const amt=prompt('Сума завдатку:','');if(amt){updatedLead.status='deposit';updatedLead.finDep=+amt;updatedLead.finDepDate=today();updatedLead.nextDate=addDays(today(),7);addLog(updatedLead,'status','Завдаток '+amt);}else return;break;
-        case'paid':const p=prompt('Повна сума:',updatedLead.finTotal||'');if(p){updatedLead.status='paid';updatedLead.finTotal=+p;updatedLead.finPaidDate=today();addLog(updatedLead,'status','Оплачено '+p);}else return;break;
-        case'dep_later':updatedLead.nextDate=addDays(today(),7);addLog(updatedLead,'call','Нагадав, +тиждень');break;
-        case'react_ok':updatedLead.status='new';updatedLead.calls=0;updatedLead.sms=0;updatedLead.noshow=0;updatedLead.nextDate=today();addLog(updatedLead,'status','Реактивація — цікаво');break;
-        case'react_later':updatedLead.reactDate=addDays(today(),90);addLog(updatedLead,'call','Реактивація +3міс');break;
+        case'schedule':
+            updatedLead.status='scheduled';
+            updatedLead.consult=prompt('Дата консультації (YYYY-MM-DDTHH:MM):',tomorrow()+'T14:00');
+            updatedLead.noshow=0;
+            updatedLead.nextDate=updatedLead.consult?addDays(updatedLead.consult.split('T')[0],-1):tomorrow();
+            updatedLead.nextTime='10:00';
+            updatedLead.nextAction='Підтвердити консультацію';
+            addLog(updatedLead,'status','Консультація призначена на '+fmtDT(updatedLead.consult));
+            break;
+        case'call_later':
+            updatedLead.calls=(updatedLead.calls||0)+1;
+            updatedLead.nextDate=tomorrow();
+            updatedLead.nextTime='10:00';
+            updatedLead.nextAction='Подзвонити';
+            addLog(updatedLead,'call','Не взяв трубку');
+            break;
+        case'call':
+            updatedLead.calls=(updatedLead.calls||0)+1;
+            addLog(updatedLead,'call','Ще спроба');
+            break;
+        case'fail':
+            updatedLead.status='failed';
+            updatedLead.failReason=prompt('Причина відмови:','');
+            updatedLead.reactDate=addDays(today(),90);
+            updatedLead.nextDate=updatedLead.reactDate;
+            updatedLead.nextAction='Реактивація';
+            addLog(updatedLead,'status','Відмова: '+(updatedLead.failReason||'не вказано')+'. Реактивація через 3 міс.');
+            break;
+        case'freeze':
+            updatedLead.status='frozen';
+            const freezeMonths = prompt('Через скільки місяців повернутися? (1-12)', '3');
+            const months = parseInt(freezeMonths) || 3;
+            updatedLead.reactDate=addDays(today(), months * 30);
+            updatedLead.nextDate=updatedLead.reactDate;
+            updatedLead.nextAction='Реактивація';
+            addLog(updatedLead,'status','Заморожено на '+months+' міс.');
+            break;
+        case'confirm':
+            updatedLead.confirmedToday = false;
+            addLog(updatedLead,'call','Підтвердив консультацію');
+            break;
+        case'confirm_today':
+            updatedLead.confirmedToday = true;
+            addLog(updatedLead,'call','Підтвердив на сьогодні');
+            break;
+        case'confirm_sms':
+            updatedLead.sms=(updatedLead.sms||0)+1;
+            addLog(updatedLead,'sms','SMS підтвердження');
+            break;
+        case'complete':
+            updatedLead.status='completed';
+            updatedLead.calls=0;
+            updatedLead.sms=0;
+            updatedLead.nextDate=today();
+            updatedLead.nextTime='10:00';
+            updatedLead.nextAction='Написати звіт';
+            addLog(updatedLead,'status','Консультація проведена');
+            break;
+        case'noshow':
+            updatedLead.noshow=(updatedLead.noshow||0)+1;
+            const noShowDelay = updatedLead.noshow === 1 ? 7 : updatedLead.noshow === 2 ? 30 : 90;
+            updatedLead.nextDate = addDays(today(), noShowDelay);
+            updatedLead.nextTime = '10:00';
+            updatedLead.nextAction = 'Перепризначити консультацію';
+            addLog(updatedLead,'status','Не прийшов ('+updatedLead.noshow+' раз). Наступна спроба через '+noShowDelay+' днів');
+            break;
+        case'reschedule':
+            updatedLead.consult=prompt('Нова дата консультації:',tomorrow()+'T14:00');
+            updatedLead.noshow=0;
+            updatedLead.nextDate=updatedLead.consult?addDays(updatedLead.consult.split('T')[0],-1):tomorrow();
+            updatedLead.nextTime='10:00';
+            updatedLead.nextAction='Підтвердити консультацію';
+            addLog(updatedLead,'status','Перенесено на '+fmtDT(updatedLead.consult));
+            break;
+        case'send_report':
+            updatedLead.status='report_sent';
+            updatedLead.reportDate=today();
+            updatedLead.calls=0;
+            updatedLead.sms=0;
+            updatedLead.nextDate=addDays(today(),2);
+            updatedLead.nextTime='10:00';
+            updatedLead.nextAction='Дізнатись реакцію на звіт';
+            addLog(updatedLead,'status','Звіт відправлено');
+            break;
+        case'followup':
+            updatedLead.calls=(updatedLead.calls||0)+1;
+            updatedLead.nextDate=addDays(today(),2);
+            updatedLead.nextTime='10:00';
+            updatedLead.nextAction='Дожати рішення';
+            addLog(updatedLead,'call','Думає, передзвоню');
+            break;
+        case'repeat':
+            updatedLead.status='repeat';
+            updatedLead.repeatCount=(updatedLead.repeatCount||0)+1;
+            updatedLead.calls=0;
+            updatedLead.sms=0;
+            updatedLead.noshow=0;
+            updatedLead.consult=prompt('Дата повторної консультації:',tomorrow()+'T14:00');
+            updatedLead.nextDate=updatedLead.consult?addDays(updatedLead.consult.split('T')[0],-1):tomorrow();
+            updatedLead.nextTime='10:00';
+            updatedLead.nextAction='Підтвердити консультацію';
+            addLog(updatedLead,'status','Повторна консультація #'+(updatedLead.repeatCount));
+            break;
+        case'deposit':
+            const amt=prompt('Сума завдатку:','');
+            if(amt){
+                updatedLead.status='deposit';
+                updatedLead.finDep=+amt;
+                updatedLead.finDepDate=today();
+                updatedLead.nextDate=addDays(today(),7);
+                updatedLead.nextTime='10:00';
+                updatedLead.nextAction='Нагадати про повну оплату';
+                addLog(updatedLead,'status','Завдаток '+amt);
+            }else return;
+            break;
+        case'paid':
+            const p=prompt('Повна сума:',updatedLead.finTotal||'');
+            if(p){
+                updatedLead.status='paid';
+                updatedLead.finTotal=+p;
+                updatedLead.finPaidDate=today();
+                updatedLead.nextDate=null;
+                updatedLead.nextAction=null;
+                addLog(updatedLead,'status','Оплачено '+p+' 🎉');
+            }else return;
+            break;
+        case'dep_later':
+            updatedLead.nextDate=addDays(today(),7);
+            updatedLead.nextTime='10:00';
+            addLog(updatedLead,'call','Нагадав, +тиждень');
+            break;
+        case'react_ok':
+            updatedLead.status='new';
+            updatedLead.calls=0;
+            updatedLead.sms=0;
+            updatedLead.noshow=0;
+            updatedLead.nextDate=today();
+            updatedLead.nextTime='10:00';
+            updatedLead.nextAction='Подзвонити';
+            addLog(updatedLead,'status','Реактивація — знову в роботі!');
+            break;
+        case'react_later':
+            updatedLead.reactDate=addDays(today(),90);
+            updatedLead.nextDate=updatedLead.reactDate;
+            addLog(updatedLead,'call','Реактивація +3 міс');
+            break;
+        case'react_year':
+            updatedLead.reactDate=addDays(today(),365);
+            updatedLead.nextDate=updatedLead.reactDate;
+            addLog(updatedLead,'call','Реактивація +1 рік');
+            break;
     }
     saveLead(updatedLead);
 }
@@ -1808,10 +2066,11 @@ function switchTab(t){
     document.getElementById('t-'+t).classList.add('active');
 }
 function resetForm(){
-    ['f-id','f-status','f-noshow','f-tg','f-phone','f-biz','f-source','f-consult','f-repeat','f-calls','f-sms','f-next','f-next-time','f-action','f-fail','f-report','f-notes','l-record','l-report','l-kp','l-contract','fin-dep','fin-dep-cur','fin-dep-date','fin-total','fin-total-cur','fin-paid-date'].forEach(id=>{
+    ['f-id','f-status','f-noshow','f-tg','f-phone','f-viber','f-whatsapp','f-email','f-primary-channel','f-biz','f-source','f-consult','f-repeat','f-calls','f-sms','f-next','f-next-time','f-action','f-fail','f-report','f-notes','l-record','l-report','l-kp','l-contract','fin-dep','fin-dep-cur','fin-dep-date','fin-total','fin-total-cur','fin-paid-date'].forEach(id=>{
         const e=document.getElementById(id);if(e)e.value='';
     });
     document.getElementById('f-next-time').value='10:00';
+    document.getElementById('f-primary-channel').value='phone';
     document.getElementById('comm-log').innerHTML='<div style="color:var(--g);text-align:center;padding:20px">Історія порожня</div>';
     document.getElementById('fail-group').style.display='none';
 }
@@ -1821,6 +2080,10 @@ function fillForm(l){
     document.getElementById('f-noshow').value=l.noshow||'0';
     document.getElementById('f-tg').value=l.tg||'';
     document.getElementById('f-phone').value=l.phone||'';
+    document.getElementById('f-viber').value=l.viber||'';
+    document.getElementById('f-whatsapp').value=l.whatsapp||'';
+    document.getElementById('f-email').value=l.email||'';
+    document.getElementById('f-primary-channel').value=l.primaryChannel||'phone';
     document.getElementById('f-biz').value=l.biz||'';
     document.getElementById('f-source').value=l.source||'';
     document.getElementById('f-consult').value=l.consult||'';
@@ -1849,7 +2112,8 @@ function fillForm(l){
 function saveLeadForm(){
     const phone=document.getElementById('f-phone').value;
     const tg=document.getElementById('f-tg').value;
-    if(!phone&&!tg){alert('Вкажіть телефон або телеграм');return;}
+    const email=document.getElementById('f-email').value;
+    if(!phone&&!tg&&!email){alert('Вкажіть хоча б один контакт');return;}
     const status=document.getElementById('f-status').value;
     if(status==='failed'&&!document.getElementById('f-fail').value){alert('Вкажіть причину');return;}
     
@@ -1858,6 +2122,10 @@ function saveLeadForm(){
         status,
         noshow:+document.getElementById('f-noshow').value||0,
         tg,phone,
+        viber:document.getElementById('f-viber').value,
+        whatsapp:document.getElementById('f-whatsapp').value,
+        email,
+        primaryChannel:document.getElementById('f-primary-channel').value||'phone',
         biz:document.getElementById('f-biz').value,
         source:document.getElementById('f-source').value,
         consult:document.getElementById('f-consult').value,
@@ -2427,6 +2695,76 @@ function getPhoneLink(phone) {
     if(!phone) return null;
     const clean = phone.replace(/\D/g, '');
     return `tel:+${clean}`;
+}
+
+function getEmailLink(email) {
+    if(!email) return null;
+    return `mailto:${email}`;
+}
+
+// Render primary contact based on primaryChannel setting
+function renderPrimaryContact(l) {
+    const channel = l.primaryChannel || 'phone';
+    
+    // Channel icons (SVG)
+    const icons = {
+        tg: `<svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>`,
+        phone: `<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>`,
+        viber: `<svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><path d="M11.398.002C9.473.028 5.331.344 3.014 2.467 1.294 4.182.518 6.792.377 10.967c-.14 4.175-.324 12.001 7.326 14.127h.006l-.006 3.09s-.048.757.47 1.076c.626.386 1.04.169 1.665-.437.345-.334 1.056-1.09 1.497-1.556 4.13.36 7.3-.453 7.657-.562.821-.254 5.469-.863 6.223-7.049.777-6.379-.389-10.413-2.566-12.24-1.276-1.136-6.397-2.81-11.25-3.414z"/></svg>`,
+        whatsapp: `<svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/></svg>`,
+        email: `<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>`
+    };
+    
+    const classes = {
+        tg: 'tg',
+        phone: 'phone',
+        viber: 'viber',
+        whatsapp: 'whatsapp',
+        email: 'email'
+    };
+    
+    // Get contact value and link based on channel
+    let value, link, displayValue;
+    
+    switch(channel) {
+        case 'tg':
+            value = l.tg;
+            link = getTelegramLink(l.tg);
+            displayValue = l.tg;
+            break;
+        case 'viber':
+            value = l.viber || l.phone;
+            link = getViberLink(l.viber || l.phone);
+            displayValue = l.viber || l.phone;
+            break;
+        case 'whatsapp':
+            value = l.whatsapp || l.phone;
+            link = getWhatsAppLink(l.whatsapp || l.phone);
+            displayValue = l.whatsapp || l.phone;
+            break;
+        case 'email':
+            value = l.email;
+            link = getEmailLink(l.email);
+            displayValue = l.email;
+            break;
+        default: // phone
+            value = l.phone;
+            link = getPhoneLink(l.phone);
+            displayValue = l.phone;
+    }
+    
+    // Fallback to any available contact
+    if(!value) {
+        if(l.tg) { value = l.tg; link = getTelegramLink(l.tg); displayValue = l.tg; channel = 'tg'; }
+        else if(l.phone) { value = l.phone; link = getPhoneLink(l.phone); displayValue = l.phone; channel = 'phone'; }
+        else if(l.email) { value = l.email; link = getEmailLink(l.email); displayValue = l.email; channel = 'email'; }
+        else return '<span class="task-contact-link">—</span>';
+    }
+    
+    return `<a href="${link}" target="_blank" class="task-contact-link ${classes[channel]}" onclick="event.stopPropagation()" title="${channel.toUpperCase()}">
+        ${icons[channel]}
+        ${displayValue}
+    </a>`;
 }
 
 function renderContactLinks(lead) {
