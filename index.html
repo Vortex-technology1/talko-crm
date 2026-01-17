@@ -98,8 +98,8 @@
         
         .tasks-list{background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.08)}
         
-        /* Task Row - Time-focused */
-        .task-row{display:grid;grid-template-columns:70px 1fr auto;gap:12px;padding:12px 16px;border-bottom:1px solid #f0f0f0;cursor:pointer;transition:background .15s;align-items:center}
+        /* Task Row - Compact single line */
+        .task-row{display:grid;grid-template-columns:65px 1fr auto auto;gap:12px;padding:10px 16px;border-bottom:1px solid #f0f0f0;cursor:pointer;transition:background .15s;align-items:center}
         .task-row:last-child{border-bottom:none}
         .task-row:hover{background:#fafafa}
         .task-row.overdue{background:#fff5f5}
@@ -107,28 +107,56 @@
         
         /* Time Column */
         .task-time{text-align:center}
-        .task-time-value{font-size:15px;font-weight:600;color:#1d1d1f}
-        .task-time-date{font-size:11px;color:#8e8e93}
+        .task-time-value{font-size:14px;font-weight:600;color:#1d1d1f}
+        .task-time-date{font-size:10px;color:#8e8e93}
         .task-time.overdue .task-time-value{color:#ff3b30}
         .task-time.overdue .task-time-date{color:#ff3b30}
         .task-time.today .task-time-value{color:#007aff}
-        .task-time.now .task-time-value{color:#34c759;font-size:13px}
+        .task-time.now .task-time-value{color:#34c759;font-size:12px}
         
-        /* Main Info */
-        .task-main-info{min-width:0}
-        .task-action-line{font-size:15px;font-weight:500;color:#1d1d1f;margin-bottom:4px;display:flex;align-items:center;gap:8px}
-        .task-action-text{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-        .task-contact{font-size:13px;color:#8e8e93;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-        .task-contact-name{font-weight:500;color:#1d1d1f}
-        .task-contact-link{display:inline-flex;align-items:center;gap:4px;padding:2px 6px;border-radius:4px;font-size:12px;font-weight:500;text-decoration:none;transition:all .15s}
+        /* Main Info - Single line */
+        .task-main-info{min-width:0;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+        .task-action-text{font-size:14px;font-weight:500;color:#1d1d1f;white-space:nowrap}
+        .task-contact-link{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:500;text-decoration:none;transition:all .15s}
         .task-contact-link.tg{background:#e3f2fd;color:#0088cc}
         .task-contact-link.tg:hover{background:#bbdefb}
         .task-contact-link.phone{background:#f3f4f6;color:#1d1d1f}
         .task-contact-link.phone:hover{background:#e5e7eb}
+        .task-biz{font-size:12px;color:#8e8e93}
         .task-score{font-size:10px;padding:2px 6px;border-radius:4px;font-weight:600}
         .task-score.hot{background:#ffebee;color:#c62828}
         .task-score.warm{background:#fff3e0;color:#ef6c00}
         .task-score.cold{background:#e3f2fd;color:#1565c0}
+        
+        /* Status dropdown */
+        .task-status-wrap{position:relative}
+        .task-status-btn{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid transparent;transition:all .15s;text-transform:uppercase}
+        .task-status-btn:hover{filter:brightness(0.95)}
+        .task-status-btn svg{width:12px;height:12px;opacity:0.6}
+        .task-status-btn.st-new{background:#e3f2fd;color:#1565c0}
+        .task-status-btn.st-contacted{background:#fff3e0;color:#ef6c00}
+        .task-status-btn.st-scheduled{background:#e8f5e9;color:#2e7d32}
+        .task-status-btn.st-completed{background:#f3e5f5;color:#7b1fa2}
+        .task-status-btn.st-report_sent{background:#e0f2f1;color:#00695c}
+        .task-status-btn.st-deposit{background:#fff8e1;color:#f57f17}
+        .task-status-btn.st-paid{background:#e8f5e9;color:#1b5e20}
+        .task-status-btn.st-failed{background:#ffebee;color:#c62828}
+        .task-status-btn.st-repeat{background:#ede7f6;color:#512da8}
+        
+        .task-status-dropdown{position:absolute;top:100%;right:0;margin-top:4px;background:#fff;border-radius:8px;box-shadow:0 4px 20px rgba(0,0,0,0.15);z-index:50;min-width:160px;padding:6px 0;display:none}
+        .task-status-dropdown.active{display:block}
+        .task-status-option{display:flex;align-items:center;gap:8px;padding:8px 12px;font-size:12px;cursor:pointer;transition:background .1s}
+        .task-status-option:hover{background:#f5f5f5}
+        .task-status-option .dot{width:8px;height:8px;border-radius:50%}
+        .task-status-option .dot.new{background:#1565c0}
+        .task-status-option .dot.contacted{background:#ef6c00}
+        .task-status-option .dot.scheduled{background:#2e7d32}
+        .task-status-option .dot.completed{background:#7b1fa2}
+        .task-status-option .dot.report_sent{background:#00695c}
+        .task-status-option .dot.deposit{background:#f57f17}
+        .task-status-option .dot.paid{background:#1b5e20}
+        .task-status-option .dot.failed{background:#c62828}
+        .task-status-option .dot.repeat{background:#512da8}
         
         /* Actions */
         .task-actions{display:flex;gap:4px}
@@ -1437,22 +1465,30 @@ function renderTaskRow(t, status) {
             <div class="task-time-date">${dateLabel}</div>
         </div>
         <div class="task-main-info">
-            <div class="task-action-line">
-                <span class="task-action-text">${action}</span>
-            </div>
-            <div class="task-contact">
-                ${t.l.tg ? `<a href="${getTelegramLink(t.l.tg)}" target="_blank" class="task-contact-link tg" onclick="event.stopPropagation()" title="Telegram">
-                    <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>
-                    ${t.l.tg}
-                </a>` : ''}
-                ${t.l.phone ? `<a href="tel:+${t.l.phone.replace(/\\D/g,'')}" class="task-contact-link phone" onclick="event.stopPropagation()" title="Зателефонувати">
-                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-                    ${t.l.phone}
-                </a>` : ''}
-                ${!t.l.tg && !t.l.phone ? '<span class="task-contact-name">—</span>' : ''}
-                <span>${t.l.biz||''}</span>
-                <span class="task-score ${scoreClass}">${score}</span>
-                <span style="color:#8e8e93">${ST[t.l.status]||''}</span>
+            <span class="task-action-text">${action}</span>
+            ${t.l.tg ? `<a href="${getTelegramLink(t.l.tg)}" target="_blank" class="task-contact-link tg" onclick="event.stopPropagation()" title="Telegram">
+                <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>
+                ${t.l.tg}
+            </a>` : ''}
+            ${t.l.phone ? `<a href="tel:+${t.l.phone.replace(/\\D/g,'')}" class="task-contact-link phone" onclick="event.stopPropagation()" title="Зателефонувати">
+                <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                ${t.l.phone}
+            </a>` : ''}
+            ${t.l.biz ? `<span class="task-biz">${t.l.biz}</span>` : ''}
+            <span class="task-score ${scoreClass}">${score}</span>
+        </div>
+        <div class="task-status-wrap" onclick="event.stopPropagation()">
+            <button class="task-status-btn st-${t.l.status || 'new'}" onclick="toggleStatusDropdown('${t.l.id}', this)">
+                ${ST[t.l.status] || 'Новий'}
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+            </button>
+            <div class="task-status-dropdown" id="status-dropdown-${t.l.id}">
+                ${Object.entries(ST).map(([key, label]) => `
+                    <div class="task-status-option" onclick="changeLeadStatus('${t.l.id}', '${key}')">
+                        <span class="dot ${key}"></span>
+                        ${label}
+                    </div>
+                `).join('')}
             </div>
         </div>
         <div class="task-actions">
@@ -2283,6 +2319,81 @@ async function aiSend(){
 
 // Init report dates on load
 initReportDates();
+
+// ===== STATUS DROPDOWN =====
+let activeDropdown = null;
+
+function toggleStatusDropdown(leadId, btn) {
+    const dropdown = document.getElementById(`status-dropdown-${leadId}`);
+    
+    // Закрити інші dropdown
+    document.querySelectorAll('.task-status-dropdown.active').forEach(d => {
+        if(d !== dropdown) d.classList.remove('active');
+    });
+    
+    dropdown.classList.toggle('active');
+    activeDropdown = dropdown.classList.contains('active') ? dropdown : null;
+}
+
+function changeLeadStatus(leadId, newStatus) {
+    const l = leads.find(x => x.id === leadId);
+    if(!l) return;
+    
+    const updatedLead = {...l};
+    const oldStatus = updatedLead.status;
+    updatedLead.status = newStatus;
+    updatedLead.stageDate = new Date().toISOString();
+    
+    // Логіка для різних статусів
+    if(newStatus === 'scheduled' && !updatedLead.consult) {
+        const dt = prompt('Дата консультації (YYYY-MM-DDTHH:MM):', tomorrow() + 'T14:00');
+        if(dt) {
+            updatedLead.consult = dt;
+            updatedLead.nextDate = addDays(dt.split('T')[0], -1);
+            updatedLead.nextTime = '10:00';
+            updatedLead.nextAction = 'Підтвердити консультацію';
+        }
+    }
+    
+    if(newStatus === 'failed') {
+        const reason = prompt('Причина відмови:', '');
+        updatedLead.failReason = reason || '';
+        updatedLead.reactDate = addDays(today(), 90);
+    }
+    
+    if(newStatus === 'deposit') {
+        const amt = prompt('Сума завдатку:', '');
+        if(amt) {
+            updatedLead.finDep = +amt;
+            updatedLead.finDepDate = today();
+        }
+    }
+    
+    if(newStatus === 'paid') {
+        const amt = prompt('Повна сума:', updatedLead.finTotal || '');
+        if(amt) {
+            updatedLead.finTotal = +amt;
+            updatedLead.finPaidDate = today();
+        }
+    }
+    
+    addLog(updatedLead, 'status', `${ST[oldStatus] || 'Новий'} → ${ST[newStatus]}`);
+    saveLead(updatedLead);
+    
+    // Закрити dropdown
+    if(activeDropdown) {
+        activeDropdown.classList.remove('active');
+        activeDropdown = null;
+    }
+}
+
+// Закрити dropdown при кліку поза ним
+document.addEventListener('click', (e) => {
+    if(activeDropdown && !e.target.closest('.task-status-wrap')) {
+        activeDropdown.classList.remove('active');
+        activeDropdown = null;
+    }
+});
 
 // ===== QUICK ACTION PANEL =====
 let quickLeadId = null;
