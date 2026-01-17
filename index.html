@@ -60,6 +60,35 @@
         .user-email{font-size:12px;color:var(--g);max-width:150px;overflow:hidden;text-overflow:ellipsis}
         .user-btn{padding:6px 10px;font-size:12px}
         
+        /* Admin Panel */
+        .admin-panel{display:flex;align-items:center;gap:8px;padding-right:12px;margin-right:12px;border-right:1px solid #e5e7eb}
+        .admin-badge{background:linear-gradient(135deg,#8b5cf6,#6366f1);color:#fff;font-size:10px;font-weight:700;padding:3px 8px;border-radius:4px;letter-spacing:0.5px}
+        .org-dropdown{position:absolute;top:100%;left:0;background:#fff;border:1px solid #e5e7eb;border-radius:10px;box-shadow:0 10px 40px rgba(0,0,0,0.15);min-width:240px;z-index:200;margin-top:4px;overflow:hidden}
+        .org-dropdown-item{display:flex;align-items:center;gap:10px;padding:10px 14px;width:100%;border:none;background:none;font-size:13px;color:#374151;cursor:pointer;text-align:left}
+        .org-dropdown-item:hover{background:#f3f4f6}
+        .org-dropdown-item.active{background:#f0fdf4;color:#16a34a;font-weight:500}
+        .org-dropdown-item.create{color:#22c55e;font-weight:500;border-top:1px solid #e5e7eb}
+        .org-dropdown-item.create:hover{background:#f0fdf4}
+        .org-dropdown-divider{height:1px;background:#e5e7eb;margin:0}
+        .org-item-count{margin-left:auto;background:#e5e7eb;color:#6b7280;font-size:11px;padding:2px 6px;border-radius:10px}
+        #org-selector-btn{position:relative}
+        
+        /* Team Modal */
+        .team-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:300;align-items:center;justify-content:center;padding:20px}
+        .team-modal.active{display:flex}
+        .team-modal-content{background:#fff;border-radius:16px;width:100%;max-width:500px;max-height:80vh;overflow:hidden;display:flex;flex-direction:column}
+        .team-modal-header{padding:20px;border-bottom:1px solid #e5e7eb;display:flex;justify-content:space-between;align-items:center}
+        .team-modal-title{font-size:18px;font-weight:600}
+        .team-modal-body{padding:20px;overflow-y:auto;flex:1}
+        .team-member{display:flex;align-items:center;gap:12px;padding:12px;background:#f9fafb;border-radius:10px;margin-bottom:8px}
+        .team-member-avatar{width:40px;height:40px;background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:600}
+        .team-member-info{flex:1;min-width:0}
+        .team-member-email{font-size:14px;font-weight:500;color:#1f2937;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+        .team-member-role{font-size:12px;font-weight:500}
+        .team-invite-section{margin-top:20px;padding-top:20px;border-top:1px solid #e5e7eb}
+        .team-invite-title{font-size:14px;font-weight:600;margin-bottom:12px;color:#374151}
+        .team-invite-btns{display:flex;gap:8px;flex-wrap:wrap}
+        
         /* Sync indicator */
         .sync-status{display:flex;align-items:center;gap:4px;font-size:11px;color:var(--g);padding:4px 8px;background:var(--gl);border-radius:4px}
         .sync-dot{width:6px;height:6px;border-radius:50%;background:var(--p)}
@@ -737,11 +766,11 @@
                         <div class="form-group">
                             <label class="form-label">Основний канал</label>
                             <select class="form-select" id="f-primary-channel">
-                                <option value="phone">📞 Телефон</option>
-                                <option value="tg">✈️ Telegram</option>
-                                <option value="viber">💜 Viber</option>
-                                <option value="whatsapp">💚 WhatsApp</option>
-                                <option value="email">📧 Email</option>
+                                <option value="phone">Телефон</option>
+                                <option value="tg">Telegram</option>
+                                <option value="viber">Viber</option>
+                                <option value="whatsapp">WhatsApp</option>
+                                <option value="email">Email</option>
                             </select>
                         </div>
                     </div>
@@ -906,7 +935,7 @@
             <div class="help-item"><span class="status-badge st-report_sent">Звіт</span><span>Дожимати до оплати</span></div>
             <div class="help-item"><span class="status-badge st-repeat">Повторна</span><span>Ще консультація</span></div>
             <div class="help-item"><span class="status-badge st-deposit">Завдаток</span><span>Повна оплата</span></div>
-            <div class="help-item"><span class="status-badge st-paid">Оплачено</span><span>Закрито ✓</span></div>
+            <div class="help-item"><span class="status-badge st-paid">Оплачено</span><span>Закрито</span></div>
             <div class="help-item"><span class="status-badge st-failed">Неуспішна</span><span>+3 міс реактивація</span></div>
             <div style="margin-top:12px;padding:10px;background:var(--ol);border-radius:6px;font-size:12px">
                 <b>Правила:</b><br>• Новий лід: макс 3 дзвінки<br>• Після звіту: 3 дзв + 3 SMS<br>• Неуспішна → реактивація 3 міс
@@ -1055,6 +1084,42 @@
     </div>
 </div>
 
+<!-- Team Modal -->
+<div class="team-modal" id="team-modal">
+    <div class="team-modal-content">
+        <div class="team-modal-header">
+            <div class="team-modal-title">Команда</div>
+            <button class="btn btn-s" onclick="closeTeamModal()">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+        </div>
+        <div class="team-modal-body">
+            <div id="team-list"></div>
+            
+            <div class="team-invite-section">
+                <div class="team-invite-title">Запросити нового учасника</div>
+                <div class="team-invite-btns">
+                    <button class="btn btn-s" onclick="createInvite('employee')">
+                        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
+                        Співробітник
+                    </button>
+                    <button class="btn btn-s" onclick="createInvite('manager')">
+                        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                        Менеджер
+                    </button>
+                    <button class="btn btn-p" onclick="createInvite('owner')">
+                        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                        Власник
+                    </button>
+                </div>
+                <p style="font-size:12px;color:#6b7280;margin-top:12px">
+                    Після натискання буде створено посилання-запрошення, яке ви можете надіслати колезі
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
 // ===== FIREBASE CONFIG =====
 const firebaseConfig = {
@@ -1070,9 +1135,21 @@ firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
 
+// ===== SUPER ADMIN CONFIG =====
+const SUPER_ADMIN_EMAILS = ['management.talco@gmail.com', 'sashatalko@gmail.com'];
+
+// ===== APP STATE =====
 let currentUser = null;
-let isAuthMode = 'login'; // 'login' or 'register'
-let unsubscribe = null; // Firestore listener
+let currentOrg = null;      // Поточна організація
+let currentRole = null;     // owner | manager | employee | superadmin
+let organizations = [];     // Список організацій (для superadmin)
+let isAuthMode = 'login';
+let unsubscribe = null;
+
+// ===== HELPER: Check if Super Admin =====
+function isSuperAdmin(email) {
+    return SUPER_ADMIN_EMAILS.includes(email?.toLowerCase());
+}
 
 // ===== AUTH MODAL FUNCTIONS =====
 function openAuthModal(mode){
@@ -1162,29 +1239,420 @@ function logout(){
 }
 
 // ===== AUTH STATE LISTENER =====
-auth.onAuthStateChanged(user => {
+auth.onAuthStateChanged(async (user) => {
     if(user){
         currentUser = user;
         document.getElementById('auth-screen').style.display = 'none';
         document.getElementById('auth-modal').classList.remove('active');
-        document.getElementById('app').style.display = 'block';
         document.getElementById('user-email').textContent = user.email;
-        initFirestoreListener();
+        
+        // Перевіряємо чи Super Admin
+        if(isSuperAdmin(user.email)){
+            currentRole = 'superadmin';
+            await initSuperAdminMode();
+        } else {
+            await initUserMode();
+        }
+        
+        document.getElementById('app').style.display = 'block';
     } else {
         currentUser = null;
+        currentOrg = null;
+        currentRole = null;
         document.getElementById('auth-screen').style.display = 'flex';
         document.getElementById('app').style.display = 'none';
         document.getElementById('auth-btn').disabled = false;
         document.getElementById('auth-btn').textContent = 'Увійти';
+        hideAdminPanel();
         if(unsubscribe) unsubscribe();
     }
 });
 
-// ===== FIRESTORE SYNC =====
+// ===== SUPER ADMIN MODE =====
+async function initSuperAdminMode(){
+    console.log('Super Admin mode activated');
+    showAdminPanel();
+    await loadOrganizations();
+    
+    // Якщо є організації - відкриваємо першу, інакше показуємо панель створення
+    if(organizations.length > 0){
+        await selectOrganization(organizations[0].id);
+    } else {
+        showCreateOrgPrompt();
+    }
+}
+
+// ===== USER MODE =====
+async function initUserMode(){
+    console.log('User mode');
+    hideAdminPanel();
+    
+    // Шукаємо організацію користувача
+    const userDoc = await db.collection('users').doc(currentUser.uid).get();
+    
+    if(userDoc.exists){
+        const userData = userDoc.data();
+        if(userData.organizationId){
+            currentOrg = { id: userData.organizationId };
+            currentRole = userData.role || 'employee';
+            
+            // Завантажуємо дані організації
+            const orgDoc = await db.collection('organizations').doc(userData.organizationId).get();
+            if(orgDoc.exists){
+                currentOrg = { id: orgDoc.id, ...orgDoc.data() };
+            }
+            
+            initFirestoreListener();
+        } else {
+            showNoOrgMessage();
+        }
+    } else {
+        // Новий користувач - можливо прийшов по інвайту
+        const urlParams = new URLSearchParams(window.location.search);
+        const inviteCode = urlParams.get('invite');
+        
+        if(inviteCode){
+            await processInvite(inviteCode);
+        } else {
+            showNoOrgMessage();
+        }
+    }
+}
+
+// ===== ORGANIZATIONS MANAGEMENT =====
+async function loadOrganizations(){
+    try {
+        const snapshot = await db.collection('organizations').orderBy('createdAt', 'desc').get();
+        organizations = [];
+        snapshot.forEach(doc => {
+            organizations.push({ id: doc.id, ...doc.data() });
+        });
+        renderOrgSelector();
+    } catch(err){
+        console.error('Error loading organizations:', err);
+    }
+}
+
+async function selectOrganization(orgId){
+    currentOrg = organizations.find(o => o.id === orgId);
+    if(!currentOrg){
+        const orgDoc = await db.collection('organizations').doc(orgId).get();
+        if(orgDoc.exists){
+            currentOrg = { id: orgDoc.id, ...orgDoc.data() };
+        }
+    }
+    
+    if(currentOrg){
+        document.getElementById('org-selector-btn').innerHTML = `
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            ${currentOrg.name}
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+        `;
+        initFirestoreListener();
+    }
+}
+
+async function createOrganization(){
+    const name = prompt('Назва організації:', '');
+    if(!name) return;
+    
+    try {
+        const orgRef = await db.collection('organizations').add({
+            name: name,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+            createdBy: currentUser.uid,
+            settings: {
+                statuses: getDefaultStatuses(),
+                funnels: [{ id: 'default', name: 'Основна воронка' }]
+            }
+        });
+        
+        // Додаємо творця як owner
+        await db.collection('users').doc(currentUser.uid).set({
+            email: currentUser.email,
+            organizationId: orgRef.id,
+            role: 'owner',
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        }, { merge: true });
+        
+        await loadOrganizations();
+        await selectOrganization(orgRef.id);
+        
+        alert('Організацію створено!');
+    } catch(err){
+        console.error('Error creating org:', err);
+        alert('Помилка: ' + err.message);
+    }
+}
+
+function getDefaultStatuses(){
+    return {
+        new: { name: 'Новий лід', color: '#1565c0', order: 1 },
+        contacted: { name: 'Контакт', color: '#3949ab', order: 2 },
+        scheduled: { name: 'Призначена', color: '#2e7d32', order: 3 },
+        completed: { name: 'Проведена', color: '#7b1fa2', order: 4 },
+        report_sent: { name: 'Звіт відправлено', color: '#00695c', order: 5 },
+        deposit: { name: 'Завдаток', color: '#f57f17', order: 6 },
+        paid: { name: 'Оплачено', color: '#1b5e20', order: 7, isClosed: true },
+        failed: { name: 'Відмова', color: '#c62828', order: 8 },
+        frozen: { name: 'Заморожений', color: '#546e7a', order: 9 }
+    };
+}
+
+// ===== INVITE SYSTEM =====
+async function processInvite(code){
+    try {
+        const inviteDoc = await db.collection('invites').doc(code).get();
+        
+        if(!inviteDoc.exists){
+            alert('Запрошення не знайдено');
+            return;
+        }
+        
+        const invite = inviteDoc.data();
+        
+        if(invite.used){
+            alert('Це запрошення вже використано');
+            return;
+        }
+        
+        // Додаємо користувача до організації
+        await db.collection('users').doc(currentUser.uid).set({
+            email: currentUser.email,
+            organizationId: invite.organizationId,
+            role: invite.role || 'employee',
+            invitedBy: invite.createdBy,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        
+        // Позначаємо інвайт як використаний
+        await db.collection('invites').doc(code).update({
+            used: true,
+            usedBy: currentUser.uid,
+            usedAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        
+        // Очищаємо URL
+        window.history.replaceState({}, document.title, window.location.pathname);
+        
+        // Ініціалізуємо
+        await initUserMode();
+        
+    } catch(err){
+        console.error('Error processing invite:', err);
+        alert('Помилка обробки запрошення');
+    }
+}
+
+async function createInvite(role = 'employee'){
+    if(!currentOrg) return;
+    
+    try {
+        const code = generateInviteCode();
+        
+        await db.collection('invites').doc(code).set({
+            organizationId: currentOrg.id,
+            organizationName: currentOrg.name,
+            role: role,
+            createdBy: currentUser.uid,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+            used: false
+        });
+        
+        const link = `${window.location.origin}${window.location.pathname}?invite=${code}`;
+        
+        if(navigator.clipboard){
+            await navigator.clipboard.writeText(link);
+            alert('Посилання скопійовано!\n\n' + link);
+        } else {
+            prompt('Скопіюйте посилання:', link);
+        }
+        
+    } catch(err){
+        console.error('Error creating invite:', err);
+        alert('Помилка: ' + err.message);
+    }
+}
+
+function generateInviteCode(){
+    return 'inv_' + Date.now().toString(36) + Math.random().toString(36).substr(2, 8);
+}
+
+// ===== UI HELPERS =====
+function showAdminPanel(){
+    let panel = document.getElementById('admin-panel');
+    if(!panel){
+        // Створюємо панель адміна
+        const header = document.querySelector('.actions');
+        const adminHtml = `
+            <div id="admin-panel" class="admin-panel">
+                <button id="org-selector-btn" class="btn btn-s" onclick="toggleOrgDropdown()">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                    Оберіть організацію
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                </button>
+                <div id="org-dropdown" class="org-dropdown" style="display:none">
+                    <div id="org-list"></div>
+                    <div class="org-dropdown-divider"></div>
+                    <button class="org-dropdown-item create" onclick="createOrganization()">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                        Створити організацію
+                    </button>
+                </div>
+                <button class="btn btn-s" onclick="openTeamModal()" title="Команда">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                </button>
+                <span class="admin-badge">ADMIN</span>
+            </div>
+        `;
+        header.insertAdjacentHTML('afterbegin', adminHtml);
+    }
+    document.getElementById('admin-panel')?.style.setProperty('display', 'flex');
+}
+
+function hideAdminPanel(){
+    document.getElementById('admin-panel')?.style.setProperty('display', 'none');
+}
+
+function toggleOrgDropdown(){
+    const dropdown = document.getElementById('org-dropdown');
+    dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
+}
+
+function renderOrgSelector(){
+    const list = document.getElementById('org-list');
+    if(!list) return;
+    
+    list.innerHTML = organizations.map(org => `
+        <button class="org-dropdown-item ${currentOrg?.id === org.id ? 'active' : ''}" onclick="selectOrganization('${org.id}');toggleOrgDropdown()">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+            ${org.name}
+            <span class="org-item-count">${org.leadsCount || 0}</span>
+        </button>
+    `).join('');
+}
+
+function showNoOrgMessage(){
+    document.getElementById('v-tasks').innerHTML = `
+        <div style="text-align:center;padding:60px 20px">
+            <svg viewBox="0 0 24 24" width="64" height="64" fill="none" stroke="#d1d5db" stroke-width="1.5" style="margin:0 auto 20px">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
+            </svg>
+            <h3 style="font-size:20px;font-weight:600;margin-bottom:8px;color:#1f2937">Немає доступу до організації</h3>
+            <p style="color:#6b7280;margin-bottom:24px">Попросіть адміністратора надіслати вам запрошення</p>
+        </div>
+    `;
+}
+
+function showCreateOrgPrompt(){
+    document.getElementById('v-tasks').innerHTML = `
+        <div style="text-align:center;padding:60px 20px">
+            <svg viewBox="0 0 24 24" width="64" height="64" fill="none" stroke="#22c55e" stroke-width="1.5" style="margin:0 auto 20px">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
+            </svg>
+            <h3 style="font-size:20px;font-weight:600;margin-bottom:8px;color:#1f2937">Створіть першу організацію</h3>
+            <p style="color:#6b7280;margin-bottom:24px">Почніть роботу з CRM, створивши організацію для вашого бізнесу</p>
+            <button class="btn btn-p" onclick="createOrganization()" style="padding:12px 24px;font-size:15px">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                Створити організацію
+            </button>
+        </div>
+    `;
+}
+
+// ===== TEAM MODAL =====
+function openTeamModal(){
+    if(!currentOrg) return;
+    
+    // Завантажуємо користувачів організації
+    loadTeamMembers();
+    
+    document.getElementById('team-modal').classList.add('active');
+}
+
+function closeTeamModal(){
+    document.getElementById('team-modal').classList.remove('active');
+}
+
+async function loadTeamMembers(){
+    try {
+        const snapshot = await db.collection('users')
+            .where('organizationId', '==', currentOrg.id)
+            .get();
+        
+        const members = [];
+        snapshot.forEach(doc => {
+            members.push({ id: doc.id, ...doc.data() });
+        });
+        
+        renderTeamMembers(members);
+    } catch(err){
+        console.error('Error loading team:', err);
+    }
+}
+
+function renderTeamMembers(members){
+    const container = document.getElementById('team-list');
+    if(!container) return;
+    
+    const roleLabels = {
+        owner: 'Власник',
+        manager: 'Менеджер',
+        employee: 'Співробітник',
+        superadmin: 'Super Admin'
+    };
+    
+    const roleColors = {
+        owner: '#22c55e',
+        manager: '#3b82f6',
+        employee: '#6b7280',
+        superadmin: '#8b5cf6'
+    };
+    
+    container.innerHTML = members.map(m => `
+        <div class="team-member">
+            <div class="team-member-avatar">${m.email?.[0]?.toUpperCase() || '?'}</div>
+            <div class="team-member-info">
+                <div class="team-member-email">${m.email}</div>
+                <div class="team-member-role" style="color:${roleColors[m.role]}">${roleLabels[m.role] || m.role}</div>
+            </div>
+            ${m.id !== currentUser.uid && (currentRole === 'owner' || currentRole === 'superadmin') ? `
+                <button class="btn btn-s" onclick="removeTeamMember('${m.id}')" title="Видалити">
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+                </button>
+            ` : ''}
+        </div>
+    `).join('');
+}
+
+async function removeTeamMember(userId){
+    if(!confirm('Видалити цього користувача з організації?')) return;
+    
+    try {
+        await db.collection('users').doc(userId).update({
+            organizationId: firebase.firestore.FieldValue.delete(),
+            role: firebase.firestore.FieldValue.delete()
+        });
+        loadTeamMembers();
+    } catch(err){
+        console.error('Error removing member:', err);
+        alert('Помилка: ' + err.message);
+    }
+}
+
+// ===== FIRESTORE SYNC (Organization-based) =====
 function initFirestoreListener(){
+    if(unsubscribe) unsubscribe();
+    
+    if(!currentOrg){
+        console.log('No organization selected');
+        return;
+    }
+    
     setSyncStatus('syncing', 'Синхронізація...');
     
-    unsubscribe = db.collection('users').doc(currentUser.uid).collection('leads')
+    // Слухаємо ліди організації
+    unsubscribe = db.collection('organizations').doc(currentOrg.id).collection('leads')
         .onSnapshot(snapshot => {
             leads = [];
             snapshot.forEach(doc => {
@@ -1192,23 +1660,34 @@ function initFirestoreListener(){
             });
             render();
             setSyncStatus('synced', 'Синхронізовано');
+            
+            // Оновлюємо кількість лідів в організації
+            updateOrgLeadsCount(leads.length);
         }, err => {
             console.error('Firestore error:', err);
             setSyncStatus('error', 'Помилка синхронізації');
         });
 }
 
-function setSyncStatus(status, text){
-    const dot = document.getElementById('sync-dot');
-    const txt = document.getElementById('sync-text');
-    dot.className = 'sync-dot' + (status === 'syncing' ? ' syncing' : status === 'error' ? ' error' : '');
-    txt.textContent = text;
+function updateOrgLeadsCount(count){
+    if(currentOrg){
+        currentOrg.leadsCount = count;
+        const idx = organizations.findIndex(o => o.id === currentOrg.id);
+        if(idx >= 0) organizations[idx].leadsCount = count;
+        renderOrgSelector();
+    }
 }
 
+// ===== SAVE/DELETE with Organization =====
 async function saveLead(leadData){
+    if(!currentOrg){
+        alert('Оберіть організацію');
+        return;
+    }
+    
     setSyncStatus('syncing', 'Збереження...');
     try {
-        const docRef = db.collection('users').doc(currentUser.uid).collection('leads').doc(leadData.id);
+        const docRef = db.collection('organizations').doc(currentOrg.id).collection('leads').doc(leadData.id);
         await docRef.set(leadData);
         setSyncStatus('synced', 'Синхронізовано');
     } catch(err){
@@ -1218,14 +1697,23 @@ async function saveLead(leadData){
 }
 
 async function deleteLead(leadId){
+    if(!currentOrg) return;
+    
     setSyncStatus('syncing', 'Видалення...');
     try {
-        await db.collection('users').doc(currentUser.uid).collection('leads').doc(leadId).delete();
+        await db.collection('organizations').doc(currentOrg.id).collection('leads').doc(leadId).delete();
         setSyncStatus('synced', 'Синхронізовано');
     } catch(err){
         console.error('Delete error:', err);
         setSyncStatus('error', 'Помилка видалення');
     }
+}
+
+function setSyncStatus(status, text){
+    const dot = document.getElementById('sync-dot');
+    const txt = document.getElementById('sync-text');
+    dot.className = 'sync-dot' + (status === 'syncing' ? ' syncing' : status === 'error' ? ' error' : '');
+    txt.textContent = text;
 }
 
 // ===== CONSTANTS =====
@@ -1280,7 +1768,7 @@ function getTasks(){
         // Заморожені та Відмова - перевіряємо дату реактивації
         if(['failed','frozen'].includes(l.status)){
             if(l.reactDate && l.reactDate <= t){
-                tasks.push({l, p:'info', msg:'🔄 Реактивація — час повернутися', btns:[
+                tasks.push({l, p:'info', msg:'Реактивація — час повернутися', btns:[
                     {t:'success',l:'Цікаво',a:'react_ok'},
                     {t:'secondary',l:'+3 міс',a:'react_later'},
                     {t:'secondary',l:'+1 рік',a:'react_year'}
@@ -1289,18 +1777,18 @@ function getTasks(){
             return;
         }
         
-        if(!l.status){tasks.push({l,p:'critical',msg:'⚠️ Немає статусу!',btns:[{t:'warn',l:'Відкрити',a:'open'}]});return;}
+        if(!l.status){tasks.push({l,p:'critical',msg:'Немає статусу!',btns:[{t:'warn',l:'Відкрити',a:'open'}]});return;}
         
         // Новий лід
         if(l.status==='new' || l.status==='contacted'){
             if(l.calls>=3){
-                tasks.push({l,p:'critical',msg:'📞 3 дзвінки без відповіді',btns:[
+                tasks.push({l,p:'critical',msg:'3 дзвінки без відповіді',btns:[
                     {t:'warn',l:'Заморозити',a:'freeze'},
                     {t:'secondary',l:'Ще раз',a:'call'}
                 ]});
             }
             else if(!l.nextDate||l.nextDate<=t){
-                tasks.push({l,p:l.nextDate<t?'critical':'warning',msg:`📞 Подзвонити (${l.calls||0}/3)`,btns:[
+                tasks.push({l,p:l.nextDate<t?'critical':'warning',msg:`Подзвонити (${l.calls||0}/3)`,btns:[
                     {t:'success',l:'Призначити',a:'schedule'},
                     {t:'secondary',l:'Не взяв',a:'call_later'},
                     {t:'warn',l:'Заморозити',a:'freeze'}
@@ -1315,8 +1803,8 @@ function getTasks(){
             
             // Консультація пройшла (дата в минулому) і статус досі "Призначена"
             if(cd && cd < t){
-                tasks.push({l, p:'critical', msg:'❓ Консультація відбулась?', btns:[
-                    {t:'success',l:'✓ Проведена',a:'complete'},
+                tasks.push({l, p:'critical', msg:'Консультація відбулась?', btns:[
+                    {t:'success',l:'Проведена',a:'complete'},
                     {t:'danger',l:'Не прийшов',a:'noshow'},
                     {t:'secondary',l:'Перенесли',a:'reschedule'}
                 ]});
@@ -1325,28 +1813,28 @@ function getTasks(){
             else if(cd === t){
                 // Ранок (до 12:00) - нагадування підтвердити
                 if(currentHour < 12 && !l.confirmedToday){
-                    tasks.push({l, p:'warning', msg:'📅 Сьогодні консультація — підтвердити!', btns:[
+                    tasks.push({l, p:'warning', msg:'Сьогодні консультація — підтвердити!', btns:[
                         {t:'success',l:'Підтвердив',a:'confirm_today'},
                         {t:'secondary',l:'SMS',a:'confirm_sms'}
                     ]});
                 }
                 // Після часу консультації
                 else if(consultTime && currentHour >= parseInt(consultTime.split(':')[0])){
-                    tasks.push({l, p:'info', msg:'🕐 Консультація зараз/була', btns:[
-                        {t:'success',l:'✓ Проведена',a:'complete'},
+                    tasks.push({l, p:'info', msg:'Консультація зараз/була', btns:[
+                        {t:'success',l:'Проведена',a:'complete'},
                         {t:'danger',l:'Не прийшов',a:'noshow'}
                     ]});
                 }
                 else {
-                    tasks.push({l, p:'info', msg:`📅 Консультація сьогодні о ${consultTime || '—'}`, btns:[
-                        {t:'success',l:'✓ Проведена',a:'complete'},
+                    tasks.push({l, p:'info', msg:`Консультація сьогодні о ${consultTime || '—'}`, btns:[
+                        {t:'success',l:'Проведена',a:'complete'},
                         {t:'danger',l:'Не прийшов',a:'noshow'}
                     ]});
                 }
             }
             // Консультація завтра
             else if(cd === tm){
-                tasks.push({l, p:'warning', msg:'📅 Завтра консультація — підтвердити', btns:[
+                tasks.push({l, p:'warning', msg:'Завтра консультація — підтвердити', btns:[
                     {t:'success',l:'Підтвердив',a:'confirm'},
                     {t:'secondary',l:'SMS',a:'confirm_sms'}
                 ]});
@@ -1354,7 +1842,7 @@ function getTasks(){
             // No-show обробка
             else if(l.noshow > 0){
                 const freezeAfter = l.noshow >= 3;
-                tasks.push({l, p:'warning', msg:`⚠️ Не прийшов ${l.noshow} раз(ів)`, btns:[
+                tasks.push({l, p:'warning', msg:`Не прийшов ${l.noshow} раз(ів)`, btns:[
                     {t:'success',l:'Перенесли',a:'reschedule'},
                     {t:'warn',l:freezeAfter?'Заморозити':'Ще шанс',a:freezeAfter?'freeze':'reschedule'}
                 ]});
@@ -1363,7 +1851,7 @@ function getTasks(){
         
         // Проведена - чекає звіт
         if(l.status==='completed'){
-            tasks.push({l, p:'warning', msg:'📝 Написати звіт', btns:[
+            tasks.push({l, p:'warning', msg:'Написати звіт', btns:[
                 {t:'success',l:'Звіт готовий',a:'send_report'}
             ]});
         }
@@ -1371,13 +1859,13 @@ function getTasks(){
         // Звіт відправлено - дожим
         if(l.status==='report_sent'){
             if(l.calls>=3 && l.sms>=3){
-                tasks.push({l, p:'critical', msg:'📊 3+3 контакти — рішення?', btns:[
+                tasks.push({l, p:'critical', msg:'3+3 контакти — рішення?', btns:[
                     {t:'warn',l:'Повторна',a:'repeat'},
                     {t:'secondary',l:'Заморозити',a:'freeze'}
                 ]});
             }
             else if(!l.nextDate || l.nextDate<=t){
-                tasks.push({l, p:l.nextDate<t?'critical':'warning', msg:`💰 Дожати (дзв:${l.calls||0} sms:${l.sms||0})`, btns:[
+                tasks.push({l, p:l.nextDate<t?'critical':'warning', msg:`Дожати (дзв:${l.calls||0} sms:${l.sms||0})`, btns:[
                     {t:'success',l:'Завдаток',a:'deposit'},
                     {t:'secondary',l:'Думає',a:'followup'},
                     {t:'warn',l:'Повторна',a:'repeat'}
@@ -1389,7 +1877,7 @@ function getTasks(){
         if(l.status==='deposit'){
             const days = l.finDepDate ? Math.floor((new Date()-new Date(l.finDepDate))/864e5) : 0;
             if(days>=7 || (l.nextDate && l.nextDate<=t)){
-                tasks.push({l, p:days>=14?'critical':'warning', msg:`💳 Завдаток ${days}дн — повна оплата?`, btns:[
+                tasks.push({l, p:days>=14?'critical':'warning', msg:`Завдаток ${days}дн — повна оплата?`, btns:[
                     {t:'success',l:'Оплатив',a:'paid'},
                     {t:'secondary',l:'+тиждень',a:'dep_later'}
                 ]});
@@ -1399,7 +1887,7 @@ function getTasks(){
         // Загальна перевірка протермінування
         if(l.nextDate && l.nextDate<t && !tasks.find(x=>x.l.id===l.id)){
             const d = Math.floor((new Date(t)-new Date(l.nextDate))/864e5);
-            tasks.push({l, p:'critical', msg:`⏰ Протерміновано ${d}дн`, btns:[
+            tasks.push({l, p:'critical', msg:`Протерміновано ${d}дн`, btns:[
                 {t:'warn',l:'Відкрити',a:'open'}
             ]});
         }
@@ -1754,7 +2242,7 @@ function taskAction(id,a){
                 updatedLead.finPaidDate=today();
                 updatedLead.nextDate=null;
                 updatedLead.nextAction=null;
-                addLog(updatedLead,'status','Оплачено '+p+' 🎉');
+                addLog(updatedLead,'status','Оплачено '+p);
             }else return;
             break;
         case'dep_later':
