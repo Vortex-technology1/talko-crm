@@ -1789,6 +1789,15 @@ let currentAssigneeFilter = null; // null = всі, 'mine' = мої, userId = к
 let selectedFunnelForEdit = null; // Воронка яку редагуємо в налаштуваннях
 let teamMembers = [];           // Кешований список членів команди
 
+// ===== UTILITIES =====
+function debounce(fn, delay) {
+    let timeout;
+    return function(...args) {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => fn.apply(this, args), delay);
+    };
+}
+
 // ===== HELPER: Check if Super Admin =====
 function isSuperAdmin(email) {
     return SUPER_ADMIN_EMAILS.includes(email?.toLowerCase());
@@ -1889,25 +1898,36 @@ auth.onAuthStateChanged(async (user) => {
         document.getElementById('auth-modal').classList.remove('active');
         document.getElementById('user-email').textContent = user.email;
         
-        // Перевіряємо чи Super Admin
-        if(isSuperAdmin(user.email)){
-            currentRole = 'superadmin';
-            await initSuperAdminMode();
-        } else {
-            await initUserMode();
+        try {
+            // Перевіряємо чи Super Admin
+            if(isSuperAdmin(user.email)){
+                currentRole = 'superadmin';
+                await initSuperAdminMode();
+            } else {
+                await initUserMode();
+            }
+            
+            document.getElementById('app').style.display = 'block';
+        } catch(err) {
+            console.error('Error initializing user mode:', err);
+            alert('Помилка завантаження: ' + err.message + '\n\nСпробуйте оновити сторінку.');
+            // Показуємо app навіть при помилці, щоб юзер не застряг
+            document.getElementById('app').style.display = 'block';
         }
-        
-        document.getElementById('app').style.display = 'block';
     } else {
         currentUser = null;
         currentOrg = null;
         currentRole = null;
+        leads = []; // Очищаємо дані
         document.getElementById('auth-screen').style.display = 'flex';
         document.getElementById('app').style.display = 'none';
         document.getElementById('auth-btn').disabled = false;
         document.getElementById('auth-btn').textContent = 'Увійти';
         hideAdminPanel();
-        if(unsubscribe) unsubscribe();
+        if(unsubscribe) {
+            unsubscribe();
+            unsubscribe = null;
+        }
     }
 });
 
@@ -2778,28 +2798,7 @@ function deleteStatus(statusId){
     renderStatusList();
 }
 
-async function saveStatuses(){
-    if(!currentOrg) return;
-    
-    const statuses = getOrgStatuses();
-    
-    try {
-        await db.collection('organizations').doc(currentOrg.id).update({
-            'settings.statuses': statuses
-        });
-        
-        // Оновлюємо локально
-        if(!currentOrg.settings) currentOrg.settings = {};
-        currentOrg.settings.statuses = statuses;
-        
-        // Перерендерюємо Kanban
-        render();
-        
-    } catch(err){
-        console.error('Error saving statuses:', err);
-        alert('Помилка збереження: ' + err.message);
-    }
-}
+// saveStatuses переміщено нижче для роботи з воронками
 
 // Drag & Drop для статусів
 let draggedStatusId = null;
@@ -2834,7 +2833,7 @@ function dropStatus(e){
         statuses[id].order = index + 1;
     });
     
-    saveStatuses();
+    debouncedSaveStatuses(); // Використовуємо debounced версію
     renderStatusList();
 }
 
@@ -3062,6 +3061,9 @@ async function saveStatuses(){
         alert('Помилка збереження: ' + err.message);
     }
 }
+
+// Debounced версія для частих змін (drag-n-drop, швидке редагування)
+const debouncedSaveStatuses = debounce(saveStatuses, 500);
 
 // ===== ASSIGNMENT MODE =====
 function renderAssignmentMode(){
@@ -3319,18 +3321,33 @@ async function incrementRoundRobinIndex(){
 
 // ===== FIRESTORE SYNC (Organization-based) =====
 function initFirestoreListener(){
-    if(unsubscribe) unsubscribe();
+    // Відписуємось від попереднього listener
+    if(unsubscribe) {
+        unsubscribe();
+        unsubscribe = null; // Обнулюємо для уникнення memory leak
+    }
     
-    if(!currentOrg){
-        console.log('No organization selected');
+    // Перевіряємо що організація існує і має id
+    if(!currentOrg?.id){
+        console.log('No organization selected or invalid org');
+        leads = []; // Очищаємо ліди
+        render();
         return;
     }
     
     setSyncStatus('syncing', 'Синхронізація...');
     
+    // Зберігаємо orgId на момент створення listener
+    const orgId = currentOrg.id;
+    
     // Слухаємо ліди організації
-    unsubscribe = db.collection('organizations').doc(currentOrg.id).collection('leads')
+    unsubscribe = db.collection('organizations').doc(orgId).collection('leads')
         .onSnapshot(snapshot => {
+            // Перевіряємо чи організація не змінилась поки чекали відповідь
+            if(currentOrg?.id !== orgId) {
+                console.log('Organization changed, ignoring snapshot');
+                return;
+            }
             leads = [];
             snapshot.forEach(doc => {
                 leads.push({ id: doc.id, ...doc.data() });
@@ -4642,7 +4659,7 @@ function fillForm(l){
     onStatusChange();
     renderCommLog(l);
 }
-function saveLeadForm(){
+async function saveLeadForm(){
     const phone=document.getElementById('f-phone').value;
     const tg=document.getElementById('f-tg').value;
     const email=document.getElementById('f-email').value;
@@ -4723,10 +4740,50 @@ function saveLeadForm(){
     }
     if(data.status==='failed'&&!data.reactDate)data.reactDate=addDays(today(),90);
     
-    saveLead(data); // Firebase save
-    closeModal();
+    // Блокуємо кнопку збереження
+    const saveBtn = document.querySelector('.modal-foot .btn-p');
+    if(saveBtn) {
+        saveBtn.disabled = true;
+        saveBtn.textContent = 'Збереження...';
+    }
+    
+    try {
+        await saveLead(data); // Firebase save - чекаємо завершення
+        closeModal();
+    } catch(err) {
+        console.error('Save error:', err);
+        alert('Помилка збереження: ' + err.message);
+    } finally {
+        // Розблоковуємо кнопку
+        if(saveBtn) {
+            saveBtn.disabled = false;
+            saveBtn.textContent = 'Зберегти';
+        }
+    }
 }
-function delLeadForm(){if(!editing)return;if(!confirm('Видалити?'))return;deleteLead(editing);closeModal();}
+async function delLeadForm(){
+    if(!editing) return;
+    if(!confirm('Видалити ліда?')) return;
+    
+    const delBtn = document.getElementById('del-btn');
+    if(delBtn) {
+        delBtn.disabled = true;
+        delBtn.textContent = 'Видалення...';
+    }
+    
+    try {
+        await deleteLead(editing);
+        closeModal();
+    } catch(err) {
+        console.error('Delete error:', err);
+        alert('Помилка видалення: ' + err.message);
+    } finally {
+        if(delBtn) {
+            delBtn.disabled = false;
+            delBtn.textContent = 'Видалити';
+        }
+    }
+}
 function onStatusChange(){
     const st=document.getElementById('f-status').value;
     document.getElementById('fail-group').style.display=st==='failed'?'block':'none';
@@ -4978,11 +5035,19 @@ function getSelectedLead(){
     return id ? leads.find(l => l.id === id) : null;
 }
 
+// XSS захист
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
 function addAIMessage(text, isUser = false){
     const chat = document.getElementById('ai-chat');
     const msg = document.createElement('div');
     msg.className = `ai-msg ${isUser ? 'ai-msg-user' : 'ai-msg-bot'}`;
-    msg.innerHTML = text.replace(/\n/g, '<br>');
+    // Санітизуємо текст перед вставкою
+    msg.innerHTML = escapeHtml(text).replace(/\n/g, '<br>');
     chat.appendChild(msg);
     chat.scrollTop = chat.scrollHeight;
     return msg;
