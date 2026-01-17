@@ -366,6 +366,7 @@
         .quick-panel{display:none;position:fixed;bottom:0;left:0;right:0;background:#fff;border-radius:20px 20px 0 0;box-shadow:0 -4px 24px rgba(0,0,0,0.15);z-index:150;max-height:80vh;overflow:hidden;animation:slideUp .25s ease}
         .quick-panel.active{display:block}
         @keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+        @keyframes fadeInUp{from{opacity:0;transform:translate(-50%,20px)}to{opacity:1;transform:translate(-50%,0)}}
         .quick-panel-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.3);z-index:149;display:none}
         .quick-panel-overlay.active{display:block}
         
@@ -1914,13 +1915,112 @@ auth.onAuthStateChanged(async (user) => {
 async function initSuperAdminMode(){
     console.log('Super Admin mode activated');
     showAdminPanel();
+    
+    // Завантажуємо ВСІ організації для ADMIN панелі
     await loadOrganizations();
     
-    // Якщо є організації - відкриваємо першу, інакше показуємо панель створення
-    if(organizations.length > 0){
-        await selectOrganization(organizations[0].id);
+    // Шукаємо власну організацію Super Admin (де він є членом команди)
+    const userDoc = await db.collection('users').doc(currentUser.uid).get();
+    let ownOrgId = null;
+    
+    if(userDoc.exists && userDoc.data().organizationId){
+        ownOrgId = userDoc.data().organizationId;
+        currentRole = userDoc.data().role || 'owner';
+    }
+    
+    // Super Admin працює ТІЛЬКИ зі своєю організацією
+    if(ownOrgId){
+        const orgDoc = await db.collection('organizations').doc(ownOrgId).get();
+        if(orgDoc.exists){
+            currentOrg = { id: orgDoc.id, ...orgDoc.data() };
+            
+            // Оновлюємо UI
+            document.getElementById('org-selector-btn').innerHTML = `
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                ${currentOrg.name}
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+            `;
+            
+            // Показуємо кнопки
+            document.getElementById('team-btn').style.display = 'inline-flex';
+            document.getElementById('settings-btn').style.display = 'inline-flex';
+            document.getElementById('funnel-bar').style.display = 'flex';
+            
+            // Завантажуємо команду та ліди ТІЛЬКИ своєї організації
+            loadTeamMembersForSettings();
+            renderFunnelDropdown();
+            initFirestoreListener();
+        }
     } else {
-        showCreateOrgPrompt();
+        // Super Admin без власної організації - тільки ADMIN панель
+        showSuperAdminOnlyMessage();
+    }
+}
+
+function showSuperAdminOnlyMessage(){
+    document.getElementById('v-tasks').innerHTML = `
+        <div style="text-align:center;padding:60px 20px">
+            <svg viewBox="0 0 24 24" width="64" height="64" fill="none" stroke="#8b5cf6" stroke-width="1.5" style="margin:0 auto 20px">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            </svg>
+            <h3 style="font-size:20px;font-weight:600;margin-bottom:8px;color:#1f2937">Режим Super Admin</h3>
+            <p style="color:#6b7280;margin-bottom:16px">Використовуйте <strong>ADMIN</strong> панель для управління організаціями клієнтів.</p>
+            <p style="color:#6b7280;margin-bottom:24px">Для роботи з власними лідами — створіть організацію і призначте себе власником.</p>
+            <button class="btn btn-p" onclick="createOrgForSuperAdmin()" style="padding:12px 24px;font-size:15px">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                Створити власну організацію
+            </button>
+        </div>
+    `;
+    document.getElementById('v-kanban').innerHTML = '';
+    document.getElementById('v-reports').innerHTML = '';
+}
+
+async function createOrgForSuperAdmin(){
+    const name = prompt('Назва вашої організації:');
+    if(!name) return;
+    
+    try {
+        // Створюємо організацію з Super Admin як Owner
+        const orgRef = await db.collection('organizations').add({
+            name: name,
+            createdAt: new Date().toISOString(),
+            createdBy: currentUser.uid,
+            ownerEmail: currentUser.email,
+            settings: {
+                statuses: getDefaultStatuses(),
+                funnels: [{
+                    id: 'default',
+                    name: 'Основна воронка',
+                    statuses: getDefaultStatuses(),
+                    isDefault: true
+                }]
+            }
+        });
+        
+        // Зберігаємо зв'язок користувача з організацією
+        await db.collection('users').doc(currentUser.uid).set({
+            email: currentUser.email,
+            organizationId: orgRef.id,
+            role: 'owner',
+            joinedAt: new Date().toISOString()
+        });
+        
+        // Додаємо в team
+        await db.collection('organizations').doc(orgRef.id).collection('team').doc(currentUser.uid).set({
+            id: currentUser.uid,
+            email: currentUser.email,
+            role: 'owner',
+            status: 'active',
+            joinedAt: new Date().toISOString()
+        });
+        
+        alert('Організацію створено! Сторінка перезавантажиться.');
+        location.reload();
+        
+    } catch(err) {
+        console.error(err);
+        alert('Помилка: ' + err.message);
     }
 }
 
@@ -1995,6 +2095,18 @@ async function loadOrganizations(){
 }
 
 async function selectOrganization(orgId){
+    // Super Admin не може перемикатися на чужі організації
+    if(currentRole === 'superadmin'){
+        // Перевіряємо чи це власна організація
+        const userDoc = await db.collection('users').doc(currentUser.uid).get();
+        const ownOrgId = userDoc.exists ? userDoc.data().organizationId : null;
+        
+        if(orgId !== ownOrgId){
+            alert('Як Super Admin ви можете працювати тільки зі своєю організацією.\n\nДля управління організаціями клієнтів використовуйте ADMIN панель.');
+            return;
+        }
+    }
+    
     currentOrg = organizations.find(o => o.id === orgId);
     if(!currentOrg){
         const orgDoc = await db.collection('organizations').doc(orgId).get();
@@ -2242,7 +2354,7 @@ function showAdminPanel(){
                 <button class="btn btn-s" onclick="openTeamModal()" title="Команда">
                     <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
                 </button>
-                <span class="admin-badge">ADMIN</span>
+                <button class="btn admin-badge" onclick="openAdminFullPanel()" title="Панель управління організаціями">ADMIN</button>
             </div>
         `;
         header.insertAdjacentHTML('afterbegin', adminHtml);
@@ -2263,7 +2375,16 @@ function renderOrgSelector(){
     const list = document.getElementById('org-list');
     if(!list) return;
     
-    list.innerHTML = organizations.map(org => `
+    // Super Admin бачить тільки свою організацію в dropdown
+    // Всі інші організації він бачить в ADMIN панелі
+    let orgsToShow = organizations;
+    
+    if(currentRole === 'superadmin' && currentOrg){
+        // Показуємо тільки власну організацію
+        orgsToShow = organizations.filter(o => o.id === currentOrg.id);
+    }
+    
+    list.innerHTML = orgsToShow.map(org => `
         <button class="org-dropdown-item ${currentOrg?.id === org.id ? 'active' : ''}" onclick="selectOrganization('${org.id}');toggleOrgDropdown()">
             <div style="display:flex;flex-direction:column;align-items:flex-start;flex:1;min-width:0">
                 <div style="display:flex;align-items:center;gap:8px;width:100%">
@@ -5141,7 +5262,13 @@ function getEmailLink(email) {
 
 // Render primary contact based on primaryChannel setting
 function renderPrimaryContact(l) {
+    // Визначаємо канал з пріоритетом: якщо є tg - показуємо tg
     let channel = l.primaryChannel || 'phone';
+    
+    // ВАЖЛИВО: якщо є tg і він заповнений - пріоритет tg
+    if(l.tg && l.tg.startsWith('@')) {
+        channel = 'tg';
+    }
     
     // Channel icons (SVG)
     const icons = {
@@ -5457,6 +5584,437 @@ function calculateNextDateTime(timeCode) {
         date: targetDate.toISOString().split('T')[0],
         time: targetTime
     };
+}
+
+// ===== ADMIN FULL PANEL =====
+function openAdminFullPanel(){
+    // Створюємо модалку якщо її немає
+    let modal = document.getElementById('admin-full-modal');
+    if(!modal){
+        const modalHtml = `
+            <div class="team-modal" id="admin-full-modal">
+                <div class="team-modal-content" style="max-width:700px;max-height:85vh">
+                    <div class="team-modal-header">
+                        <div class="team-modal-title">
+                            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#8b5cf6" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                            Панель Super Admin
+                        </div>
+                        <button class="btn btn-s" onclick="closeAdminFullPanel()">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                        </button>
+                    </div>
+                    <div class="team-modal-body" style="padding:0;overflow-y:auto;max-height:calc(85vh - 60px)">
+                        <div style="padding:16px;background:#f9fafb;border-bottom:1px solid #e5e7eb">
+                            <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">
+                                <div>
+                                    <div style="font-weight:600;font-size:15px">Організації клієнтів</div>
+                                    <div style="font-size:12px;color:#6b7280">Всього: <span id="admin-orgs-count">0</span></div>
+                                </div>
+                                <button class="btn btn-p" onclick="createOrganization();closeAdminFullPanel()">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                                    Нова організація
+                                </button>
+                            </div>
+                        </div>
+                        <div id="admin-orgs-list" style="padding:8px"></div>
+                    </div>
+                </div>
+            </div>
+        `;
+        document.body.insertAdjacentHTML('beforeend', modalHtml);
+        modal = document.getElementById('admin-full-modal');
+    }
+    
+    // Рендеримо список організацій
+    renderAdminOrgsList();
+    modal.classList.add('active');
+}
+
+function closeAdminFullPanel(){
+    document.getElementById('admin-full-modal')?.classList.remove('active');
+}
+
+function renderAdminOrgsList(){
+    const list = document.getElementById('admin-orgs-list');
+    const count = document.getElementById('admin-orgs-count');
+    if(!list) return;
+    
+    count.textContent = organizations.length;
+    
+    if(organizations.length === 0){
+        list.innerHTML = `
+            <div style="text-align:center;padding:40px;color:#6b7280">
+                <svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="#d1d5db" stroke-width="1.5" style="margin:0 auto 16px"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+                <div>Немає організацій</div>
+            </div>
+        `;
+        return;
+    }
+    
+    list.innerHTML = organizations.map(org => `
+        <div style="display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid #f3f4f6;flex-wrap:wrap">
+            <div style="flex:1;min-width:200px">
+                <div style="font-weight:600;font-size:14px;margin-bottom:2px">${org.name}</div>
+                <div style="font-size:12px;color:#6b7280">${org.ownerEmail || 'Без власника'}</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+                <span style="font-size:11px;color:#6b7280;padding:4px 8px;background:#f3f4f6;border-radius:4px">
+                    ${org.leadsCount || 0} лідів
+                </span>
+                <button class="btn btn-s" onclick="copyOrgId('${org.id}')" title="Копіювати ID">
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                    ID
+                </button>
+                <button class="btn btn-s" onclick="downloadScript('${org.id}', '${org.name}')" title="Завантажити скрипт">
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                    Скрипт
+                </button>
+                <button class="btn btn-s" onclick="copyClientInstructions('${org.id}', '${org.name}', '${org.ownerEmail || ''}')" title="Копіювати інструкцію для клієнта">
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                    Інструкція
+                </button>
+            </div>
+        </div>
+    `).join('');
+}
+
+function copyOrgId(orgId){
+    navigator.clipboard.writeText(orgId).then(() => {
+        showToast('ID скопійовано: ' + orgId);
+    }).catch(() => {
+        prompt('Скопіюйте ID:', orgId);
+    });
+}
+
+function downloadScript(orgId, orgName){
+    const safeName = orgName.replace(/[^a-zA-Zа-яА-ЯіІїЇєЄ0-9]/g, '_');
+    
+    const scriptContent = generateSyncScript(orgId);
+    
+    const blob = new Blob([scriptContent], { type: 'text/javascript' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `TALKO_CRM_Sync_${safeName}.js`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    
+    showToast('Скрипт завантажено');
+}
+
+function generateSyncScript(orgId){
+    return \`// ===== TALKO CRM - Google Sheets Sync Script =====
+// Організація ID: \${orgId}
+// Згенеровано: \${new Date().toLocaleDateString('uk-UA')}
+
+const CONFIG = {
+  FIREBASE_PROJECT_ID: 'talko-crm',
+  ORGANIZATION_ID: '\${orgId}',
+  
+  // Листи для синхронізації (змініть під ваші потреби)
+  SHEETS: [
+    { name: 'consult_clinic', source: 'consult_clinic' },
+    { name: 'consult_production', source: 'consult_production' }
+  ],
+  
+  // Колонки (A=1, B=2, C=3...)
+  COLUMNS: {
+    DATE: 1,      // A - Дата
+    TELEGRAM: 2,  // B - Telegram/Нік  
+    PHONE: 3      // C - Телефон
+  }
+};
+
+// ===== ГОЛОВНА ФУНКЦІЯ СИНХРОНІЗАЦІЇ =====
+function syncToFirestore() {
+  let totalSynced = 0;
+  let totalSkipped = 0;
+  
+  CONFIG.SHEETS.forEach(sheetConfig => {
+    const result = syncSheet(sheetConfig.name, sheetConfig.source);
+    totalSynced += result.synced;
+    totalSkipped += result.skipped;
+  });
+  
+  Logger.log(\\\`✅ ВСЬОГО: \\\${totalSynced} нових, \\\${totalSkipped} пропущено\\\`);
+}
+
+function syncSheet(sheetName, sourceName) {
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(sheetName);
+  if (!sheet) {
+    Logger.log('❌ Лист не знайдено: ' + sheetName);
+    return { synced: 0, skipped: 0 };
+  }
+  
+  const data = sheet.getDataRange().getValues();
+  let synced = 0;
+  let skipped = 0;
+  
+  for (let i = 1; i < data.length; i++) {
+    const row = data[i];
+    
+    const telegram = normalizeTelegram(row[CONFIG.COLUMNS.TELEGRAM - 1]);
+    const phone = normalizePhone(row[CONFIG.COLUMNS.PHONE - 1]);
+    const dateValue = row[CONFIG.COLUMNS.DATE - 1];
+    
+    if (!telegram && !phone) continue;
+    
+    if (leadExists(telegram, phone)) {
+      skipped++;
+      continue;
+    }
+    
+    const hasTelegram = telegram && telegram.startsWith('@');
+    
+    const lead = {
+      id: generateId(),
+      tg: telegram || '',
+      phone: phone || '',
+      viber: '',
+      whatsapp: '',
+      email: '',
+      primaryChannel: hasTelegram ? 'tg' : 'phone',
+      source: sourceName,
+      status: 'new',
+      nextAction: 'Подзвонити',
+      nextDate: getToday(),
+      nextTime: '10:00',
+      name: '',
+      biz: '',
+      notes: '',
+      createdAt: formatDate(dateValue) || new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      calls: 0,
+      noshow: 0,
+      deposit: 0,
+      amount: 0,
+      consult: '',
+      consultDate: '',
+      consultTime: '',
+      paidAt: '',
+      failReason: '',
+      reactDate: '',
+      log: [{ date: new Date().toISOString(), type: 'system', text: 'Створено з Google Sheets' }]
+    };
+    
+    if (saveLeadToFirestore(lead)) synced++;
+  }
+  
+  Logger.log(\\\`📊 \\\${sheetName}: \\\${synced} нових, \\\${skipped} пропущено\\\`);
+  return { synced, skipped };
+}
+
+// ===== FIRESTORE =====
+function saveLeadToFirestore(lead) {
+  const url = \\\`https://firestore.googleapis.com/v1/projects/\\\${CONFIG.FIREBASE_PROJECT_ID}/databases/(default)/documents/organizations/\\\${CONFIG.ORGANIZATION_ID}/leads/\\\${lead.id}\\\`;
+  
+  const firestoreData = {
+    fields: {
+      id: { stringValue: lead.id },
+      tg: { stringValue: lead.tg },
+      phone: { stringValue: lead.phone },
+      viber: { stringValue: lead.viber },
+      whatsapp: { stringValue: lead.whatsapp },
+      email: { stringValue: lead.email },
+      primaryChannel: { stringValue: lead.primaryChannel },
+      source: { stringValue: lead.source },
+      status: { stringValue: lead.status },
+      nextAction: { stringValue: lead.nextAction },
+      nextDate: { stringValue: lead.nextDate },
+      nextTime: { stringValue: lead.nextTime },
+      name: { stringValue: lead.name },
+      biz: { stringValue: lead.biz },
+      notes: { stringValue: lead.notes },
+      createdAt: { stringValue: lead.createdAt },
+      updatedAt: { stringValue: lead.updatedAt },
+      calls: { integerValue: lead.calls },
+      noshow: { integerValue: lead.noshow },
+      deposit: { integerValue: lead.deposit },
+      amount: { integerValue: lead.amount },
+      consult: { stringValue: lead.consult },
+      consultDate: { stringValue: lead.consultDate },
+      consultTime: { stringValue: lead.consultTime },
+      paidAt: { stringValue: lead.paidAt },
+      failReason: { stringValue: lead.failReason },
+      reactDate: { stringValue: lead.reactDate },
+      log: { arrayValue: { values: lead.log.map(e => ({ mapValue: { fields: { date: { stringValue: e.date }, type: { stringValue: e.type }, text: { stringValue: e.text } } } })) } }
+    }
+  };
+  
+  const options = {
+    method: 'patch',
+    contentType: 'application/json',
+    headers: { 'Authorization': 'Bearer ' + ScriptApp.getOAuthToken() },
+    payload: JSON.stringify(firestoreData),
+    muteHttpExceptions: true
+  };
+  
+  try {
+    const response = UrlFetchApp.fetch(url, options);
+    if (response.getResponseCode() === 200) {
+      Logger.log('✅ ' + (lead.tg || lead.phone));
+      return true;
+    }
+    Logger.log('❌ ' + response.getContentText());
+    return false;
+  } catch (e) {
+    Logger.log('❌ ' + e.toString());
+    return false;
+  }
+}
+
+function leadExists(telegram, phone) {
+  if (telegram && checkField('tg', telegram)) return true;
+  if (phone && checkField('phone', phone)) return true;
+  return false;
+}
+
+function checkField(field, value) {
+  const url = \\\`https://firestore.googleapis.com/v1/projects/\\\${CONFIG.FIREBASE_PROJECT_ID}/databases/(default)/documents:runQuery\\\`;
+  const options = {
+    method: 'post',
+    contentType: 'application/json',
+    headers: { 'Authorization': 'Bearer ' + ScriptApp.getOAuthToken() },
+    payload: JSON.stringify({
+      structuredQuery: {
+        from: [{ collectionId: 'leads' }],
+        where: { fieldFilter: { field: { fieldPath: field }, op: 'EQUAL', value: { stringValue: value } } },
+        limit: 1
+      },
+      parent: \\\`projects/\\\${CONFIG.FIREBASE_PROJECT_ID}/databases/(default)/documents/organizations/\\\${CONFIG.ORGANIZATION_ID}\\\`
+    }),
+    muteHttpExceptions: true
+  };
+  
+  try {
+    const results = JSON.parse(UrlFetchApp.fetch(url, options).getContentText());
+    return results && results.length > 0 && results[0].document;
+  } catch (e) { return false; }
+}
+
+// ===== ДОПОМІЖНІ ФУНКЦІЇ =====
+function normalizeTelegram(value) {
+  if (!value) return '';
+  let tg = String(value).trim();
+  if (tg && !tg.startsWith('@') && !tg.match(/^\\\\d+$/)) tg = '@' + tg;
+  return tg;
+}
+
+function normalizePhone(value) {
+  if (!value) return '';
+  let phone = String(value).replace(/[^\\\\d+]/g, '');
+  if (phone.length === 9) phone = '+380' + phone;
+  else if (phone.length === 10 && phone.startsWith('0')) phone = '+38' + phone;
+  else if (phone.length === 12 && phone.startsWith('380')) phone = '+' + phone;
+  if (phone.length >= 10 && !phone.startsWith('+')) phone = '+' + phone;
+  return phone;
+}
+
+function formatDate(value) {
+  if (!value) return '';
+  try { return value instanceof Date ? value.toISOString() : new Date(value).toISOString(); }
+  catch (e) { return ''; }
+}
+
+function generateId() { return 'l' + Date.now() + Math.random().toString(36).substr(2, 5); }
+
+function getToday() {
+  const now = new Date();
+  return \\\`\\\${now.getFullYear()}-\\\${String(now.getMonth()+1).padStart(2,'0')}-\\\${String(now.getDate()).padStart(2,'0')}\\\`;
+}
+
+// ===== ТРИГЕРИ =====
+function createTimeTrigger() {
+  ScriptApp.getProjectTriggers().forEach(t => { if (t.getHandlerFunction() === 'syncToFirestore') ScriptApp.deleteTrigger(t); });
+  ScriptApp.newTrigger('syncToFirestore').timeBased().everyMinutes(5).create();
+  Logger.log('✅ Автосинхронізація: кожні 5 хвилин');
+}
+
+function removeAllTriggers() {
+  ScriptApp.getProjectTriggers().forEach(t => ScriptApp.deleteTrigger(t));
+  Logger.log('✅ Тригери видалено');
+}
+
+// ===== МЕНЮ =====
+function onOpen() {
+  SpreadsheetApp.getUi()
+    .createMenu('🚀 TALKO CRM')
+    .addItem('▶️ Синхронізувати', 'syncToFirestore')
+    .addSeparator()
+    .addItem('⏰ Увімкнути автосинхронізацію', 'createTimeTrigger')
+    .addItem('🛑 Вимкнути автосинхронізацію', 'removeAllTriggers')
+    .addToUi();
+}
+\`;
+}
+
+function copyClientInstructions(orgId, orgName, ownerEmail){
+    const instructions = \`Привіт! Ось інструкція для підключення TALKO CRM:
+
+📋 КРОК 1: Google Sheet
+1. Створи нову таблицю Google Sheets
+2. Назви листи: consult_clinic, consult_production
+3. Колонки: A=Дата, B=Telegram/Нік, C=Телефон
+
+📋 КРОК 2: Встановити скрипт
+1. Меню: Розширення → Apps Script
+2. Видали весь код
+3. Встав код зі скрипта який я надішлю
+4. Збережи (Ctrl+S)
+
+📋 КРОК 3: Запустити
+1. Вибери функцію: syncToFirestore
+2. Натисни "Запустити"
+3. Дозволь всі права (безпечно, це доступ до твоєї таблиці)
+
+📋 КРОК 4: Увійти в CRM
+1. Відкрий: https://talko-crm.vercel.app
+2. Натисни "Увійти з Google"
+3. Використай email: \${ownerEmail || '[твій email]'}
+
+✅ Готово! Тепер ліди з таблиці автоматично синхронізуються в CRM.
+
+Організація: \${orgName}
+ID (для скрипта): \${orgId}
+
+Питання — пиши!\`;
+
+    navigator.clipboard.writeText(instructions).then(() => {
+        showToast('Інструкцію скопійовано');
+    }).catch(() => {
+        // Fallback
+        const textarea = document.createElement('textarea');
+        textarea.value = instructions;
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+        showToast('Інструкцію скопійовано');
+    });
+}
+
+function showToast(message){
+    // Видаляємо старий toast якщо є
+    const oldToast = document.querySelector('.toast-message');
+    if(oldToast) oldToast.remove();
+    
+    const toast = document.createElement('div');
+    toast.className = 'toast-message';
+    toast.innerHTML = \`
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+        \${message}
+    \`;
+    toast.style.cssText = \`
+        position:fixed;bottom:100px;left:50%;transform:translateX(-50%);
+        background:#1f2937;color:#fff;padding:12px 20px;border-radius:8px;
+        font-size:14px;z-index:9999;display:flex;align-items:center;gap:8px;
+        box-shadow:0 4px 12px rgba(0,0,0,0.2);animation:fadeInUp .3s ease;
+    \`;
+    document.body.appendChild(toast);
+    
+    setTimeout(() => toast.remove(), 3000);
 }
 </script>
 </body>
