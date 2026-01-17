@@ -546,7 +546,7 @@
         .funnel-title{font-weight:600;margin-bottom:16px}
         .funnel-row{display:flex;align-items:center;gap:12px;margin-bottom:8px}
         .funnel-label{width:160px;font-size:13px}
-        .funnel-bar{flex:1;height:28px;background:var(--gl);border-radius:4px;overflow:hidden}
+        .funnel-progress{flex:1;height:28px;background:var(--gl);border-radius:4px;overflow:hidden}
         .funnel-fill{height:100%;background:var(--p);display:flex;align-items:center;padding:0 10px;font-size:12px;color:#fff;font-weight:500}
         
         /* Modal */
@@ -774,7 +774,7 @@
             .reports-funnel{padding:16px}
             .reports-funnel-title{font-size:14px;margin-bottom:14px}
             .funnel-bar-header{font-size:12px}
-            .funnel-bar{height:28px}
+            .funnel-progress{height:28px}
             
             /* Modal - full screen on mobile */
             .modal-bg{padding:0}
@@ -4280,7 +4280,7 @@ function renderReportsFunnel(fromDate, toDate, statusIds, statuses){
                     <span class="funnel-bar-label">${status.name}</span>
                     <span class="funnel-bar-value">${count}</span>
                 </div>
-                <div class="funnel-bar">
+                <div class="funnel-progress">
                     <div class="funnel-bar-fill" style="width:${pct}%;background:${status.color}">${count > 0 ? count : ''}</div>
                 </div>
             </div>
