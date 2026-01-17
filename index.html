@@ -90,6 +90,43 @@
         .team-invite-title{font-size:14px;font-weight:600;margin-bottom:12px;color:#374151}
         .team-invite-btns{display:flex;gap:8px;flex-wrap:wrap}
         
+        /* Settings Panel - Google style slide-in */
+        .settings-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.3);z-index:400}
+        .settings-overlay.active{display:block}
+        .settings-panel{position:fixed;top:0;right:-420px;width:400px;max-width:100vw;height:100vh;background:#fff;box-shadow:-4px 0 20px rgba(0,0,0,0.15);z-index:401;transition:right 0.3s ease;display:flex;flex-direction:column}
+        .settings-panel.active{right:0}
+        .settings-header{padding:20px;border-bottom:1px solid #e5e7eb;display:flex;justify-content:space-between;align-items:center}
+        .settings-title{font-size:18px;font-weight:600;color:#1f2937}
+        .settings-close{width:36px;height:36px;border:none;background:#f3f4f6;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center}
+        .settings-close:hover{background:#e5e7eb}
+        .settings-body{flex:1;overflow-y:auto;padding:20px}
+        .settings-section{margin-bottom:24px}
+        .settings-section-title{font-size:14px;font-weight:600;color:#374151;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+        .settings-section-title svg{width:18px;height:18px;color:#6b7280}
+        
+        /* Status Editor */
+        .status-list{display:flex;flex-direction:column;gap:8px}
+        .status-item{display:flex;align-items:center;gap:10px;padding:10px 12px;background:#f9fafb;border-radius:10px;cursor:grab}
+        .status-item:active{cursor:grabbing}
+        .status-item.dragging{opacity:0.5;background:#e5e7eb}
+        .status-color{width:24px;height:24px;border-radius:6px;flex-shrink:0;cursor:pointer;border:2px solid rgba(0,0,0,0.1)}
+        .status-name{flex:1;font-size:14px;font-weight:500;color:#1f2937}
+        .status-name input{width:100%;border:none;background:transparent;font-size:14px;font-weight:500;color:#1f2937;outline:none}
+        .status-actions{display:flex;gap:4px}
+        .status-action-btn{width:28px;height:28px;border:none;background:transparent;border-radius:6px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#9ca3af}
+        .status-action-btn:hover{background:#e5e7eb;color:#374151}
+        .status-action-btn.delete:hover{background:#fef2f2;color:#ef4444}
+        .status-add-btn{display:flex;align-items:center;justify-content:center;gap:8px;padding:12px;border:2px dashed #d1d5db;border-radius:10px;background:transparent;color:#6b7280;font-size:14px;font-weight:500;cursor:pointer;margin-top:12px;width:100%}
+        .status-add-btn:hover{border-color:#22c55e;color:#22c55e;background:#f0fdf4}
+        
+        /* Color Picker */
+        .color-picker-popup{position:absolute;background:#fff;border-radius:12px;box-shadow:0 10px 40px rgba(0,0,0,0.2);padding:12px;z-index:500;display:none}
+        .color-picker-popup.active{display:block}
+        .color-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}
+        .color-option{width:28px;height:28px;border-radius:6px;cursor:pointer;border:2px solid transparent}
+        .color-option:hover{transform:scale(1.1)}
+        .color-option.selected{border-color:#1f2937}
+        
         /* Sync indicator */
         .sync-status{display:flex;align-items:center;gap:4px;font-size:11px;color:var(--g);padding:4px 8px;background:var(--gl);border-radius:4px}
         .sync-dot{width:6px;height:6px;border-radius:50%;background:var(--p)}
@@ -615,6 +652,9 @@
                 <button class="btn btn-s" id="team-btn" onclick="openTeamModal()" style="display:none" title="Команда">
                     <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
                 </button>
+                <button class="btn btn-s" id="settings-btn" onclick="openSettingsPanel()" style="display:none" title="Налаштування">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                </button>
                 <button class="btn btn-p" onclick="openModal()">+ Додати</button>
                 <label class="btn btn-s">Імпорт<input type="file" accept=".xlsx,.xls" onchange="importXLS(event)" hidden></label>
                 <button class="btn btn-s" onclick="exportXLS()">Експорт</button>
@@ -1113,6 +1153,47 @@
     </div>
 </div>
 
+<!-- Settings Panel (Google-style slide-in) -->
+<div class="settings-overlay" id="settings-overlay" onclick="closeSettingsPanel()"></div>
+<div class="settings-panel" id="settings-panel">
+    <div class="settings-header">
+        <div class="settings-title">Налаштування</div>
+        <button class="settings-close" onclick="closeSettingsPanel()">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+    </div>
+    <div class="settings-body">
+        <!-- Status Editor Section -->
+        <div class="settings-section">
+            <div class="settings-section-title">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>
+                Статуси воронки
+            </div>
+            <div class="status-list" id="status-list">
+                <!-- Статуси генеруються динамічно -->
+            </div>
+            <button class="status-add-btn" onclick="addNewStatus()">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                Додати статус
+            </button>
+        </div>
+        
+        <!-- Future: Funnels Section -->
+        <div class="settings-section" style="opacity:0.5">
+            <div class="settings-section-title">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+                Воронки продажів
+                <span style="font-size:11px;background:#e5e7eb;padding:2px 8px;border-radius:4px;margin-left:auto">Скоро</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Color Picker Popup -->
+<div class="color-picker-popup" id="color-picker">
+    <div class="color-grid" id="color-grid"></div>
+</div>
+
 <script>
 // ===== FIREBASE CONFIG =====
 const firebaseConfig = {
@@ -1298,6 +1379,11 @@ async function initUserMode(){
             // Показуємо кнопку команди для Owner та Manager
             if(currentRole === 'owner' || currentRole === 'manager'){
                 document.getElementById('team-btn').style.display = 'inline-flex';
+            }
+            
+            // Показуємо кнопку налаштувань для Owner
+            if(currentRole === 'owner'){
+                document.getElementById('settings-btn').style.display = 'inline-flex';
             }
             
             initFirestoreListener();
@@ -1781,6 +1867,284 @@ async function removeTeamMember(userId){
     }
 }
 
+// ===== SETTINGS PANEL =====
+const STATUS_COLORS = [
+    '#1565c0', '#1e88e5', '#42a5f5', // Blues
+    '#2e7d32', '#43a047', '#66bb6a', // Greens
+    '#7b1fa2', '#9c27b0', '#ba68c8', // Purples
+    '#c62828', '#ef5350', '#e57373', // Reds
+    '#ef6c00', '#ff9800', '#ffb74d', // Oranges
+    '#00695c', '#00897b', '#4db6ac', // Teals
+    '#546e7a', '#78909c', '#90a4ae', // Grays
+    '#f57f17', '#fbc02d', '#fff176'  // Yellows
+];
+
+let editingStatusId = null;
+let colorPickerTarget = null;
+
+function openSettingsPanel(){
+    if(!currentOrg) return;
+    
+    renderStatusList();
+    renderColorPicker();
+    
+    document.getElementById('settings-overlay').classList.add('active');
+    document.getElementById('settings-panel').classList.add('active');
+}
+
+function closeSettingsPanel(){
+    document.getElementById('settings-overlay').classList.remove('active');
+    document.getElementById('settings-panel').classList.remove('active');
+    hideColorPicker();
+}
+
+function getOrgStatuses(){
+    // Повертаємо статуси організації або дефолтні
+    if(currentOrg?.settings?.statuses){
+        return currentOrg.settings.statuses;
+    }
+    return getDefaultStatuses();
+}
+
+function renderStatusList(){
+    const container = document.getElementById('status-list');
+    if(!container) return;
+    
+    const statuses = getOrgStatuses();
+    
+    // Сортуємо по order
+    const sortedStatuses = Object.entries(statuses)
+        .sort((a, b) => (a[1].order || 0) - (b[1].order || 0));
+    
+    container.innerHTML = sortedStatuses.map(([id, status], index) => `
+        <div class="status-item" draggable="true" data-status-id="${id}" ondragstart="dragStatusStart(event)" ondragover="dragStatusOver(event)" ondrop="dropStatus(event)" ondragend="dragStatusEnd(event)">
+            <div class="status-color" style="background:${status.color}" onclick="openColorPicker(event, '${id}')" title="Змінити колір"></div>
+            <div class="status-name">
+                <input type="text" value="${status.name}" onchange="updateStatusName('${id}', this.value)" onblur="saveStatuses()">
+            </div>
+            <div class="status-actions">
+                <button class="status-action-btn" onclick="moveStatus('${id}', -1)" title="Вгору" ${index === 0 ? 'disabled style="opacity:0.3"' : ''}>
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="18 15 12 9 6 15"/></svg>
+                </button>
+                <button class="status-action-btn" onclick="moveStatus('${id}', 1)" title="Вниз" ${index === sortedStatuses.length - 1 ? 'disabled style="opacity:0.3"' : ''}>
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                </button>
+                <button class="status-action-btn delete" onclick="deleteStatus('${id}')" title="Видалити">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+                </button>
+            </div>
+        </div>
+    `).join('');
+}
+
+function renderColorPicker(){
+    const grid = document.getElementById('color-grid');
+    if(!grid) return;
+    
+    grid.innerHTML = STATUS_COLORS.map(color => `
+        <div class="color-option" style="background:${color}" onclick="selectColor('${color}')" data-color="${color}"></div>
+    `).join('');
+}
+
+function openColorPicker(event, statusId){
+    event.stopPropagation();
+    colorPickerTarget = statusId;
+    
+    const picker = document.getElementById('color-picker');
+    const rect = event.target.getBoundingClientRect();
+    
+    picker.style.top = (rect.bottom + 8) + 'px';
+    picker.style.left = Math.min(rect.left, window.innerWidth - 220) + 'px';
+    picker.classList.add('active');
+    
+    // Позначаємо поточний колір
+    const statuses = getOrgStatuses();
+    const currentColor = statuses[statusId]?.color;
+    document.querySelectorAll('.color-option').forEach(opt => {
+        opt.classList.toggle('selected', opt.dataset.color === currentColor);
+    });
+    
+    // Закриваємо при кліку поза пікером
+    setTimeout(() => {
+        document.addEventListener('click', hideColorPickerOnOutsideClick);
+    }, 10);
+}
+
+function hideColorPicker(){
+    document.getElementById('color-picker')?.classList.remove('active');
+    document.removeEventListener('click', hideColorPickerOnOutsideClick);
+    colorPickerTarget = null;
+}
+
+function hideColorPickerOnOutsideClick(e){
+    if(!e.target.closest('.color-picker-popup') && !e.target.closest('.status-color')){
+        hideColorPicker();
+    }
+}
+
+function selectColor(color){
+    if(!colorPickerTarget) return;
+    
+    const statuses = getOrgStatuses();
+    if(statuses[colorPickerTarget]){
+        statuses[colorPickerTarget].color = color;
+        saveStatuses();
+        renderStatusList();
+    }
+    
+    hideColorPicker();
+}
+
+function updateStatusName(statusId, newName){
+    const statuses = getOrgStatuses();
+    if(statuses[statusId]){
+        statuses[statusId].name = newName.trim() || 'Без назви';
+    }
+}
+
+function moveStatus(statusId, direction){
+    const statuses = getOrgStatuses();
+    const entries = Object.entries(statuses).sort((a, b) => (a[1].order || 0) - (b[1].order || 0));
+    
+    const currentIndex = entries.findIndex(([id]) => id === statusId);
+    const newIndex = currentIndex + direction;
+    
+    if(newIndex < 0 || newIndex >= entries.length) return;
+    
+    // Swap orders
+    const currentOrder = entries[currentIndex][1].order;
+    const targetOrder = entries[newIndex][1].order;
+    
+    statuses[entries[currentIndex][0]].order = targetOrder;
+    statuses[entries[newIndex][0]].order = currentOrder;
+    
+    saveStatuses();
+    renderStatusList();
+}
+
+function addNewStatus(){
+    const statuses = getOrgStatuses();
+    
+    // Генеруємо ID
+    const newId = 'status_' + Date.now();
+    
+    // Знаходимо максимальний order
+    const maxOrder = Math.max(...Object.values(statuses).map(s => s.order || 0), 0);
+    
+    // Випадковий колір
+    const randomColor = STATUS_COLORS[Math.floor(Math.random() * STATUS_COLORS.length)];
+    
+    statuses[newId] = {
+        name: 'Новий статус',
+        color: randomColor,
+        order: maxOrder + 1
+    };
+    
+    // Зберігаємо в currentOrg
+    if(!currentOrg.settings) currentOrg.settings = {};
+    currentOrg.settings.statuses = statuses;
+    
+    saveStatuses();
+    renderStatusList();
+    
+    // Фокус на новий статус
+    setTimeout(() => {
+        const inputs = document.querySelectorAll('.status-item input');
+        const lastInput = inputs[inputs.length - 1];
+        if(lastInput){
+            lastInput.select();
+            lastInput.focus();
+        }
+    }, 100);
+}
+
+function deleteStatus(statusId){
+    const statuses = getOrgStatuses();
+    
+    // Перевіряємо чи є ліди з цим статусом
+    const leadsWithStatus = leads.filter(l => l.status === statusId);
+    if(leadsWithStatus.length > 0){
+        alert(`Неможливо видалити статус: ${leadsWithStatus.length} лідів мають цей статус`);
+        return;
+    }
+    
+    if(Object.keys(statuses).length <= 2){
+        alert('Потрібно мати мінімум 2 статуси');
+        return;
+    }
+    
+    if(!confirm('Видалити цей статус?')) return;
+    
+    delete statuses[statusId];
+    saveStatuses();
+    renderStatusList();
+}
+
+async function saveStatuses(){
+    if(!currentOrg) return;
+    
+    const statuses = getOrgStatuses();
+    
+    try {
+        await db.collection('organizations').doc(currentOrg.id).update({
+            'settings.statuses': statuses
+        });
+        
+        // Оновлюємо локально
+        if(!currentOrg.settings) currentOrg.settings = {};
+        currentOrg.settings.statuses = statuses;
+        
+        // Перерендерюємо Kanban
+        render();
+        
+    } catch(err){
+        console.error('Error saving statuses:', err);
+        alert('Помилка збереження: ' + err.message);
+    }
+}
+
+// Drag & Drop для статусів
+let draggedStatusId = null;
+
+function dragStatusStart(e){
+    draggedStatusId = e.target.dataset.statusId;
+    e.target.classList.add('dragging');
+}
+
+function dragStatusOver(e){
+    e.preventDefault();
+}
+
+function dropStatus(e){
+    e.preventDefault();
+    const targetId = e.target.closest('.status-item')?.dataset.statusId;
+    
+    if(!draggedStatusId || !targetId || draggedStatusId === targetId) return;
+    
+    const statuses = getOrgStatuses();
+    const entries = Object.entries(statuses).sort((a, b) => (a[1].order || 0) - (b[1].order || 0));
+    
+    const draggedIndex = entries.findIndex(([id]) => id === draggedStatusId);
+    const targetIndex = entries.findIndex(([id]) => id === targetId);
+    
+    // Переміщуємо
+    const [removed] = entries.splice(draggedIndex, 1);
+    entries.splice(targetIndex, 0, removed);
+    
+    // Оновлюємо orders
+    entries.forEach(([id], index) => {
+        statuses[id].order = index + 1;
+    });
+    
+    saveStatuses();
+    renderStatusList();
+}
+
+function dragStatusEnd(e){
+    e.target.classList.remove('dragging');
+    draggedStatusId = null;
+}
+
 // ===== FIRESTORE SYNC (Organization-based) =====
 function initFirestoreListener(){
     if(unsubscribe) unsubscribe();
@@ -1858,7 +2222,11 @@ function setSyncStatus(status, text){
 }
 
 // ===== CONSTANTS =====
-const ST={new:'Новий лід',contacted:'Контакт',scheduled:'Призначена',completed:'Проведена',report_sent:'Звіт відправлено',repeat:'Повторна',deposit:'Завдаток',paid:'Оплачено',failed:'Відмова',frozen:'Заморожений'};
+const ST_DEFAULT={new:'Новий лід',contacted:'Контакт',scheduled:'Призначена',completed:'Проведена',report_sent:'Звіт відправлено',repeat:'Повторна',deposit:'Завдаток',paid:'Оплачено',failed:'Відмова',frozen:'Заморожений'};
+function getStatusName(statusId){ const statuses = currentOrg?.settings?.statuses || ST_DEFAULT; return statuses[statusId]?.name || ST_DEFAULT[statusId] || statusId; }
+function getStatusColor(statusId){ const statuses = currentOrg?.settings?.statuses; return statuses?.[statusId]?.color || '#6b7280'; }
+function getStatusIds(){ const statuses = currentOrg?.settings?.statuses || ST_DEFAULT; return Object.entries(statuses).sort((a,b) => (a[1].order||0) - (b[1].order||0)).map(([id]) => id); }
+const ST = ST_DEFAULT; // Legacy compatibility
 const SRC={bot:'Бот',mk_clinic:'МК Клініки',mk_prod:'МК Виробництво',ads:'Реклама',ref:'Рекомендація',consult_clinic:'Консультація'};
 const CUR={UAH:'₴',USD:'$',EUR:'€'};
 let leads=[];
@@ -2231,15 +2599,15 @@ function renderTaskRow(t, status) {
             <span class="task-score ${scoreClass}">${score}</span>
         </div>
         <div class="task-status-wrap" onclick="event.stopPropagation()">
-            <button class="task-status-btn st-${t.l.status || 'new'}" onclick="toggleStatusDropdown('${t.l.id}', this)">
-                ${ST[t.l.status] || 'Новий'}
+            <button class="task-status-btn" style="background:${getStatusColor(t.l.status || 'new')}20;color:${getStatusColor(t.l.status || 'new')};border-color:${getStatusColor(t.l.status || 'new')}" onclick="toggleStatusDropdown('${t.l.id}', this)">
+                ${getStatusName(t.l.status || 'new')}
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
             </button>
             <div class="task-status-dropdown" id="status-dropdown-${t.l.id}">
-                ${Object.entries(ST).map(([key, label]) => `
+                ${getStatusIds().map(key => `
                     <div class="task-status-option" onclick="changeLeadStatus('${t.l.id}', '${key}')">
-                        <span class="dot ${key}"></span>
-                        ${label}
+                        <span class="dot" style="background:${getStatusColor(key)}"></span>
+                        ${getStatusName(key)}
                     </div>
                 `).join('')}
             </div>
@@ -2489,14 +2857,15 @@ function filterLeads(arr){
 }
 
 function renderKanban(){
-    const cols=['new','scheduled','completed','report_sent','repeat','deposit','paid'];
-    const filtered=filterLeads(leads);
-    document.getElementById('kanban').innerHTML=cols.map(s=>{
-        const items=filtered.filter(l=>l.status===s);
-        return`<div class="column" data-status="${s}">
-            <div class="column-header"><span>${ST[s]}</span><span class="column-count">${items.length}</span></div>
+    const cols = getStatusIds();
+    const filtered = filterLeads(leads);
+    document.getElementById('kanban').innerHTML = cols.map(s => {
+        const items = filtered.filter(l => l.status === s);
+        const color = getStatusColor(s);
+        return `<div class="column" data-status="${s}">
+            <div class="column-header" style="border-top:3px solid ${color}"><span>${getStatusName(s)}</span><span class="column-count">${items.length}</span></div>
             <div class="column-cards" ondragover="dOver(event)" ondrop="dDrop(event,'${s}')" ondragleave="dLeave(event)">
-                ${items.map(l=>kCard(l)).join('')}
+                ${items.map(l => kCard(l)).join('')}
             </div>
         </div>`;
     }).join('');
