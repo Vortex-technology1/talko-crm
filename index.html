@@ -968,6 +968,12 @@
     </style>
 </head>
 <body>
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(255,255,255,0.9);z-index:9999;justify-content:center;align-items:center;flex-direction:column;">
+        <div style="font-size:24px;color:#22c55e;margin-bottom:10px;">⏳</div>
+        <div style="color:#525252;">Завантаження...</div>
+    </div>
+    
     <!-- Auth Screen - Premium Landing -->
     <div class="auth-screen" id="auth-screen">
         <div class="auth-container">
@@ -1789,6 +1795,48 @@ let currentAssigneeFilter = null; // null = всі, 'mine' = мої, userId = к
 let selectedFunnelForEdit = null; // Воронка яку редагуємо в налаштуваннях
 let teamMembers = [];           // Кешований список членів команди
 
+// ===== UTILITIES =====
+function debounce(fn, delay) {
+    let timeout;
+    return function(...args) {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => fn.apply(this, args), delay);
+    };
+}
+
+// Валідація дати
+function isValidDateTime(str) {
+    if(!str) return false;
+    const regex = /^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2})?$/;
+    if(!regex.test(str)) return false;
+    const date = new Date(str);
+    return !isNaN(date.getTime());
+}
+
+function promptDateTime(message, defaultValue) {
+    let result = prompt(message, defaultValue);
+    if(!result) return null;
+    result = result.trim();
+    if(!isValidDateTime(result)) {
+        alert('Невірний формат дати. Використовуйте: YYYY-MM-DD або YYYY-MM-DDTHH:MM');
+        return null;
+    }
+    return result;
+}
+
+// Loading overlay
+function showLoading(text = 'Завантаження...') {
+    const el = document.getElementById('loading-overlay');
+    if(el) { 
+        el.querySelector('div:last-child').textContent = text;
+        el.style.display = 'flex'; 
+    }
+}
+function hideLoading() {
+    const el = document.getElementById('loading-overlay');
+    if(el) el.style.display = 'none';
+}
+
 // ===== HELPER: Check if Super Admin =====
 function isSuperAdmin(email) {
     return SUPER_ADMIN_EMAILS.includes(email?.toLowerCase());
@@ -1889,6 +1937,8 @@ auth.onAuthStateChanged(async (user) => {
         document.getElementById('auth-modal').classList.remove('active');
         document.getElementById('user-email').textContent = user.email;
         
+        showLoading('Завантаження даних...');
+        
         try {
             if(isSuperAdmin(user.email)){
                 currentRole = 'superadmin';
@@ -1899,6 +1949,8 @@ auth.onAuthStateChanged(async (user) => {
         } catch(err) {
             console.error('Init error:', err);
             alert('Помилка завантаження: ' + err.message);
+        } finally {
+            hideLoading();
         }
         
         document.getElementById('app').style.display = 'block';
@@ -2818,7 +2870,7 @@ function dropStatus(e){
         statuses[id].order = index + 1;
     });
     
-    saveStatuses();
+    debouncedSaveStatuses();
     renderStatusList();
 }
 
@@ -3046,6 +3098,9 @@ async function saveStatuses(){
         alert('Помилка збереження: ' + err.message);
     }
 }
+
+// Debounced версія для drag-n-drop
+const debouncedSaveStatuses = debounce(saveStatuses, 500);
 
 // ===== ASSIGNMENT MODE =====
 function renderAssignmentMode(){
@@ -3853,7 +3908,7 @@ function taskAction(id,a){
         case'open':openModal(id);return;
         case'schedule':
             updatedLead.status='scheduled';
-            updatedLead.consult=prompt('Дата консультації (YYYY-MM-DDTHH:MM):',tomorrow()+'T14:00');
+            updatedLead.consult=promptDateTime('Дата консультації (YYYY-MM-DDTHH:MM):',tomorrow()+'T14:00');
             updatedLead.noshow=0;
             updatedLead.nextDate=updatedLead.consult?addDays(updatedLead.consult.split('T')[0],-1):tomorrow();
             updatedLead.nextTime='10:00';
@@ -3918,7 +3973,7 @@ function taskAction(id,a){
             addLog(updatedLead,'status','Не прийшов ('+updatedLead.noshow+' раз). Наступна спроба через '+noShowDelay+' днів');
             break;
         case'reschedule':
-            updatedLead.consult=prompt('Нова дата консультації:',tomorrow()+'T14:00');
+            updatedLead.consult=promptDateTime('Нова дата консультації:',tomorrow()+'T14:00');
             updatedLead.noshow=0;
             updatedLead.nextDate=updatedLead.consult?addDays(updatedLead.consult.split('T')[0],-1):tomorrow();
             updatedLead.nextTime='10:00';
@@ -3948,7 +4003,7 @@ function taskAction(id,a){
             updatedLead.calls=0;
             updatedLead.sms=0;
             updatedLead.noshow=0;
-            updatedLead.consult=prompt('Дата повторної консультації:',tomorrow()+'T14:00');
+            updatedLead.consult=promptDateTime('Дата повторної консультації:',tomorrow()+'T14:00');
             updatedLead.nextDate=updatedLead.consult?addDays(updatedLead.consult.split('T')[0],-1):tomorrow();
             updatedLead.nextTime='10:00';
             updatedLead.nextAction='Підтвердити консультацію';
@@ -4735,6 +4790,12 @@ function onStatusChange(){
 
 // ===== LEAD SCORING =====
 function calcScore(l){
+    // Кешуємо результат на основі ключових полів
+    const cacheKey = `${l.status}_${l.source}_${l.noshow}_${l.calls}_${l.finDep}_${l.stageDate}_${l.report?.length||0}`;
+    if(l._scoreCache === cacheKey && l._cachedScore !== undefined) {
+        return l._cachedScore;
+    }
+    
     let score=50; // базовий
     
     // Джерело (+/- 15)
@@ -4787,8 +4848,11 @@ function calcScore(l){
         if(r.includes('дорого')||r.includes('конкурент'))score-=10;
     }
     
-    // Обмежуємо 0-100
-    return Math.max(0,Math.min(100,score));
+    // Обмежуємо 0-100 та кешуємо
+    const result = Math.max(0,Math.min(100,score));
+    l._scoreCache = cacheKey;
+    l._cachedScore = result;
+    return result;
 }
 
 // ===== COMM LOG =====
@@ -5178,7 +5242,7 @@ function changeLeadStatus(leadId, newStatus) {
     
     // Логіка для різних статусів
     if(newStatus === 'scheduled' && !updatedLead.consult) {
-        const dt = prompt('Дата консультації (YYYY-MM-DDTHH:MM):', tomorrow() + 'T14:00');
+        const dt = promptDateTime('Дата консультації (YYYY-MM-DDTHH:MM):', tomorrow() + 'T14:00');
         if(dt) {
             updatedLead.consult = dt;
             updatedLead.nextDate = addDays(dt.split('T')[0], -1);
@@ -5485,7 +5549,7 @@ function setQuickFinal(finalAction) {
     const updatedLead = {...l};
     
     if(finalAction === 'scheduled') {
-        const dt = prompt('Дата і час консультації:', tomorrow() + 'T14:00');
+        const dt = promptDateTime('Дата і час консультації:', tomorrow() + 'T14:00');
         if(!dt) return;
         updatedLead.status = 'scheduled';
         updatedLead.consult = dt;
