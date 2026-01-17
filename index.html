@@ -4708,7 +4708,6 @@ async function saveLeadForm(){
     }
     if(data.status==='failed'&&!data.reactDate)data.reactDate=addDays(today(),90);
     
-    // Блокуємо кнопку збереження
     const saveBtn = document.querySelector('.modal-foot .btn-p');
     if(saveBtn) { saveBtn.disabled = true; saveBtn.textContent = 'Збереження...'; }
     
@@ -4725,13 +4724,8 @@ async function saveLeadForm(){
 async function delLeadForm(){
     if(!editing)return;
     if(!confirm('Видалити ліда?'))return;
-    try {
-        await deleteLead(editing);
-        closeModal();
-    } catch(err) {
-        console.error('Delete error:', err);
-        alert('Помилка видалення: ' + err.message);
-    }
+    try { await deleteLead(editing); closeModal(); }
+    catch(err) { console.error('Delete error:', err); alert('Помилка: ' + err.message); }
 }
 function onStatusChange(){
     const st=document.getElementById('f-status').value;
@@ -5890,7 +5884,7 @@ function generateSyncScript(orgId){
 }
 
 function copyClientInstructions(orgId, orgName, ownerEmail){
-    const instructions = \`Привіт! Ось інструкція для підключення TALKO CRM:
+    const instructions = `Привіт! Ось інструкція для підключення TALKO CRM:
 
 📋 КРОК 1: Google Sheet
 1. Створи нову таблицю Google Sheets
@@ -5918,7 +5912,7 @@ function copyClientInstructions(orgId, orgName, ownerEmail){
 Організація: \${orgName}
 ID (для скрипта): \${orgId}
 
-Питання — пиши!\`;
+Питання — пиши!`;
 
     navigator.clipboard.writeText(instructions).then(() => {
         showToast('Інструкцію скопійовано');
@@ -5941,16 +5935,16 @@ function showToast(message){
     
     const toast = document.createElement('div');
     toast.className = 'toast-message';
-    toast.innerHTML = \`
+    toast.innerHTML = `
         <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
         \${message}
-    \`;
-    toast.style.cssText = \`
+    `;
+    toast.style.cssText = `
         position:fixed;bottom:100px;left:50%;transform:translateX(-50%);
         background:#1f2937;color:#fff;padding:12px 20px;border-radius:8px;
         font-size:14px;z-index:9999;display:flex;align-items:center;gap:8px;
         box-shadow:0 4px 12px rgba(0,0,0,0.2);animation:fadeInUp .3s ease;
-    \`;
+    `;
     document.body.appendChild(toast);
     
     setTimeout(() => toast.remove(), 3000);
