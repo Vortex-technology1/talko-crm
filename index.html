@@ -581,41 +581,37 @@
         .reports-table .zero{color:#d1d5db}
         .reports-table .status-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:4px;vertical-align:middle}
         
-        /* Visual Funnel - Dark Theme like reference */
+        /* Visual Funnel - Dark Theme */
         .reports-funnel-visual{background:linear-gradient(135deg, #1e293b 0%, #0f172a 100%);border-radius:16px;padding:24px;box-shadow:0 4px 20px rgba(0,0,0,.15);color:#fff}
         .funnel-visual-title{font-size:15px;font-weight:600;margin-bottom:20px;display:flex;align-items:center;gap:10px;color:#fff}
         .funnel-visual-title svg{opacity:0.7}
         
         .funnel-visual-container{position:relative}
-        .funnel-shape{position:relative;display:flex;flex-direction:column;align-items:center}
+        .funnel-shape{display:flex;flex-direction:column;align-items:center;gap:3px}
         
-        .funnel-stage{display:flex;align-items:center;width:100%;margin-bottom:2px;position:relative}
+        .funnel-stage{display:flex;align-items:center;width:100%;gap:12px}
         .funnel-stage-bar{
-            height:44px;
+            height:40px;
             display:flex;
             align-items:center;
-            justify-content:center;
-            font-weight:700;
-            font-size:15px;
+            justify-content:space-between;
+            padding:0 16px;
+            font-weight:600;
+            font-size:14px;
             color:#fff;
             transition:all .3s;
-            position:relative;
             margin:0 auto;
-            clip-path:polygon(0 0, 100% 0, 95% 100%, 5% 100%);
+            border-radius:4px;
+            position:relative;
+            min-width:80px;
         }
-        .funnel-stage:first-child .funnel-stage-bar{clip-path:polygon(0 0, 100% 0, 97% 100%, 3% 100%)}
-        .funnel-stage:last-child .funnel-stage-bar{clip-path:polygon(5% 0, 95% 0, 90% 100%, 10% 100%);border-radius:0 0 8px 8px}
         .funnel-stage-bar:hover{filter:brightness(1.1);transform:scale(1.02)}
+        .funnel-bar-name{font-size:12px;font-weight:500;color:rgba(255,255,255,0.85);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:70%}
+        .funnel-bar-count{font-size:15px;font-weight:700;color:#fff}
         
-        .funnel-stage-info{position:absolute;left:0;display:flex;flex-direction:column;gap:2px}
-        .funnel-stage-name{font-size:12px;color:rgba(255,255,255,0.7);font-weight:500}
-        .funnel-stage-count-label{font-size:10px;color:rgba(255,255,255,0.5)}
-        
-        .funnel-stage-right{position:absolute;right:0;text-align:right}
-        .funnel-dropoff{display:flex;align-items:center;gap:4px;justify-content:flex-end}
+        .funnel-stage-dropoff{width:70px;text-align:right;flex-shrink:0}
         .funnel-dropoff-pct{font-size:13px;font-weight:700;color:#f87171}
-        .funnel-dropoff-label{font-size:10px;color:rgba(255,255,255,0.5)}
-        .funnel-dropoff-arrow{color:#f87171;font-size:16px}
+        .funnel-dropoff-arrow{color:#f87171;font-size:14px;margin-left:2px}
         
         /* Funnel Metrics */
         .funnel-metrics{margin-top:24px;display:grid;grid-template-columns:1fr 1fr;gap:12px}
@@ -624,19 +620,16 @@
         .funnel-metric-value{font-size:20px;font-weight:700;color:#fff}
         .funnel-metric-value.positive{color:#4ade80}
         .funnel-metric-value.negative{color:#f87171}
-        .funnel-metric-change{font-size:11px;margin-top:2px}
-        .funnel-metric-change.up{color:#4ade80}
-        .funnel-metric-change.down{color:#f87171}
         
         /* Recent Failed */
         .funnel-failed{margin-top:20px;padding-top:16px;border-top:1px solid rgba(255,255,255,0.1)}
         .funnel-failed-title{font-size:12px;color:rgba(255,255,255,0.6);margin-bottom:10px}
         .funnel-failed-item{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.05)}
         .funnel-failed-item:last-child{border-bottom:none}
-        .funnel-failed-icon{width:20px;height:20px;background:#f87171;border-radius:50%;display:flex;align-items:center;justify-content:center}
+        .funnel-failed-icon{width:20px;height:20px;background:#f87171;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0}
         .funnel-failed-icon svg{width:12px;height:12px;color:#fff}
-        .funnel-failed-name{flex:1;font-size:12px;color:rgba(255,255,255,0.8)}
-        .funnel-failed-time{font-size:11px;color:rgba(255,255,255,0.4)}
+        .funnel-failed-name{flex:1;font-size:12px;color:rgba(255,255,255,0.8);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+        .funnel-failed-time{font-size:11px;color:rgba(255,255,255,0.4);flex-shrink:0}
         
         @media(max-width:1024px){
             .reports-grid{grid-template-columns:1fr}
@@ -4668,19 +4661,19 @@ function renderReportsSummary(fromDate, toDate){
     
     document.getElementById('reports-summary').innerHTML = `
         <div class="summary-card">
-            <div class="summary-card-label">Всього лідів</div>
+            <div class="summary-card-label">Нових лідів за період</div>
             <div class="summary-card-value">${fl.length}</div>
         </div>
         <div class="summary-card">
-            <div class="summary-card-label">Оплачено</div>
+            <div class="summary-card-label">Закрито угод (оплачено)</div>
             <div class="summary-card-value">${paid.length}</div>
         </div>
         <div class="summary-card">
-            <div class="summary-card-label">Сума (грн)</div>
-            <div class="summary-card-value">${Math.round(revenue).toLocaleString()}</div>
+            <div class="summary-card-label">Заробили грошей</div>
+            <div class="summary-card-value">${Math.round(revenue).toLocaleString()} ₴</div>
         </div>
         <div class="summary-card">
-            <div class="summary-card-label">Конверсія</div>
+            <div class="summary-card-label">Конверсія в продаж</div>
             <div class="summary-card-value">${conversion}%</div>
         </div>
     `;
@@ -4796,14 +4789,14 @@ function renderVisualFunnel(filteredLeads, statusIds, statuses){
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z"/>
             </svg>
-            Sales Pipeline Funnel
+            Воронка продажів
         </div>
         <div class="funnel-visual-container">
             <div class="funnel-shape">
     `;
     
     let prevCount = null;
-    const widths = [100, 85, 70, 55, 45, 35, 28]; // Decreasing widths for funnel shape
+    const widths = [100, 88, 76, 64, 52, 42, 32]; // Decreasing widths for funnel shape
     
     activeStatusIds.forEach((id, index) => {
         const status = statuses[id];
@@ -4818,22 +4811,16 @@ function renderVisualFunnel(filteredLeads, statusIds, statuses){
         
         html += `
             <div class="funnel-stage">
-                <div class="funnel-stage-info">
-                    <span class="funnel-stage-name">${status.name}</span>
-                    <span class="funnel-stage-count-label">(${count})</span>
-                </div>
                 <div class="funnel-stage-bar" style="width:${widthPct}%;background:${status.color || '#6366f1'}">
-                    ${count}
+                    <span class="funnel-bar-name">${status.name}</span>
+                    <span class="funnel-bar-count">${count}</span>
                 </div>
                 ${dropOff > 0 ? `
-                <div class="funnel-stage-right">
-                    <div class="funnel-dropoff">
-                        <span class="funnel-dropoff-pct">${dropOff}%</span>
-                        <span class="funnel-dropoff-arrow">↘</span>
-                    </div>
-                    <div class="funnel-dropoff-label">Drop-off</div>
+                <div class="funnel-stage-dropoff">
+                    <span class="funnel-dropoff-pct">${dropOff}%</span>
+                    <span class="funnel-dropoff-arrow">↘</span>
                 </div>
-                ` : ''}
+                ` : '<div class="funnel-stage-dropoff"></div>'}
             </div>
         `;
         
@@ -4845,33 +4832,33 @@ function renderVisualFunnel(filteredLeads, statusIds, statuses){
         </div>
     `;
     
-    // Metrics Cards
+    // Metrics Cards - Ukrainian
     html += `
         <div class="funnel-metrics">
             <div class="funnel-metric-card">
-                <div class="funnel-metric-label">Lead Conversion Rate</div>
+                <div class="funnel-metric-label">Скільки лідів стали клієнтами</div>
                 <div class="funnel-metric-value ${parseFloat(conversionRate) > 10 ? 'positive' : ''}">${conversionRate}%</div>
             </div>
             <div class="funnel-metric-card">
-                <div class="funnel-metric-label">Sales Cycle Time</div>
-                <div class="funnel-metric-value">${avgCycleTime} Days</div>
+                <div class="funnel-metric-label">Скільки днів від ліда до оплати</div>
+                <div class="funnel-metric-value">${avgCycleTime} дн</div>
             </div>
             <div class="funnel-metric-card">
-                <div class="funnel-metric-label">Avg Deal Size</div>
-                <div class="funnel-metric-value">${avgDealSize.toLocaleString()}₴</div>
+                <div class="funnel-metric-label">Середня сума однієї угоди</div>
+                <div class="funnel-metric-value">${avgDealSize.toLocaleString()} ₴</div>
             </div>
             <div class="funnel-metric-card">
-                <div class="funnel-metric-label">Total Revenue</div>
-                <div class="funnel-metric-value positive">${Math.round(totalRevenue).toLocaleString()}₴</div>
+                <div class="funnel-metric-label">Всього заробили за період</div>
+                <div class="funnel-metric-value positive">${Math.round(totalRevenue).toLocaleString()} ₴</div>
             </div>
         </div>
     `;
     
-    // Recent Failed Deals
+    // Recent Failed Deals - Ukrainian
     if(failedLeads.length > 0) {
         html += `
             <div class="funnel-failed">
-                <div class="funnel-failed-title">Recent Failed Deals</div>
+                <div class="funnel-failed-title">Втрачені угоди</div>
         `;
         failedLeads.forEach(l => {
             const timeAgo = getTimeAgo(l.stageDate || l.created);
@@ -4880,7 +4867,7 @@ function renderVisualFunnel(filteredLeads, statusIds, statuses){
                     <div class="funnel-failed-icon">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                     </div>
-                    <span class="funnel-failed-name">${l.tg || l.phone || l.biz || 'Без назви'}</span>
+                    <span class="funnel-failed-name">${escapeHtml(l.tg || l.phone || l.biz || 'Без назви')}</span>
                     <span class="funnel-failed-time">${timeAgo}</span>
                 </div>
             `;
