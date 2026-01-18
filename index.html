@@ -570,6 +570,36 @@
         .funnel-progress{flex:1;height:28px;background:var(--gl);border-radius:4px;overflow:hidden}
         .funnel-fill{height:100%;background:var(--p);display:flex;align-items:center;padding:0 10px;font-size:12px;color:#fff;font-weight:500}
         
+        /* Reports Grid Layout */
+        .reports-grid{display:grid;grid-template-columns:1fr 320px;gap:24px;margin-top:20px}
+        .reports-section-title{font-size:14px;font-weight:600;color:var(--t);margin-bottom:12px}
+        
+        /* Visual Funnel */
+        .reports-funnel-visual{background:var(--w);border-radius:16px;padding:20px;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+        .funnel-visual-title{font-size:14px;font-weight:600;color:var(--t);margin-bottom:16px;display:flex;align-items:center;gap:8px}
+        .funnel-visual-container{position:relative;padding:0 30px}
+        .funnel-stage{position:relative;margin-bottom:4px;display:flex;align-items:center;justify-content:center}
+        .funnel-stage-bar{height:48px;border-radius:4px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:600;font-size:14px;transition:all .2s;cursor:default}
+        .funnel-stage-bar:hover{transform:scale(1.02);box-shadow:0 4px 12px rgba(0,0,0,.15)}
+        .funnel-stage-label{position:absolute;left:-30px;right:-30px;display:flex;justify-content:space-between;align-items:center;pointer-events:none}
+        .funnel-stage-name{font-size:11px;color:var(--ts);font-weight:500;text-align:left;width:80px}
+        .funnel-stage-count{font-size:11px;color:var(--ts);font-weight:500;text-align:right;width:80px}
+        .funnel-conversion{display:flex;align-items:center;justify-content:flex-end;padding:2px 0;margin-right:-30px}
+        .funnel-conversion-arrow{color:#ef4444;font-size:10px;margin-right:4px}
+        .funnel-conversion-pct{font-size:11px;color:#ef4444;font-weight:600}
+        .funnel-metrics{margin-top:20px;padding-top:16px;border-top:1px solid #e5e7eb}
+        .funnel-metric{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f3f4f6}
+        .funnel-metric:last-child{border-bottom:none}
+        .funnel-metric-label{font-size:12px;color:var(--ts)}
+        .funnel-metric-value{font-size:14px;font-weight:600;color:var(--t)}
+        .funnel-metric-value.positive{color:#22c55e}
+        .funnel-metric-value.negative{color:#ef4444}
+        
+        @media(max-width:1024px){
+            .reports-grid{grid-template-columns:1fr}
+            .reports-funnel-visual{order:-1}
+        }
+        
         /* Modal */
         .modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;align-items:flex-start;justify-content:center;padding:20px;overflow-y:auto}
         .modal-bg.active{display:flex}
@@ -1005,7 +1035,7 @@
 <body>
     <!-- Loading Overlay -->
     <div id="loading-overlay" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(255,255,255,0.9);z-index:9999;justify-content:center;align-items:center;flex-direction:column;">
-        <div style="font-size:24px;color:#22c55e;margin-bottom:10px;">⏳</div>
+        <div style="color:#22c55e;margin-bottom:10px;"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
         <div style="color:#525252;">Завантаження...</div>
     </div>
     
@@ -1210,16 +1240,23 @@
             <!-- Summary Cards -->
             <div class="reports-summary" id="reports-summary"></div>
             
-            <!-- Stats Table -->
-            <div class="reports-table-wrap">
-                <table class="reports-table" id="reports-table">
-                    <thead id="reports-thead"></thead>
-                    <tbody id="reports-tbody"></tbody>
-                </table>
+            <!-- Main Content: Table + Funnel -->
+            <div class="reports-grid">
+                <!-- Stats Table -->
+                <div class="reports-table-wrap">
+                    <div class="reports-section-title">Тижневі показники</div>
+                    <table class="reports-table" id="reports-table">
+                        <thead id="reports-thead"></thead>
+                        <tbody id="reports-tbody"></tbody>
+                    </table>
+                </div>
+                
+                <!-- Visual Funnel -->
+                <div class="reports-funnel-visual" id="reports-funnel-visual"></div>
             </div>
             
-            <!-- Conversion Funnel -->
-            <div class="reports-funnel" id="reports-funnel"></div>
+            <!-- Old Bar Funnel (hidden for now) -->
+            <div class="reports-funnel" id="reports-funnel" style="display:none"></div>
         </div>
     </main>
     
@@ -3844,7 +3881,7 @@ function renderTaskFilters(){
     
     let html = `
         <button class="filter-pill ${taskFilter === 'all' ? 'active' : ''}" onclick="setTaskFilter('all')">Всі</button>
-        <button class="filter-pill ${taskFilter === 'critical' ? 'active' : ''}" onclick="setTaskFilter('critical')">🔴 Прострочені</button>
+        <button class="filter-pill ${taskFilter === 'critical' ? 'active' : ''}" onclick="setTaskFilter('critical')"><span style="display:inline-block;width:8px;height:8px;background:#ef4444;border-radius:50%;margin-right:4px;"></span>Прострочені</button>
     `;
     
     sortedStatuses.forEach(([id, status]) => {
@@ -4663,6 +4700,117 @@ function renderReportsFunnel(fromDate, toDate, statusIds, statuses){
     });
     
     document.getElementById('reports-funnel').innerHTML = funnelHtml;
+    
+    // Render Visual Funnel
+    renderVisualFunnel(fl, statusIds, statuses);
+}
+
+function renderVisualFunnel(filteredLeads, statusIds, statuses){
+    const container = document.getElementById('reports-funnel-visual');
+    if(!container) return;
+    
+    // Count by status
+    const byStatus = {};
+    filteredLeads.forEach(l => { byStatus[l.status] = (byStatus[l.status] || 0) + 1; });
+    
+    // Filter only active funnel statuses (exclude failed, frozen)
+    const activeStatusIds = statusIds.filter(id => !['failed', 'frozen'].includes(id));
+    const totalLeads = filteredLeads.length;
+    const firstCount = byStatus[activeStatusIds[0]] || 0;
+    const maxCount = Math.max(...activeStatusIds.map(id => byStatus[id] || 0), 1);
+    
+    // Calculate metrics
+    const paidLeads = filteredLeads.filter(l => l.status === 'paid');
+    const conversionRate = totalLeads > 0 ? ((paidLeads.length / totalLeads) * 100).toFixed(1) : 0;
+    const avgDealSize = paidLeads.length > 0 
+        ? Math.round(paidLeads.reduce((sum, l) => sum + toUAH(l.finTotal, l.finTotalCur), 0) / paidLeads.length)
+        : 0;
+    
+    // Calculate avg cycle time (days from created to paid)
+    let avgCycleTime = 0;
+    if(paidLeads.length > 0) {
+        const cycleTimes = paidLeads.map(l => {
+            const created = new Date(l.createdAt || l.created);
+            const paid = new Date(l.finPaidDate || l.stageDate);
+            return Math.max(0, Math.round((paid - created) / (1000 * 60 * 60 * 24)));
+        }).filter(d => d > 0 && d < 365);
+        avgCycleTime = cycleTimes.length > 0 ? Math.round(cycleTimes.reduce((a,b) => a+b, 0) / cycleTimes.length) : 0;
+    }
+    
+    // Build funnel HTML
+    let html = `
+        <div class="funnel-visual-title">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z"/>
+            </svg>
+            Воронка продажів
+        </div>
+        <div class="funnel-visual-container">
+    `;
+    
+    let prevCount = null;
+    activeStatusIds.forEach((id, index) => {
+        const status = statuses[id];
+        const count = byStatus[id] || 0;
+        const widthPct = maxCount > 0 ? Math.max(20, (count / maxCount) * 100) : 20;
+        
+        // Calculate drop-off from previous stage
+        if(prevCount !== null && prevCount > 0) {
+            const dropOff = Math.round(((prevCount - count) / prevCount) * 100);
+            if(dropOff > 0) {
+                html += `
+                    <div class="funnel-conversion">
+                        <span class="funnel-conversion-arrow">↓</span>
+                        <span class="funnel-conversion-pct">${dropOff}% відсів</span>
+                    </div>
+                `;
+            }
+        }
+        
+        html += `
+            <div class="funnel-stage">
+                <div class="funnel-stage-bar" style="width:${widthPct}%;background:${status.color || '#6b7280'}">
+                    ${count}
+                </div>
+                <div class="funnel-stage-label">
+                    <span class="funnel-stage-name">${status.name}</span>
+                    <span class="funnel-stage-count"></span>
+                </div>
+            </div>
+        `;
+        
+        prevCount = count;
+    });
+    
+    html += `</div>`;
+    
+    // Metrics
+    html += `
+        <div class="funnel-metrics">
+            <div class="funnel-metric">
+                <span class="funnel-metric-label">Загальна конверсія</span>
+                <span class="funnel-metric-value ${conversionRate > 10 ? 'positive' : ''}">${conversionRate}%</span>
+            </div>
+            <div class="funnel-metric">
+                <span class="funnel-metric-label">Середній чек</span>
+                <span class="funnel-metric-value">${avgDealSize.toLocaleString()} грн</span>
+            </div>
+            <div class="funnel-metric">
+                <span class="funnel-metric-label">Середній цикл угоди</span>
+                <span class="funnel-metric-value">${avgCycleTime} днів</span>
+            </div>
+            <div class="funnel-metric">
+                <span class="funnel-metric-label">Всього лідів</span>
+                <span class="funnel-metric-value">${totalLeads}</span>
+            </div>
+            <div class="funnel-metric">
+                <span class="funnel-metric-label">Оплачено</span>
+                <span class="funnel-metric-value positive">${paidLeads.length}</span>
+            </div>
+        </div>
+    `;
+    
+    container.innerHTML = html;
 }
 
 function filterByDateRange(arr, from, to){
@@ -5233,7 +5381,7 @@ function showAILoading(){
     const msg = document.createElement('div');
     msg.className = 'ai-msg ai-msg-loading';
     msg.id = 'ai-loading';
-    msg.innerHTML = '⏳ Думаю...';
+    msg.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="animation:spin 1s linear infinite"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> Думаю...';
     chat.appendChild(msg);
     chat.scrollTop = chat.scrollHeight;
 }
@@ -5375,11 +5523,11 @@ async function aiSend(){
         if(data.success){
             addAIMessage(data.message);
         } else {
-            addAIMessage('❌ Помилка: ' + (data.error || 'Невідома помилка'));
+            addAIMessage('<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2" style="vertical-align:middle;margin-right:4px"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>Помилка: ' + (data.error || 'Невідома помилка'));
         }
     } catch(err){
         hideAILoading();
-        addAIMessage('❌ Помилка з\'єднання: ' + err.message);
+        addAIMessage('<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2" style="vertical-align:middle;margin-right:4px"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>Помилка з\'єднання: ' + err.message);
     }
 }
 
