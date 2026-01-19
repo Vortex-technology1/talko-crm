@@ -226,6 +226,32 @@
         .reports-funnel-bar{height:32px;background:#f3f4f6;border-radius:6px;overflow:hidden}
         .funnel-bar-fill{height:100%;border-radius:6px;display:flex;align-items:center;justify-content:flex-end;padding-right:12px;font-size:12px;font-weight:600;color:#fff;min-width:40px}
         
+        /* Analytics Charts */
+        .analytics-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(400px,1fr));gap:20px;margin-bottom:24px}
+        .chart-card{background:#fff;border-radius:12px;padding:20px;border:1px solid #e5e7eb}
+        .chart-card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+        .chart-card-title{font-size:15px;font-weight:600;color:#1f2937}
+        .chart-card-subtitle{font-size:12px;color:#6b7280}
+        .chart-container{height:200px;position:relative}
+        .chart-bar-group{display:flex;align-items:flex-end;gap:4px;height:100%;padding-bottom:24px}
+        .chart-bar{flex:1;background:#22c55e;border-radius:4px 4px 0 0;min-height:4px;position:relative;transition:all .3s;cursor:pointer}
+        .chart-bar:hover{opacity:0.8}
+        .chart-bar-label{position:absolute;bottom:-20px;left:50%;transform:translateX(-50%);font-size:10px;color:#6b7280;white-space:nowrap}
+        .chart-bar-value{position:absolute;top:-18px;left:50%;transform:translateX(-50%);font-size:11px;font-weight:600;color:#1f2937}
+        .chart-line{stroke:#22c55e;stroke-width:2;fill:none}
+        .chart-area{fill:url(#chartGradient);opacity:0.3}
+        .chart-dot{fill:#22c55e;r:4}
+        .chart-dot:hover{r:6}
+        .chart-grid-line{stroke:#e5e7eb;stroke-width:1}
+        .chart-axis-label{font-size:10px;fill:#9ca3af}
+        .conversion-funnel{display:flex;flex-direction:column;gap:8px}
+        .conversion-step{display:flex;align-items:center;gap:12px}
+        .conversion-bar{flex:1;height:36px;background:#f3f4f6;border-radius:6px;overflow:hidden;position:relative}
+        .conversion-fill{height:100%;border-radius:6px;display:flex;align-items:center;padding:0 12px;font-size:13px;font-weight:500;color:#fff;transition:width .5s ease}
+        .conversion-label{min-width:100px;font-size:13px;color:#374151}
+        .conversion-percent{min-width:50px;text-align:right;font-size:13px;font-weight:600;color:#1f2937}
+        .conversion-arrow{color:#9ca3af;font-size:11px;padding-left:112px}
+        
         /* Sync indicator */
         .sync-status{display:flex;align-items:center;gap:4px;font-size:11px;color:var(--g);padding:4px 8px;background:var(--gl);border-radius:4px}
         .sync-dot{width:6px;height:6px;border-radius:50%;background:var(--p)}
@@ -254,6 +280,47 @@
         /* Funnel Bar */
         .funnel-bar{display:flex;gap:12px;margin-bottom:16px;padding:12px 16px;background:#fff;border-radius:10px;border:1px solid #e5e7eb;align-items:center;flex-wrap:wrap}
         .funnel-dropdown-divider{height:1px;background:#e5e7eb;margin:4px 0}
+        
+        /* Search Box */
+        .search-box{position:relative;flex:1;min-width:200px;max-width:400px}
+        .search-box input{width:100%;padding:8px 12px 8px 36px;border:1px solid #e5e7eb;border-radius:8px;font-size:14px;background:#f9fafb;transition:all .2s}
+        .search-box input:focus{outline:none;border-color:#22c55e;background:#fff;box-shadow:0 0 0 3px rgba(34,197,94,0.1)}
+        .search-box input::placeholder{color:#9ca3af}
+        .search-box-icon{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:#9ca3af;pointer-events:none}
+        .search-box-clear{position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;color:#9ca3af;cursor:pointer;padding:4px;display:none}
+        .search-box-clear:hover{color:#6b7280}
+        .search-box.has-value .search-box-clear{display:block}
+        .search-highlight{background:#fef08a;padding:0 2px;border-radius:2px}
+        
+        /* Bulk Actions */
+        .bulk-bar{display:none;align-items:center;gap:12px;padding:12px 16px;background:#1f2937;color:#fff;border-radius:10px;margin-bottom:16px;animation:slideDown .2s ease}
+        .bulk-bar.active{display:flex}
+        @keyframes slideDown{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
+        .bulk-count{font-weight:600;font-size:14px}
+        .bulk-actions{display:flex;gap:8px;flex:1;flex-wrap:wrap}
+        .bulk-btn{padding:6px 12px;border-radius:6px;font-size:12px;font-weight:500;cursor:pointer;border:none;display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,0.15);color:#fff;transition:all .2s}
+        .bulk-btn:hover{background:rgba(255,255,255,0.25)}
+        .bulk-btn.danger{background:#ef4444}
+        .bulk-btn.danger:hover{background:#dc2626}
+        .bulk-close{margin-left:auto;background:none;border:none;color:#fff;cursor:pointer;padding:4px;opacity:0.7}
+        .bulk-close:hover{opacity:1}
+        .k-card.selected{outline:2px solid #22c55e;outline-offset:2px}
+        .k-card .select-checkbox{position:absolute;top:8px;right:8px;width:20px;height:20px;border-radius:4px;border:2px solid #d1d5db;background:#fff;cursor:pointer;display:none;align-items:center;justify-content:center}
+        .k-card:hover .select-checkbox,.k-card.selected .select-checkbox,.bulk-mode .k-card .select-checkbox{display:flex}
+        .k-card.selected .select-checkbox{background:#22c55e;border-color:#22c55e}
+        .k-card.selected .select-checkbox::after{content:'';width:6px;height:10px;border:solid #fff;border-width:0 2px 2px 0;transform:rotate(45deg);margin-bottom:2px}
+        
+        /* Skeleton Loading */
+        .skeleton{background:linear-gradient(90deg,#f0f0f0 25%,#e0e0e0 50%,#f0f0f0 75%);background-size:200% 100%;animation:skeleton-loading 1.5s infinite}
+        @keyframes skeleton-loading{0%{background-position:200% 0}100%{background-position:-200% 0}}
+        .skeleton-card{height:120px;border-radius:10px;margin-bottom:12px}
+        .skeleton-row{display:grid;grid-template-columns:65px 1fr auto;gap:12px;padding:12px 16px;border-bottom:1px solid #f0f0f0}
+        .skeleton-circle{width:40px;height:40px;border-radius:50%}
+        .skeleton-line{height:14px;border-radius:4px}
+        .skeleton-line.short{width:60%}
+        .skeleton-line.medium{width:80%}
+        .skeleton-column{background:#fff;border-radius:12px;padding:16px;min-width:280px}
+        .skeleton-column-header{height:20px;border-radius:4px;margin-bottom:16px;width:50%}
         
         /* Tasks - Focus on Date/Time/Action */
         .tasks-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid #e5e7eb}
@@ -367,6 +434,7 @@
         .quick-panel.active{display:block}
         @keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
         @keyframes fadeInUp{from{opacity:0;transform:translate(-50%,20px)}to{opacity:1;transform:translate(-50%,0)}}
+        @keyframes fadeOutDown{from{opacity:1;transform:translate(-50%,0)}to{opacity:0;transform:translate(-50%,20px)}}
         .quick-panel-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.3);z-index:149;display:none}
         .quick-panel-overlay.active{display:block}
         
@@ -515,11 +583,13 @@
         .column{width:260px;flex-shrink:0;background:var(--gl);border-radius:10px;max-height:calc(100vh - 130px);display:flex;flex-direction:column}
         .column-header{padding:10px 12px;font-weight:600;font-size:12px;border-bottom:1px solid #e5e7eb;display:flex;justify-content:space-between;align-items:center}
         .column-count{background:var(--w);padding:2px 6px;border-radius:6px;font-size:11px;color:var(--g)}
-        .column-cards{padding:8px;flex:1;overflow-y:auto;min-height:60px}
-        .column-cards.drag-over{background:var(--pl)}
-        .k-card{background:var(--w);border-radius:6px;padding:8px 10px;margin-bottom:6px;box-shadow:0 1px 2px rgba(0,0,0,.08);cursor:grab;border-left:3px solid transparent}
+        .column-cards{padding:8px;flex:1;overflow-y:auto;min-height:60px;transition:background .2s}
+        .column-cards.drag-over{background:var(--pl);box-shadow:inset 0 0 0 2px var(--p)}
+        .k-card{background:var(--w);border-radius:6px;padding:8px 10px;margin-bottom:6px;box-shadow:0 1px 2px rgba(0,0,0,.08);cursor:grab;border-left:3px solid transparent;transition:transform .15s,box-shadow .15s,opacity .15s}
         .k-card:hover{box-shadow:0 2px 6px rgba(0,0,0,.12)}
-        .k-card.dragging{opacity:.5}
+        .k-card:active{cursor:grabbing}
+        .k-card.dragging{opacity:.4;transform:rotate(3deg);box-shadow:0 10px 30px rgba(0,0,0,.2)}
+        .k-card.drag-ghost{position:fixed;pointer-events:none;z-index:1000;opacity:0.9;transform:rotate(-2deg);box-shadow:0 15px 40px rgba(0,0,0,.25)}
         .k-card.has-alert{border-left-color:var(--o)}
         .k-card.has-critical{border-left-color:var(--r)}
         .k-card-name{font-weight:600;font-size:12px;margin-bottom:2px}
@@ -1065,6 +1135,12 @@
         .mobile-menu-divider{height:1px;background:#e5e7eb;margin:8px 16px}
         .mobile-menu-user{padding:8px 16px;font-size:13px;color:#6b7280}
         
+        /* Offline Banner */
+        .offline-banner{position:fixed;top:0;left:0;right:0;background:#ef4444;color:#fff;padding:10px 16px;text-align:center;font-size:14px;font-weight:500;z-index:10000;display:none;align-items:center;justify-content:center;gap:8px}
+        .offline-banner.active{display:flex}
+        .offline-banner svg{flex-shrink:0}
+        .online-restored{background:#059669}
+        
         @media(max-width:480px){
             .mobile-nav{display:block}
             .header .nav{display:none}
@@ -1074,6 +1150,12 @@
     </style>
 </head>
 <body>
+    <!-- Offline Banner -->
+    <div id="offline-banner" class="offline-banner">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><line x1="1" y1="1" x2="23" y2="23"/><path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55"/><path d="M5 12.55a10.94 10.94 0 0 1 5.17-2.39"/><path d="M10.71 5.05A16 16 0 0 1 22.58 9"/><path d="M1.42 9a15.91 15.91 0 0 1 4.7-2.88"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></svg>
+        <span>Немає з'єднання з інтернетом</span>
+    </div>
+
     <!-- Loading Overlay -->
     <div id="loading-overlay" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(255,255,255,0.9);z-index:9999;justify-content:center;align-items:center;flex-direction:column;">
         <div style="color:#22c55e;margin-bottom:10px;"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
@@ -1177,7 +1259,7 @@
                 <button class="btn btn-p" onclick="openModal()">+ Додати</button>
                 <label class="btn btn-s">Імпорт<input type="file" accept=".xlsx,.xls" onchange="importXLS(event)" hidden></label>
                 <button class="btn btn-s" onclick="exportXLS()">Експорт</button>
-                <button class="btn btn-s" style="background:#fef3c7;color:#92400e" onclick="loadDemo()">🎮 Демо</button>
+                <button class="btn btn-s" style="background:#fef3c7;color:#92400e" onclick="loadDemo()"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="6" width="20" height="12" rx="2"/><line x1="6" y1="12" x2="10" y2="12"/><line x1="8" y1="10" x2="8" y2="14"/><circle cx="17" cy="12" r="1"/></svg> Демо</button>
                 <div class="sync-status" id="sync-status"><div class="sync-dot" id="sync-dot"></div><span id="sync-text">Синхронізовано</span></div>
                 <a href="https://chatgpt.com/g/g-695d18d64ffc8191885772ca62dfb66c-talko-crm-support" target="_blank" class="btn btn-s" style="background:linear-gradient(135deg,#10a37f,#1a7f5a);color:#fff;text-decoration:none">
                     <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a7 7 0 0 1 7 7c0 2.38-1.19 4.47-3 5.74V17a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1v-2.26C6.19 13.47 5 11.38 5 9a7 7 0 0 1 7-7z"/><path d="M9 21h6"/><path d="M9 18h6"/></svg>
@@ -1228,6 +1310,55 @@
                     <div id="assignee-dropdown-list"></div>
                 </div>
             </div>
+            
+            <!-- Search Box -->
+            <div class="search-box" id="search-box">
+                <svg class="search-box-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <input type="text" id="search-input" placeholder="Пошук... (Ctrl+K)" oninput="handleSearch(this.value)" autocomplete="off">
+                <button class="search-box-clear" onclick="clearSearch()" title="Очистити">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+            </div>
+            
+            <!-- Source Filter -->
+            <div class="funnel-selector" id="source-filter">
+                <button class="funnel-selector-btn" onclick="toggleSourceDropdown()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+                    <span id="current-source-label">Всі джерела</span>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                </button>
+                <div class="funnel-dropdown" id="source-dropdown">
+                    <div class="funnel-dropdown-item active" onclick="selectSource(null)">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
+                        Всі джерела
+                    </div>
+                    <div class="funnel-dropdown-divider"></div>
+                    <div id="source-dropdown-list"></div>
+                </div>
+            </div>
+            
+            <!-- Date Filter -->
+            <div class="funnel-selector" id="date-filter">
+                <button class="funnel-selector-btn" onclick="toggleDateDropdown()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                    <span id="current-date-label">Весь час</span>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                </button>
+                <div class="funnel-dropdown" id="date-dropdown">
+                    <div class="funnel-dropdown-item active" onclick="selectDateFilter(null)">Весь час</div>
+                    <div class="funnel-dropdown-divider"></div>
+                    <div class="funnel-dropdown-item" onclick="selectDateFilter('today')">Сьогодні</div>
+                    <div class="funnel-dropdown-item" onclick="selectDateFilter('week')">Цей тиждень</div>
+                    <div class="funnel-dropdown-item" onclick="selectDateFilter('month')">Цей місяць</div>
+                    <div class="funnel-dropdown-item" onclick="selectDateFilter('quarter')">Цей квартал</div>
+                </div>
+            </div>
+            
+            <!-- Clear All Filters -->
+            <button class="btn btn-s" id="clear-filters-btn" onclick="clearAllFilters()" style="display:none" title="Скинути всі фільтри">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                Скинути
+            </button>
         </div>
         
         <!-- Tasks View -->
@@ -1245,6 +1376,32 @@
         
         <!-- Kanban View -->
         <div class="view" id="v-kanban">
+            <!-- Bulk Actions Bar -->
+            <div class="bulk-bar" id="bulk-bar">
+                <span class="bulk-count"><span id="bulk-count">0</span> вибрано</span>
+                <div class="bulk-actions">
+                    <button class="bulk-btn" onclick="bulkAssign()">
+                        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                        Призначити
+                    </button>
+                    <button class="bulk-btn" onclick="bulkChangeStatus()">
+                        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+                        Змінити статус
+                    </button>
+                    <button class="bulk-btn" onclick="bulkSetNextDate()">
+                        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                        Встановити дату
+                    </button>
+                    <button class="bulk-btn danger" onclick="bulkDelete()">
+                        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+                        Видалити
+                    </button>
+                </div>
+                <button class="bulk-close" onclick="clearBulkSelection()" title="Скасувати вибір">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+            </div>
+            
             <div class="kanban-filters" id="kanban-filters">
                 <button class="filter-btn active" onclick="setFilter('all')">Всі</button>
                 <button class="filter-btn" onclick="setFilter('critical')"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> Критичні</button>
@@ -1259,7 +1416,7 @@
         <!-- Reports View -->
         <div class="view" id="v-reports">
             <div class="reports-header">
-                <h1 class="tasks-title">Звіти</h1>
+                <h1 class="tasks-title">Аналітика</h1>
                 <div class="reports-controls">
                     <div class="reports-period-btns">
                         <button class="period-btn active" onclick="setReportPeriod('week', this)">Тиждень</button>
@@ -1281,11 +1438,58 @@
             <!-- Summary Cards -->
             <div class="reports-summary" id="reports-summary"></div>
             
+            <!-- Analytics Charts -->
+            <div class="analytics-grid">
+                <!-- Leads by Day Chart -->
+                <div class="chart-card">
+                    <div class="chart-card-header">
+                        <div>
+                            <div class="chart-card-title">Нові ліди по днях</div>
+                            <div class="chart-card-subtitle">Динаміка надходження</div>
+                        </div>
+                    </div>
+                    <div class="chart-container" id="chart-leads-by-day"></div>
+                </div>
+                
+                <!-- Conversion Funnel -->
+                <div class="chart-card">
+                    <div class="chart-card-header">
+                        <div>
+                            <div class="chart-card-title">Воронка конверсії</div>
+                            <div class="chart-card-subtitle">Від ліда до оплати</div>
+                        </div>
+                    </div>
+                    <div class="chart-container" id="chart-conversion-funnel"></div>
+                </div>
+                
+                <!-- Revenue Chart -->
+                <div class="chart-card">
+                    <div class="chart-card-header">
+                        <div>
+                            <div class="chart-card-title">Виручка по днях</div>
+                            <div class="chart-card-subtitle">Оплачені угоди</div>
+                        </div>
+                    </div>
+                    <div class="chart-container" id="chart-revenue"></div>
+                </div>
+                
+                <!-- Sources Pie -->
+                <div class="chart-card">
+                    <div class="chart-card-header">
+                        <div>
+                            <div class="chart-card-title">Джерела лідів</div>
+                            <div class="chart-card-subtitle">Розподіл по каналах</div>
+                        </div>
+                    </div>
+                    <div class="chart-container" id="chart-sources"></div>
+                </div>
+            </div>
+            
             <!-- Main Content: Table + Funnel -->
             <div class="reports-grid">
                 <!-- Stats Table -->
                 <div class="reports-table-wrap">
-                    <div class="reports-section-title">Тижневі показники</div>
+                    <div class="reports-section-title">Детальна статистика</div>
                     <table class="reports-table" id="reports-table">
                         <thead id="reports-thead"></thead>
                         <tbody id="reports-tbody"></tbody>
@@ -2019,6 +2223,10 @@ let currentFunnelId = null;     // null = всі воронки
 let currentAssigneeFilter = null; // null = всі, 'mine' = мої, userId = конкретний
 let selectedFunnelForEdit = null; // Воронка яку редагуємо в налаштуваннях
 let teamMembers = [];           // Кешований список членів команди
+let currentSearchQuery = '';    // Поточний пошуковий запит
+let currentSourceFilter = null; // Фільтр по джерелу
+let currentDateFilter = null;   // Фільтр по даті: 'today', 'week', 'month', 'quarter'
+let selectedLeadIds = new Set(); // Вибрані ліди для bulk actions
 
 // ===== UTILITIES =====
 function debounce(fn, delay) {
@@ -2403,7 +2611,7 @@ auth.onAuthStateChanged(async (user) => {
             }
         } catch(err) {
             console.error('Init error:', err);
-            alert('Помилка завантаження: ' + err.message);
+            showError('Помилка завантаження: ' + err.message);
         } finally {
             hideLoading();
         }
@@ -2535,7 +2743,7 @@ async function createOrgForSuperAdmin(){
         
     } catch(err) {
         console.error(err);
-        alert('Помилка: ' + err.message);
+        showError(err.message);
     }
 }
 
@@ -2697,12 +2905,12 @@ async function submitCreateOrganization(){
     const ownerEmail = document.getElementById('new-org-owner-email').value.trim();
     
     if(!name){
-        alert('Введіть назву компанії');
+        showWarning('Введіть назву компанії');
         return;
     }
     
     if(!ownerEmail || !ownerEmail.includes('@')){
-        alert('Введіть коректний email власника');
+        showWarning('Введіть коректний email власника');
         return;
     }
     
@@ -2753,7 +2961,7 @@ async function submitCreateOrganization(){
         
     } catch(err){
         console.error('Error creating org:', err);
-        alert('Помилка: ' + err.message);
+        showError(err.message);
     }
 }
 
@@ -2777,14 +2985,14 @@ async function processInvite(code){
         const inviteDoc = await db.collection('invites').doc(code).get();
         
         if(!inviteDoc.exists){
-            alert('Запрошення не знайдено');
+            showError('Запрошення не знайдено');
             return;
         }
         
         const invite = inviteDoc.data();
         
         if(invite.used){
-            alert('Це запрошення вже використано');
+            showWarning('Це запрошення вже використано');
             return;
         }
         
@@ -2812,7 +3020,7 @@ async function processInvite(code){
         
     } catch(err){
         console.error('Error processing invite:', err);
-        alert('Помилка обробки запрошення');
+        showError('Помилка обробки запрошення');
     }
 }
 
@@ -2849,7 +3057,7 @@ async function createInvite(role = 'employee'){
         
     } catch(err){
         console.error('Error creating invite:', err);
-        alert('Помилка: ' + err.message);
+        showError(err.message);
     }
 }
 
@@ -3093,7 +3301,7 @@ async function removeTeamMember(userId){
         loadTeamMembers();
     } catch(err){
         console.error('Error removing member:', err);
-        alert('Помилка: ' + err.message);
+        showError(err.message);
     }
 }
 
@@ -3286,12 +3494,12 @@ async function deleteStatus(statusId){
     // Перевіряємо чи є ліди з цим статусом
     const leadsWithStatus = leads.filter(l => l.status === statusId);
     if(leadsWithStatus.length > 0){
-        alert(`Неможливо видалити статус: ${leadsWithStatus.length} лідів мають цей статус`);
+        showWarning(`Неможливо видалити: ${leadsWithStatus.length} лідів мають цей статус`);
         return;
     }
     
     if(Object.keys(statuses).length <= 2){
-        alert('Потрібно мати мінімум 2 статуси');
+        showWarning('Потрібно мати мінімум 2 статуси');
         return;
     }
     
@@ -3480,13 +3688,13 @@ async function deleteFunnel(funnelId){
     const funnel = funnels.find(f => f.id === funnelId);
     
     if(funnel?.isDefault){
-        alert('Неможливо видалити основну воронку');
+        showWarning('Неможливо видалити основну воронку');
         return;
     }
     
     const leadsInFunnel = leads.filter(l => l.funnelId === funnelId);
     if(leadsInFunnel.length > 0){
-        alert(`Неможливо видалити: ${leadsInFunnel.length} лідів в цій воронці`);
+        showWarning(`Неможливо видалити: ${leadsInFunnel.length} лідів в цій воронці`);
         return;
     }
     
@@ -3525,7 +3733,7 @@ async function saveFunnels(funnels){
         
     } catch(err){
         console.error('Error saving funnels:', err);
-        alert('Помилка: ' + err.message);
+        showError(err.message);
     }
 }
 
@@ -3575,7 +3783,7 @@ async function saveStatuses(){
         
     } catch(err){
         console.error('Error saving statuses:', err);
-        alert('Помилка збереження: ' + err.message);
+        showError('Помилка збереження: ' + err.message);
     }
 }
 
@@ -3615,7 +3823,7 @@ async function setAssignmentMode(mode){
         
     } catch(err){
         console.error('Error setting assignment mode:', err);
-        alert('Помилка: ' + err.message);
+        showError(err.message);
     }
 }
 
@@ -3714,8 +3922,10 @@ function renderFunnelDropdown(){
 }
 
 function toggleFunnelDropdown(){
-    document.getElementById('funnel-dropdown')?.classList.toggle('active');
-    document.getElementById('assignee-dropdown')?.classList.remove('active');
+    const dropdown = document.getElementById('funnel-dropdown');
+    const wasActive = dropdown?.classList.contains('active');
+    closeAllDropdowns();
+    if(!wasActive) dropdown?.classList.add('active');
 }
 
 function selectFunnel(funnelId){
@@ -3728,6 +3938,7 @@ function selectFunnel(funnelId){
     document.getElementById('funnel-dropdown')?.classList.remove('active');
     
     // Оновлюємо фільтр
+    updateClearFiltersButton();
     render();
 }
 
@@ -3745,8 +3956,11 @@ function renderAssigneeDropdown(){
 }
 
 function toggleAssigneeDropdown(){
-    document.getElementById('assignee-dropdown')?.classList.toggle('active');
-    document.getElementById('funnel-dropdown')?.classList.remove('active');
+    const dropdown = document.getElementById('assignee-dropdown');
+    const wasActive = dropdown?.classList.contains('active');
+    closeAllDropdowns();
+    if(!wasActive) dropdown?.classList.add('active');
+    renderAssigneeDropdown();
 }
 
 function selectAssignee(filter){
@@ -3768,12 +3982,61 @@ function selectAssignee(filter){
         item.classList.remove('active');
     });
     
+    updateClearFiltersButton();
     render();
+}
+
+// ===== SEARCH =====
+function handleSearch(query) {
+    currentSearchQuery = query.toLowerCase().trim();
+    
+    // Update search box state
+    const searchBox = document.getElementById('search-box');
+    if(searchBox) {
+        searchBox.classList.toggle('has-value', currentSearchQuery.length > 0);
+    }
+    
+    updateClearFiltersButton();
+    
+    // Re-render
+    render();
+}
+
+function clearSearch() {
+    currentSearchQuery = '';
+    const input = document.getElementById('search-input');
+    if(input) input.value = '';
+    
+    const searchBox = document.getElementById('search-box');
+    if(searchBox) searchBox.classList.remove('has-value');
+    
+    updateClearFiltersButton();
+    render();
+}
+
+function matchesSearch(lead, query) {
+    if(!query) return true;
+    
+    const searchFields = [
+        lead.tg,
+        lead.phone,
+        lead.biz,
+        lead.email,
+        lead.notes,
+        lead.nextAction
+    ].filter(Boolean).map(f => f.toLowerCase());
+    
+    return searchFields.some(field => field.includes(query));
 }
 
 // Оновлюємо filterLeads для підтримки воронок та відповідальних
 function filterLeadsWithFunnelAndAssignee(leadsArray){
     let filtered = leadsArray;
+    
+    // Фільтр по пошуку
+    if(currentSearchQuery) {
+        filtered = filtered.filter(l => matchesSearch(l, currentSearchQuery));
+    }
     
     // Фільтр по воронці
     if(currentFunnelId){
@@ -3787,7 +4050,335 @@ function filterLeadsWithFunnelAndAssignee(leadsArray){
         filtered = filtered.filter(l => l.assignedTo === currentAssigneeFilter);
     }
     
+    // Фільтр по джерелу
+    if(currentSourceFilter) {
+        filtered = filtered.filter(l => l.source === currentSourceFilter);
+    }
+    
+    // Фільтр по даті створення
+    if(currentDateFilter) {
+        const now = new Date();
+        let startDate;
+        
+        switch(currentDateFilter) {
+            case 'today':
+                startDate = today();
+                break;
+            case 'week':
+                const weekAgo = new Date(now);
+                weekAgo.setDate(weekAgo.getDate() - 7);
+                startDate = weekAgo.toISOString().split('T')[0];
+                break;
+            case 'month':
+                const monthAgo = new Date(now);
+                monthAgo.setMonth(monthAgo.getMonth() - 1);
+                startDate = monthAgo.toISOString().split('T')[0];
+                break;
+            case 'quarter':
+                const quarterAgo = new Date(now);
+                quarterAgo.setMonth(quarterAgo.getMonth() - 3);
+                startDate = quarterAgo.toISOString().split('T')[0];
+                break;
+        }
+        
+        if(startDate) {
+            filtered = filtered.filter(l => {
+                const created = l.created ? l.created.split('T')[0] : null;
+                return created && created >= startDate;
+            });
+        }
+    }
+    
     return filtered;
+}
+
+// ===== SOURCE FILTER =====
+function toggleSourceDropdown() {
+    const dropdown = document.getElementById('source-dropdown');
+    const wasActive = dropdown.classList.contains('active');
+    closeAllDropdowns();
+    if(!wasActive) {
+        dropdown.classList.add('active');
+        renderSourceDropdown();
+    }
+}
+
+function renderSourceDropdown() {
+    const list = document.getElementById('source-dropdown-list');
+    if(!list) return;
+    
+    // Збираємо унікальні джерела з лідів
+    const sources = [...new Set(leads.map(l => l.source).filter(Boolean))];
+    
+    list.innerHTML = sources.map(source => `
+        <div class="funnel-dropdown-item ${currentSourceFilter === source ? 'active' : ''}" onclick="selectSource('${source}')">
+            ${SRC[source] || source}
+        </div>
+    `).join('');
+}
+
+function selectSource(source) {
+    currentSourceFilter = source;
+    document.getElementById('current-source-label').textContent = source ? (SRC[source] || source) : 'Всі джерела';
+    document.getElementById('source-dropdown').classList.remove('active');
+    
+    // Оновлюємо active стан
+    document.querySelectorAll('#source-dropdown .funnel-dropdown-item').forEach(item => {
+        item.classList.remove('active');
+    });
+    
+    updateClearFiltersButton();
+    render();
+}
+
+// ===== DATE FILTER =====
+function toggleDateDropdown() {
+    const dropdown = document.getElementById('date-dropdown');
+    const wasActive = dropdown.classList.contains('active');
+    closeAllDropdowns();
+    if(!wasActive) {
+        dropdown.classList.add('active');
+    }
+}
+
+const DATE_FILTER_LABELS = {
+    'today': 'Сьогодні',
+    'week': 'Цей тиждень',
+    'month': 'Цей місяць',
+    'quarter': 'Цей квартал'
+};
+
+function selectDateFilter(filter) {
+    currentDateFilter = filter;
+    document.getElementById('current-date-label').textContent = filter ? DATE_FILTER_LABELS[filter] : 'Весь час';
+    document.getElementById('date-dropdown').classList.remove('active');
+    
+    // Оновлюємо active стан
+    document.querySelectorAll('#date-dropdown .funnel-dropdown-item').forEach(item => {
+        item.classList.remove('active');
+    });
+    
+    updateClearFiltersButton();
+    render();
+}
+
+// ===== CLEAR ALL FILTERS =====
+function clearAllFilters() {
+    currentFunnelId = null;
+    currentAssigneeFilter = null;
+    currentSourceFilter = null;
+    currentDateFilter = null;
+    currentSearchQuery = '';
+    
+    // Reset UI
+    document.getElementById('current-funnel-label').textContent = 'Всі воронки';
+    document.getElementById('current-assignee-label').textContent = 'Всі менеджери';
+    document.getElementById('current-source-label').textContent = 'Всі джерела';
+    document.getElementById('current-date-label').textContent = 'Весь час';
+    
+    const searchInput = document.getElementById('search-input');
+    if(searchInput) searchInput.value = '';
+    
+    const searchBox = document.getElementById('search-box');
+    if(searchBox) searchBox.classList.remove('has-value');
+    
+    updateClearFiltersButton();
+    render();
+}
+
+function updateClearFiltersButton() {
+    const btn = document.getElementById('clear-filters-btn');
+    if(!btn) return;
+    
+    const hasFilters = currentFunnelId || currentAssigneeFilter || currentSourceFilter || currentDateFilter || currentSearchQuery;
+    btn.style.display = hasFilters ? 'inline-flex' : 'none';
+}
+
+function closeAllDropdowns() {
+    document.querySelectorAll('.funnel-dropdown').forEach(d => d.classList.remove('active'));
+}
+
+// ===== BULK ACTIONS =====
+function handleCardClick(event, leadId) {
+    // Якщо Ctrl/Cmd натиснуто — toggle selection
+    if(event.ctrlKey || event.metaKey) {
+        event.preventDefault();
+        toggleLeadSelection(leadId);
+        return;
+    }
+    
+    // Якщо Shift натиснуто і вже є вибрані — select range
+    if(event.shiftKey && selectedLeadIds.size > 0) {
+        event.preventDefault();
+        // TODO: select range
+        toggleLeadSelection(leadId);
+        return;
+    }
+    
+    // Звичайний клік — відкрити модалку
+    openModal(leadId);
+}
+
+function toggleLeadSelection(leadId) {
+    if(selectedLeadIds.has(leadId)) {
+        selectedLeadIds.delete(leadId);
+    } else {
+        selectedLeadIds.add(leadId);
+    }
+    updateBulkBar();
+    renderKanban(); // Re-render to update selection state
+}
+
+function updateBulkBar() {
+    const bar = document.getElementById('bulk-bar');
+    const count = document.getElementById('bulk-count');
+    if(!bar || !count) return;
+    
+    count.textContent = selectedLeadIds.size;
+    
+    if(selectedLeadIds.size > 0) {
+        bar.classList.add('active');
+        document.getElementById('v-kanban')?.classList.add('bulk-mode');
+    } else {
+        bar.classList.remove('active');
+        document.getElementById('v-kanban')?.classList.remove('bulk-mode');
+    }
+}
+
+function clearBulkSelection() {
+    selectedLeadIds.clear();
+    updateBulkBar();
+    renderKanban();
+}
+
+async function bulkAssign() {
+    if(selectedLeadIds.size === 0) return;
+    
+    // Показуємо dropdown з менеджерами
+    const managers = teamMembers.filter(m => m.role === 'owner' || m.role === 'manager');
+    
+    if(managers.length === 0) {
+        showWarning('Немає доступних менеджерів');
+        return;
+    }
+    
+    const options = managers.map(m => ({ value: m.id, label: m.email }));
+    options.unshift({ value: '', label: '— Зняти призначення —' });
+    
+    const selected = await promptModal('Призначити відповідального:', '', {
+        type: 'select',
+        selectOptions: options
+    });
+    
+    if(selected === null) return;
+    
+    showLoading('Призначення...');
+    
+    try {
+        const assignee = selected || null;
+        for(const leadId of selectedLeadIds) {
+            const lead = leads.find(l => l.id === leadId);
+            if(lead) {
+                lead.assignedTo = assignee;
+                await saveLead(lead);
+            }
+        }
+        showToast(`Призначено ${selectedLeadIds.size} лідів`);
+        clearBulkSelection();
+    } catch(err) {
+        showError(err.message);
+    } finally {
+        hideLoading();
+    }
+}
+
+async function bulkChangeStatus() {
+    if(selectedLeadIds.size === 0) return;
+    
+    const statuses = getOrgStatuses();
+    const options = Object.entries(statuses).map(([id, s]) => ({
+        value: id,
+        label: s.label
+    }));
+    
+    const newStatus = await promptModal('Змінити статус на:', '', {
+        type: 'select',
+        selectOptions: options
+    });
+    
+    if(!newStatus) return;
+    
+    showLoading('Зміна статусу...');
+    
+    try {
+        for(const leadId of selectedLeadIds) {
+            const lead = leads.find(l => l.id === leadId);
+            if(lead) {
+                lead.status = newStatus;
+                lead.stageDate = today();
+                addLog(lead, 'status', `Масова зміна на: ${statuses[newStatus]?.label || newStatus}`);
+                await saveLead(lead);
+            }
+        }
+        showToast(`Статус змінено для ${selectedLeadIds.size} лідів`);
+        clearBulkSelection();
+    } catch(err) {
+        showError(err.message);
+    } finally {
+        hideLoading();
+    }
+}
+
+async function bulkSetNextDate() {
+    if(selectedLeadIds.size === 0) return;
+    
+    const result = await promptDateTime('Встановити дату наступної дії');
+    if(!result) return;
+    
+    showLoading('Встановлення дати...');
+    
+    try {
+        for(const leadId of selectedLeadIds) {
+            const lead = leads.find(l => l.id === leadId);
+            if(lead) {
+                lead.nextDate = result.date;
+                lead.nextTime = result.time;
+                addLog(lead, 'call', `Масове встановлення дати: ${result.date} ${result.time}`);
+                await saveLead(lead);
+            }
+        }
+        showToast(`Дату встановлено для ${selectedLeadIds.size} лідів`);
+        clearBulkSelection();
+    } catch(err) {
+        showError(err.message);
+    } finally {
+        hideLoading();
+    }
+}
+
+async function bulkDelete() {
+    if(selectedLeadIds.size === 0) return;
+    
+    const confirmed = await confirmModal(
+        `Видалити ${selectedLeadIds.size} лідів?\n\nЦю дію неможливо скасувати.`,
+        { title: 'Масове видалення', okText: 'Видалити', danger: true }
+    );
+    
+    if(!confirmed) return;
+    
+    showLoading('Видалення...');
+    
+    try {
+        for(const leadId of selectedLeadIds) {
+            await deleteLead(leadId);
+        }
+        showToast(`Видалено ${selectedLeadIds.size} лідів`);
+        clearBulkSelection();
+    } catch(err) {
+        showError(err.message);
+    } finally {
+        hideLoading();
+    }
 }
 
 // ===== AUTO-ASSIGNMENT =====
@@ -3847,6 +4438,7 @@ function initFirestoreListener(){
     }
     
     setSyncStatus('syncing', 'Синхронізація...');
+    showSkeleton(); // Показуємо skeleton поки завантажуються дані
     const orgId = currentOrg.id;
     
     unsubscribe = db.collection('organizations').doc(orgId).collection('leads')
@@ -3877,7 +4469,7 @@ function updateOrgLeadsCount(count){
 // ===== SAVE/DELETE with Organization =====
 async function saveLead(leadData){
     if(!currentOrg){
-        alert('Оберіть організацію');
+        showWarning('Оберіть організацію');
         return;
     }
     
@@ -4026,6 +4618,43 @@ function render(){
     
     // Оновлюємо мобільний badge
     updateMobileTasksBadge();
+}
+
+// ===== SKELETON LOADING =====
+function showTasksSkeleton() {
+    const container = document.getElementById('tasks-list');
+    if(!container) return;
+    
+    container.innerHTML = Array(5).fill(0).map(() => `
+        <div class="skeleton-row">
+            <div class="skeleton skeleton-circle"></div>
+            <div style="flex:1;display:flex;flex-direction:column;gap:8px">
+                <div class="skeleton skeleton-line medium"></div>
+                <div class="skeleton skeleton-line short"></div>
+            </div>
+            <div class="skeleton skeleton-line" style="width:80px"></div>
+        </div>
+    `).join('');
+}
+
+function showKanbanSkeleton() {
+    const container = document.getElementById('kanban');
+    if(!container) return;
+    
+    container.innerHTML = Array(4).fill(0).map(() => `
+        <div class="skeleton-column">
+            <div class="skeleton skeleton-column-header"></div>
+            ${Array(3).fill(0).map(() => `
+                <div class="skeleton skeleton-card"></div>
+            `).join('')}
+        </div>
+    `).join('');
+}
+
+function showSkeleton() {
+    const v = document.querySelector('.view.active')?.id;
+    if(v === 'v-tasks') showTasksSkeleton();
+    else if(v === 'v-kanban') showKanbanSkeleton();
 }
 
 // ===== TASKS =====
@@ -4645,7 +5274,6 @@ function openAIPanel(id) {
 }
 
 // ===== KANBAN =====
-let dragId=null;
 
 function setFilter(f){
     currentFilter=f;
@@ -4706,12 +5334,14 @@ function kCard(l){
     const tags=getTags(l);
     const score=calcScore(l);
     const scoreClass=score>=70?'hot':score>=50?'warm':'cold';
-    return`<div class="k-card ${alert?'has-'+(alert.crit?'critical':'alert'):''}" draggable="true" ondragstart="dStart(event,'${l.id}')" ondragend="dEnd(event)" onclick="openModal('${l.id}')">
+    const isSelected = selectedLeadIds.has(l.id);
+    return`<div class="k-card ${alert?'has-'+(alert.crit?'critical':'alert'):''} ${isSelected?'selected':''}" draggable="true" ondragstart="dStart(event,'${l.id}')" ondragend="dEnd(event)" onclick="handleCardClick(event,'${l.id}')" style="position:relative">
+        <div class="select-checkbox" onclick="event.stopPropagation();toggleLeadSelection('${l.id}')"></div>
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
-            <div class="k-card-name">${escapeHtml(l.tg||l.phone||'—')}</div>
+            <div class="k-card-name">${highlightSearch(l.tg||l.phone||'—')}</div>
             <div class="score ${scoreClass}"><div class="score-bar"><div class="score-fill ${scoreClass}" style="width:${score}%"></div></div>${score}</div>
         </div>
-        ${l.biz?`<div class="k-card-biz">${escapeHtml(l.biz)}</div>`:''}
+        ${l.biz?`<div class="k-card-biz">${highlightSearch(l.biz)}</div>`:''}
         <div class="k-card-footer">
             <span>${SRC[l.source]||''}</span>
             ${amt?`<span class="k-card-amount">${amt}${CUR[l.finTotalCur||l.finDepCur]||''}</span>`:''}
@@ -4728,16 +5358,65 @@ function getAlert(l){
     if(l.noshow>=3)return{crit:true};
     return null;
 }
-function dStart(e,id){dragId=id;e.target.classList.add('dragging');}
-function dEnd(e){e.target.classList.remove('dragging');dragId=null;}
-function dOver(e){e.preventDefault();e.currentTarget.classList.add('drag-over');}
-function dLeave(e){e.currentTarget.classList.remove('drag-over');}
-async function dDrop(e,status){
+
+// ===== DRAG & DROP =====
+let dragId = null;
+let dragElement = null;
+
+function dStart(e, id) {
+    dragId = id;
+    dragElement = e.target;
+    e.target.classList.add('dragging');
+    
+    // Встановлюємо drag image
+    if(e.dataTransfer) {
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('text/plain', id);
+    }
+    
+    // Підсвічуємо всі колонки як можливі drop targets
+    setTimeout(() => {
+        document.querySelectorAll('.column-cards').forEach(col => {
+            col.style.minHeight = '120px';
+        });
+    }, 0);
+}
+
+function dEnd(e) {
+    e.target.classList.remove('dragging');
+    dragId = null;
+    dragElement = null;
+    
+    // Знімаємо підсвітку з усіх колонок
+    document.querySelectorAll('.column-cards').forEach(col => {
+        col.classList.remove('drag-over');
+        col.style.minHeight = '';
+    });
+}
+
+function dOver(e) {
+    e.preventDefault();
+    if(e.dataTransfer) e.dataTransfer.dropEffect = 'move';
+    e.currentTarget.classList.add('drag-over');
+}
+
+function dLeave(e) {
+    // Перевіряємо чи ми дійсно покинули колонку (а не перейшли на child елемент)
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX;
+    const y = e.clientY;
+    
+    if(x < rect.left || x > rect.right || y < rect.top || y > rect.bottom) {
+        e.currentTarget.classList.remove('drag-over');
+    }
+}
+
+async function dDrop(e, status) {
     e.preventDefault();e.currentTarget.classList.remove('drag-over');
     if(!dragId)return;
     const l=leads.find(x=>x.id===dragId);if(!l)return;
     const updatedLead = {...l};
-    if(status==='paid'&&!updatedLead.finTotal){alert('Вкажіть суму!');openModal(updatedLead.id);return;}
+    if(status==='paid'&&!updatedLead.finTotal){showWarning('Вкажіть суму!');openModal(updatedLead.id);return;}
     if(status==='deposit'&&!updatedLead.finDep){
         const a = await promptModal('Сума завдатку:', '', {type: 'number', placeholder: 'Наприклад: 5000'});
         if(!a)return;
@@ -4829,6 +5508,12 @@ function renderReports(periodType = 'week'){
     
     // Рендеримо summary cards
     renderReportsSummary(fromDate, toDate);
+    
+    // Рендеримо графіки
+    renderLeadsByDayChart(fromDate, toDate);
+    renderConversionFunnel(statusIds, statuses);
+    renderRevenueChart(fromDate, toDate);
+    renderSourcesChart();
     
     // Рендеримо таблицю
     renderReportsTable(tableData, statusIds, statuses);
@@ -5193,6 +5878,191 @@ function filterByDateRange(arr, from, to){
 
 function toUAH(a, c){ if(!a) return 0; return a * ({UAH:1, USD:41, EUR:45}[c] || 1); }
 
+// ===== ANALYTICS CHARTS =====
+function renderLeadsByDayChart(fromDate, toDate) {
+    const container = document.getElementById('chart-leads-by-day');
+    if(!container) return;
+    
+    // Збираємо дані по днях за останні 14 днів
+    const days = [];
+    const to = new Date(toDate || today());
+    for(let i = 13; i >= 0; i--) {
+        const d = new Date(to);
+        d.setDate(d.getDate() - i);
+        days.push(d.toISOString().split('T')[0]);
+    }
+    
+    const counts = days.map(day => {
+        return leads.filter(l => {
+            const created = (l.created || l.createdAt || '').split('T')[0];
+            return created === day;
+        }).length;
+    });
+    
+    const maxCount = Math.max(...counts, 1);
+    
+    container.innerHTML = `
+        <div class="chart-bar-group">
+            ${days.map((day, i) => {
+                const height = Math.max((counts[i] / maxCount) * 160, 4);
+                const label = new Date(day).toLocaleDateString('uk', { day: 'numeric', month: 'short' }).replace(' ', '');
+                return `
+                    <div class="chart-bar" style="height:${height}px" title="${label}: ${counts[i]} лідів">
+                        ${counts[i] > 0 ? `<span class="chart-bar-value">${counts[i]}</span>` : ''}
+                        <span class="chart-bar-label">${label}</span>
+                    </div>
+                `;
+            }).join('')}
+        </div>
+    `;
+}
+
+function renderConversionFunnel(statusIds, statuses) {
+    const container = document.getElementById('chart-conversion-funnel');
+    if(!container) return;
+    
+    // Рахуємо кількість лідів на кожному етапі
+    const stages = statusIds.filter(id => !['failed', 'frozen'].includes(id));
+    const counts = {};
+    stages.forEach(id => {
+        counts[id] = leads.filter(l => l.status === id).length;
+    });
+    
+    const totalLeads = leads.length || 1;
+    const colors = ['#22c55e', '#16a34a', '#15803d', '#166534', '#14532d', '#064e3b'];
+    
+    container.innerHTML = `
+        <div class="conversion-funnel">
+            ${stages.map((id, i) => {
+                const count = counts[id] || 0;
+                const pct = Math.round((count / totalLeads) * 100);
+                const width = Math.max(pct, 5);
+                const color = colors[Math.min(i, colors.length - 1)];
+                const status = statuses[id];
+                
+                let arrow = '';
+                if(i < stages.length - 1) {
+                    const nextCount = counts[stages[i + 1]] || 0;
+                    const dropOff = count > 0 ? Math.round(((count - nextCount) / count) * 100) : 0;
+                    if(dropOff > 0) {
+                        arrow = `<div class="conversion-arrow">↓ -${dropOff}% втрата</div>`;
+                    }
+                }
+                
+                return `
+                    <div class="conversion-step">
+                        <span class="conversion-label">${status?.label || id}</span>
+                        <div class="conversion-bar">
+                            <div class="conversion-fill" style="width:${width}%;background:${status?.color || color}">${count}</div>
+                        </div>
+                        <span class="conversion-percent">${pct}%</span>
+                    </div>
+                    ${arrow}
+                `;
+            }).join('')}
+        </div>
+    `;
+}
+
+function renderRevenueChart(fromDate, toDate) {
+    const container = document.getElementById('chart-revenue');
+    if(!container) return;
+    
+    // Збираємо виручку по днях
+    const days = [];
+    const to = new Date(toDate || today());
+    for(let i = 13; i >= 0; i--) {
+        const d = new Date(to);
+        d.setDate(d.getDate() - i);
+        days.push(d.toISOString().split('T')[0]);
+    }
+    
+    const revenues = days.map(day => {
+        return leads
+            .filter(l => l.status === 'paid' && (l.stageDate || '').split('T')[0] === day)
+            .reduce((sum, l) => sum + toUAH(l.finTotal, l.finTotalCur), 0);
+    });
+    
+    const maxRevenue = Math.max(...revenues, 1);
+    
+    container.innerHTML = `
+        <div class="chart-bar-group">
+            ${days.map((day, i) => {
+                const height = Math.max((revenues[i] / maxRevenue) * 160, 4);
+                const label = new Date(day).toLocaleDateString('uk', { day: 'numeric', month: 'short' }).replace(' ', '');
+                const value = revenues[i] > 0 ? formatMoney(revenues[i]) : '';
+                return `
+                    <div class="chart-bar" style="height:${height}px;background:#059669" title="${label}: ${formatMoney(revenues[i])}">
+                        ${value ? `<span class="chart-bar-value" style="font-size:9px">${value}</span>` : ''}
+                        <span class="chart-bar-label">${label}</span>
+                    </div>
+                `;
+            }).join('')}
+        </div>
+    `;
+}
+
+function renderSourcesChart() {
+    const container = document.getElementById('chart-sources');
+    if(!container) return;
+    
+    // Рахуємо ліди по джерелах
+    const sourceCounts = {};
+    leads.forEach(l => {
+        const src = l.source || 'unknown';
+        sourceCounts[src] = (sourceCounts[src] || 0) + 1;
+    });
+    
+    const sorted = Object.entries(sourceCounts)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 6);
+    
+    const total = leads.length || 1;
+    const colors = ['#22c55e', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#6b7280'];
+    
+    container.innerHTML = `
+        <div style="display:flex;gap:20px;height:100%">
+            <div style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:8px">
+                ${sorted.map(([src, count], i) => {
+                    const pct = Math.round((count / total) * 100);
+                    return `
+                        <div style="display:flex;align-items:center;gap:8px">
+                            <div style="width:12px;height:12px;border-radius:3px;background:${colors[i]};flex-shrink:0"></div>
+                            <span style="flex:1;font-size:12px;color:#374151">${SRC[src] || src}</span>
+                            <span style="font-size:12px;font-weight:600;color:#1f2937">${count}</span>
+                            <span style="font-size:11px;color:#6b7280">${pct}%</span>
+                        </div>
+                    `;
+                }).join('')}
+            </div>
+            <div style="width:120px;height:120px;position:relative;flex-shrink:0;align-self:center">
+                <svg viewBox="0 0 36 36" style="width:100%;height:100%;transform:rotate(-90deg)">
+                    ${(() => {
+                        let offset = 0;
+                        return sorted.map(([src, count], i) => {
+                            const pct = (count / total) * 100;
+                            const dash = pct * 0.314;
+                            const result = `<circle cx="18" cy="18" r="15.9" fill="none" stroke="${colors[i]}" stroke-width="4" stroke-dasharray="${dash} 100" stroke-dashoffset="-${offset}" />`;
+                            offset += dash;
+                            return result;
+                        }).join('');
+                    })()}
+                </svg>
+                <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center">
+                    <div style="font-size:20px;font-weight:700;color:#1f2937">${total}</div>
+                    <div style="font-size:10px;color:#6b7280">всього</div>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+function formatMoney(amount) {
+    if(amount >= 1000000) return Math.round(amount / 1000000) + 'М';
+    if(amount >= 1000) return Math.round(amount / 1000) + 'К';
+    return Math.round(amount) + '';
+}
+
 function exportReport(){
     const fromDate = document.getElementById('date-from').value;
     const toDate = document.getElementById('date-to').value;
@@ -5372,9 +6242,9 @@ async function saveLeadForm(){
     const phone=document.getElementById('f-phone').value;
     const tg=document.getElementById('f-tg').value;
     const email=document.getElementById('f-email').value;
-    if(!phone&&!tg&&!email){alert('Вкажіть хоча б один контакт');return;}
+    if(!phone&&!tg&&!email){showWarning('Вкажіть хоча б один контакт');return;}
     const status=document.getElementById('f-status').value;
-    if(status==='failed'&&!document.getElementById('f-fail').value){alert('Вкажіть причину');return;}
+    if(status==='failed'&&!document.getElementById('f-fail').value){showWarning('Вкажіть причину відмови');return;}
     
     const funnelId = document.getElementById('f-funnel')?.value || 'default';
     const assignedTo = document.getElementById('f-assignee')?.value || null;
@@ -5457,7 +6327,7 @@ async function saveLeadForm(){
         closeModal();
     } catch(err) {
         console.error('Save error:', err);
-        alert('Помилка збереження: ' + err.message);
+        showError('Помилка збереження: ' + err.message);
     } finally {
         if(saveBtn) { saveBtn.disabled = false; saveBtn.textContent = 'Зберегти'; }
     }
@@ -5471,7 +6341,7 @@ async function delLeadForm(){
     });
     if(!confirmed)return;
     try { await deleteLead(editing); closeModal(); }
-    catch(err) { console.error('Delete error:', err); alert('Помилка: ' + err.message); }
+    catch(err) { console.error('Delete error:', err); showError(err.message); }
 }
 function onStatusChange(){
     const st=document.getElementById('f-status').value;
@@ -5688,7 +6558,7 @@ function importXLS(e){
                 n++;
             }
             showToast('Імпортовано: '+n+(skip?' (пропущено: '+skip+')':''));
-        }catch(err){console.error(err);alert('Помилка: '+err.message);}
+        }catch(err){console.error(err);showError(err.message);}
     };
     reader.readAsArrayBuffer(file);
     e.target.value='';
@@ -5743,6 +6613,22 @@ function escapeHtml(text) {
     return div.innerHTML;
 }
 
+/**
+ * Підсвічує пошуковий запит в тексті
+ */
+function highlightSearch(text) {
+    if(!text) return '';
+    const escaped = escapeHtml(text);
+    if(!currentSearchQuery) return escaped;
+    
+    const regex = new RegExp(`(${escapeRegex(currentSearchQuery)})`, 'gi');
+    return escaped.replace(regex, '<mark class="search-highlight">$1</mark>');
+}
+
+function escapeRegex(string) {
+    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
 function addAIMessage(text, isUser = false){
     const chat = document.getElementById('ai-chat');
     const msg = document.createElement('div');
@@ -5771,7 +6657,7 @@ function hideAILoading(){
 async function aiAsk(type){
     const lead = getSelectedLead();
     if(!lead && type !== 'general'){
-        alert('Спочатку виберіть ліда');
+        showWarning('Спочатку виберіть ліда');
         return;
     }
     
@@ -6104,9 +6990,15 @@ async function changeLeadStatus(leadId, newStatus) {
 
 // Закрити dropdown при кліку поза ним
 document.addEventListener('click', (e) => {
+    // Task status dropdown
     if(activeDropdown && !e.target.closest('.task-status-wrap')) {
         activeDropdown.classList.remove('active');
         activeDropdown = null;
+    }
+    
+    // Funnel bar dropdowns
+    if(!e.target.closest('.funnel-selector')) {
+        closeAllDropdowns();
     }
 });
 
@@ -6901,27 +7793,216 @@ ID (для скрипта): \${orgId}
     });
 }
 
-function showToast(message){
+// ===== TOAST NOTIFICATIONS =====
+const TOAST_CONFIG = {
+    success: {
+        bg: '#059669',
+        icon: `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>`
+    },
+    error: {
+        bg: '#dc2626',
+        icon: `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>`
+    },
+    warning: {
+        bg: '#d97706',
+        icon: `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>`
+    },
+    info: {
+        bg: '#1f2937',
+        icon: `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>`
+    }
+};
+
+/**
+ * Показує toast повідомлення
+ * @param {string} message - Текст повідомлення
+ * @param {string} type - Тип: 'success' | 'error' | 'warning' | 'info'
+ * @param {number} duration - Тривалість в мс (default: 3000, error: 5000)
+ */
+function showToast(message, type = 'success', duration = null) {
     // Видаляємо старий toast якщо є
     const oldToast = document.querySelector('.toast-message');
     if(oldToast) oldToast.remove();
     
+    const config = TOAST_CONFIG[type] || TOAST_CONFIG.info;
+    const displayDuration = duration || (type === 'error' ? 5000 : 3000);
+    
     const toast = document.createElement('div');
-    toast.className = 'toast-message';
-    toast.innerHTML = `
-        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
-        \${message}
-    `;
+    toast.className = 'toast-message toast-' + type;
+    toast.innerHTML = `${config.icon}<span>${escapeHtml(message)}</span>`;
     toast.style.cssText = `
         position:fixed;bottom:100px;left:50%;transform:translateX(-50%);
-        background:#1f2937;color:#fff;padding:12px 20px;border-radius:8px;
-        font-size:14px;z-index:9999;display:flex;align-items:center;gap:8px;
-        box-shadow:0 4px 12px rgba(0,0,0,0.2);animation:fadeInUp .3s ease;
+        background:${config.bg};color:#fff;padding:12px 20px;border-radius:8px;
+        font-size:14px;z-index:9999;display:flex;align-items:center;gap:10px;
+        box-shadow:0 4px 12px rgba(0,0,0,0.3);animation:fadeInUp .3s ease;
+        max-width:90%;text-align:left;
     `;
     document.body.appendChild(toast);
     
-    setTimeout(() => toast.remove(), 3000);
+    setTimeout(() => {
+        toast.style.animation = 'fadeOutDown .3s ease forwards';
+        setTimeout(() => toast.remove(), 300);
+    }, displayDuration);
 }
+
+/**
+ * Shortcut для error toast
+ */
+function showError(message) {
+    showToast(message, 'error');
+}
+
+/**
+ * Shortcut для warning toast
+ */
+function showWarning(message) {
+    showToast(message, 'warning');
+}
+
+// ===== OFFLINE DETECTION =====
+let wasOffline = false;
+
+function updateOnlineStatus() {
+    const banner = document.getElementById('offline-banner');
+    if(!banner) return;
+    
+    if(!navigator.onLine) {
+        // Offline
+        banner.classList.remove('online-restored');
+        banner.classList.add('active');
+        banner.querySelector('span').textContent = "Немає з'єднання з інтернетом";
+        wasOffline = true;
+        setSyncStatus('error', 'Офлайн');
+    } else if(wasOffline) {
+        // Back online
+        banner.classList.add('online-restored');
+        banner.querySelector('span').textContent = "З'єднання відновлено!";
+        setSyncStatus('synced', 'Синхронізовано');
+        
+        // Hide after 3 seconds
+        setTimeout(() => {
+            banner.classList.remove('active', 'online-restored');
+            wasOffline = false;
+        }, 3000);
+    }
+}
+
+// Listen for online/offline events
+window.addEventListener('online', updateOnlineStatus);
+window.addEventListener('offline', updateOnlineStatus);
+
+// Check on page load
+document.addEventListener('DOMContentLoaded', () => {
+    updateOnlineStatus();
+});
+
+// ===== GLOBAL KEYBOARD SHORTCUTS =====
+document.addEventListener('keydown', (e) => {
+    // Ignore if typing in input/textarea
+    const activeEl = document.activeElement;
+    const isTyping = activeEl && (
+        activeEl.tagName === 'INPUT' || 
+        activeEl.tagName === 'TEXTAREA' || 
+        activeEl.isContentEditable
+    );
+    
+    // ESC - Close modals (works even when typing)
+    if(e.key === 'Escape') {
+        e.preventDefault();
+        
+        // Priority order: close the topmost modal first
+        
+        // 1. Confirm modal
+        if(document.getElementById('confirm-modal')?.classList.contains('active')) {
+            closeConfirmModal(false);
+            return;
+        }
+        
+        // 2. Input modal (prompt)
+        if(document.getElementById('input-modal')?.classList.contains('active')) {
+            closeInputModal();
+            return;
+        }
+        
+        // 3. DateTime modal
+        if(document.getElementById('datetime-modal')?.classList.contains('active')) {
+            closeDateTimePicker();
+            return;
+        }
+        
+        // 4. Quick action panel
+        if(document.getElementById('quick-panel')?.classList.contains('active')) {
+            closeQuickPanel();
+            return;
+        }
+        
+        // 5. Lead edit modal
+        if(document.getElementById('modal')?.classList.contains('active')) {
+            closeModal();
+            return;
+        }
+        
+        // 6. Settings panel
+        if(document.getElementById('settings-panel')?.classList.contains('active')) {
+            closeSettingsPanel();
+            return;
+        }
+        
+        // 7. Team modal
+        if(document.getElementById('team-modal')?.classList.contains('active')) {
+            closeTeamModal();
+            return;
+        }
+        
+        // 8. AI Assistant
+        if(document.getElementById('ai-assistant')?.classList.contains('active')) {
+            toggleAI();
+            return;
+        }
+        
+        // 9. Mobile menu
+        if(document.getElementById('mobile-menu')?.classList.contains('active')) {
+            closeMobileMenu();
+            return;
+        }
+        
+        // 10. Auth modal
+        if(document.getElementById('auth-modal')?.classList.contains('active')) {
+            closeAuthModal();
+            return;
+        }
+    }
+    
+    // Don't process other shortcuts if typing
+    if(isTyping) return;
+    
+    // Ctrl/Cmd + K - Focus search
+    if((e.ctrlKey || e.metaKey) && e.key === 'k') {
+        e.preventDefault();
+        const searchInput = document.getElementById('search-input');
+        if(searchInput && document.getElementById('app-screen')?.style.display !== 'none') {
+            searchInput.focus();
+            searchInput.select();
+        }
+        return;
+    }
+    
+    // Ctrl/Cmd + N - New lead
+    if((e.ctrlKey || e.metaKey) && e.key === 'n') {
+        e.preventDefault();
+        if(document.getElementById('app-screen')?.style.display !== 'none') {
+            openModal();
+        }
+        return;
+    }
+    
+    // ? - Show help
+    if(e.key === '?' && !e.shiftKey) {
+        e.preventDefault();
+        toggleHelp();
+        return;
+    }
+});
 </script>
 </body>
 </html>
