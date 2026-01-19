@@ -4075,6 +4075,16 @@ function clearSearch() {
 function matchesSearch(lead, query) {
     if(!query) return true;
     
+    // Нормалізуємо телефон (видаляємо все крім цифр)
+    const normalizedQuery = query.replace(/\D/g, '');
+    const phoneDigits = (lead.phone || '').replace(/\D/g, '');
+    
+    // Якщо запит схожий на номер телефону (тільки цифри)
+    if(normalizedQuery.length >= 3 && /^\d+$/.test(query.replace(/[\s\-\+]/g, ''))) {
+        if(phoneDigits.includes(normalizedQuery)) return true;
+    }
+    
+    // Звичайний текстовий пошук
     const searchFields = [
         lead.tg,
         lead.phone,
@@ -4721,7 +4731,10 @@ function getTasks(){
     const now = new Date();
     const currentHour = now.getHours();
     
-    leads.forEach(l=>{
+    // Застосовуємо фільтри (включаючи пошук)
+    const filteredLeads = filterLeadsWithFunnelAndAssignee(leads);
+    
+    filteredLeads.forEach(l=>{
         // Оплачені - виключаємо з активних задач
         if(l.status==='paid') return;
         
