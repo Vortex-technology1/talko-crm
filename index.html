@@ -1634,15 +1634,37 @@
         <div class="quick-lead-contacts" id="quick-lead-contacts"></div>
         <div class="quick-lead-action" id="quick-lead-task">Завдання: —</div>
         <div class="quick-lead-notes" id="quick-lead-notes" style="display:none;margin-top:12px;padding:10px 12px;background:#fffbeb;border-left:3px solid #f59e0b;border-radius:6px;font-size:13px;color:#92400e;">
-            <div style="font-weight:600;margin-bottom:4px;display:flex;align-items:center;gap:6px;">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-                Примітки:
+            <div style="font-weight:600;margin-bottom:4px;display:flex;align-items:center;justify-content:space-between;">
+                <span style="display:flex;align-items:center;gap:6px;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                    Примітки/Звіт:
+                </span>
+                <button onclick="toggleNotesExpand()" id="notes-expand-btn" style="background:none;border:none;color:#b45309;cursor:pointer;font-size:12px;padding:2px 6px;">
+                    Розгорнути ▼
+                </button>
             </div>
-            <div id="quick-lead-notes-text"></div>
+            <div id="quick-lead-notes-text" style="max-height:80px;overflow:hidden;transition:max-height 0.3s;"></div>
         </div>
     </div>
     
     <div class="quick-panel-body">
+        <!-- Confirm consultation section - shown if task is "Підтвердити консультацію" -->
+        <div class="quick-section" id="quick-confirm-consult-section" style="display:none">
+            <div class="quick-section-title" style="color:#22c55e">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/><path d="M9 16l2 2 4-4"/></svg>
+                Підтвердження консультації
+            </div>
+            <div class="quick-buttons">
+                <button class="quick-btn completed" onclick="confirmConsultation()" style="flex:1;justify-content:center">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                    Консультація підтверджена
+                </button>
+            </div>
+            <div style="margin-top:12px;padding:12px;background:#f0fdf4;border-radius:8px;font-size:13px;color:#166534">
+                Клієнт підтвердив що прийде на консультацію
+            </div>
+        </div>
+        
         <!-- Outcome buttons -->
         <div class="quick-section" id="quick-outcome-section">
             <div class="quick-section-title">
@@ -1667,6 +1689,15 @@
                     Передзвонить
                 </button>
             </div>
+        </div>
+        
+        <!-- Comment section - shown after outcome -->
+        <div class="quick-section" id="quick-comment-section" style="display:none">
+            <div class="quick-section-title">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                Коментар до дзвінка
+            </div>
+            <textarea class="quick-note" id="quick-comment" placeholder="Що обговорили? Про що домовились?"></textarea>
         </div>
         
         <!-- Next action section - shown after outcome -->
@@ -1807,6 +1838,40 @@
     </div>
 </div>
 
+<!-- Universal Input Modal (замість prompt) -->
+<div class="datetime-modal-overlay" id="input-modal-overlay" onclick="closeInputModal()"></div>
+<div class="datetime-modal" id="input-modal" style="max-width:380px">
+    <div class="datetime-header">
+        <span id="input-modal-title">Введіть значення</span>
+        <button class="datetime-close" onclick="closeInputModal()">×</button>
+    </div>
+    <div class="datetime-body">
+        <div id="input-modal-content">
+            <!-- Контент генерується динамічно -->
+        </div>
+    </div>
+    <div class="datetime-footer">
+        <button class="btn btn-s" onclick="closeInputModal()">Скасувати</button>
+        <button class="btn btn-p" id="input-modal-confirm" onclick="confirmInputModal()">OK</button>
+    </div>
+</div>
+
+<!-- Confirm Modal (замість confirm) -->
+<div class="datetime-modal-overlay" id="confirm-modal-overlay" onclick="closeConfirmModal(false)"></div>
+<div class="datetime-modal" id="confirm-modal" style="max-width:360px">
+    <div class="datetime-header">
+        <span id="confirm-modal-title">Підтвердження</span>
+        <button class="datetime-close" onclick="closeConfirmModal(false)">×</button>
+    </div>
+    <div class="datetime-body">
+        <p id="confirm-modal-message" style="margin:0;color:#374151;line-height:1.5"></p>
+    </div>
+    <div class="datetime-footer">
+        <button class="btn btn-s" id="confirm-modal-cancel" onclick="closeConfirmModal(false)">Скасувати</button>
+        <button class="btn btn-p" id="confirm-modal-ok" onclick="closeConfirmModal(true)">Так</button>
+    </div>
+</div>
+
 <!-- Team Modal -->
 <div class="team-modal" id="team-modal">
     <div class="team-modal-content">
@@ -1934,6 +1999,13 @@ const db = firebase.firestore();
 // ===== SUPER ADMIN CONFIG =====
 const SUPER_ADMIN_EMAILS = ['management.talco@gmail.com'];
 
+// ===== BUSINESS CONSTANTS =====
+const REACTIVATION_DAYS = 90;           // Днів до реактивації після відмови
+const DEFAULT_FREEZE_MONTHS = 3;        // Місяців заморозки за замовчуванням
+const DEPOSIT_REMINDER_DAYS = 7;        // Днів до нагадування про оплату після завдатку
+const CONFIRM_BEFORE_DAYS = 1;          // За скільки днів підтверджувати консультацію
+const NOSHOW_DELAYS = [7, 30, 90];      // Затримки після неявки (1-ша, 2-га, 3+ разів)
+
 // ===== APP STATE =====
 let currentUser = null;
 let currentOrg = null;      // Поточна організація
@@ -2031,6 +2103,174 @@ function setQuickDate(option) {
         dateInput.value = addDays(today(), 2);
     } else if(option === '+7') {
         dateInput.value = addDays(today(), 7);
+    }
+}
+
+// ===== UNIVERSAL INPUT MODAL (замість prompt) =====
+let inputModalCallback = null;
+let inputModalType = 'text';
+
+/**
+ * Універсальна модалка замість prompt()
+ * @param {string} title - Заголовок
+ * @param {string} defaultValue - Значення за замовчуванням
+ * @param {Object} options - Додаткові опції
+ * @param {string} options.type - 'text', 'number', 'textarea', 'select'
+ * @param {string} options.placeholder - Placeholder
+ * @param {Array} options.selectOptions - Опції для select [{value, label}]
+ * @param {string} options.min - Мін значення для number
+ * @param {string} options.max - Макс значення для number
+ * @returns {Promise<string|null>}
+ */
+function promptModal(title, defaultValue = '', options = {}) {
+    return new Promise((resolve) => {
+        const modal = document.getElementById('input-modal');
+        const overlay = document.getElementById('input-modal-overlay');
+        const titleEl = document.getElementById('input-modal-title');
+        const content = document.getElementById('input-modal-content');
+        
+        inputModalCallback = resolve;
+        inputModalType = options.type || 'text';
+        
+        titleEl.textContent = title || 'Введіть значення';
+        
+        // Генеруємо контент залежно від типу
+        let inputHtml = '';
+        
+        if(options.type === 'select' && options.selectOptions) {
+            inputHtml = `<select id="input-modal-value" class="form-select" style="width:100%;padding:12px;font-size:15px">
+                ${options.selectOptions.map(opt => 
+                    `<option value="${opt.value}" ${opt.value == defaultValue ? 'selected' : ''}>${opt.label}</option>`
+                ).join('')}
+            </select>`;
+        } else if(options.type === 'textarea') {
+            inputHtml = `<textarea id="input-modal-value" class="form-textarea" 
+                style="width:100%;min-height:100px;padding:12px;font-size:15px;resize:vertical"
+                placeholder="${options.placeholder || ''}">${defaultValue}</textarea>`;
+        } else if(options.type === 'number') {
+            inputHtml = `<input type="number" id="input-modal-value" class="form-input" 
+                style="width:100%;padding:12px;font-size:15px"
+                value="${defaultValue}"
+                placeholder="${options.placeholder || ''}"
+                ${options.min !== undefined ? `min="${options.min}"` : ''}
+                ${options.max !== undefined ? `max="${options.max}"` : ''}>`;
+        } else {
+            inputHtml = `<input type="text" id="input-modal-value" class="form-input" 
+                style="width:100%;padding:12px;font-size:15px"
+                value="${defaultValue}"
+                placeholder="${options.placeholder || ''}">`;
+        }
+        
+        content.innerHTML = inputHtml;
+        
+        modal.classList.add('active');
+        overlay.classList.add('active');
+        
+        // Фокус на input
+        setTimeout(() => {
+            const input = document.getElementById('input-modal-value');
+            if(input) {
+                input.focus();
+                if(input.select) input.select();
+            }
+        }, 100);
+        
+        // Enter для підтвердження
+        const input = document.getElementById('input-modal-value');
+        if(input && input.tagName !== 'TEXTAREA') {
+            input.onkeydown = (e) => {
+                if(e.key === 'Enter') confirmInputModal();
+                if(e.key === 'Escape') closeInputModal();
+            };
+        }
+    });
+}
+
+function closeInputModal() {
+    document.getElementById('input-modal').classList.remove('active');
+    document.getElementById('input-modal-overlay').classList.remove('active');
+    if(inputModalCallback) {
+        inputModalCallback(null);
+        inputModalCallback = null;
+    }
+}
+
+function confirmInputModal() {
+    const input = document.getElementById('input-modal-value');
+    const value = input ? input.value : '';
+    
+    document.getElementById('input-modal').classList.remove('active');
+    document.getElementById('input-modal-overlay').classList.remove('active');
+    
+    if(inputModalCallback) {
+        inputModalCallback(value);
+        inputModalCallback = null;
+    }
+}
+
+// ===== CONFIRM MODAL (замість confirm) =====
+let confirmModalCallback = null;
+
+/**
+ * Красива модалка замість confirm()
+ * @param {string} message - Повідомлення
+ * @param {Object} options - Опції
+ * @param {string} options.title - Заголовок (default: "Підтвердження")
+ * @param {string} options.okText - Текст кнопки OK (default: "Так")
+ * @param {string} options.cancelText - Текст кнопки Cancel (default: "Скасувати")
+ * @param {boolean} options.danger - Червона кнопка OK для небезпечних дій
+ * @returns {Promise<boolean>}
+ */
+function confirmModal(message, options = {}) {
+    return new Promise((resolve) => {
+        const modal = document.getElementById('confirm-modal');
+        const overlay = document.getElementById('confirm-modal-overlay');
+        const titleEl = document.getElementById('confirm-modal-title');
+        const messageEl = document.getElementById('confirm-modal-message');
+        const okBtn = document.getElementById('confirm-modal-ok');
+        const cancelBtn = document.getElementById('confirm-modal-cancel');
+        
+        confirmModalCallback = resolve;
+        
+        titleEl.textContent = options.title || 'Підтвердження';
+        messageEl.innerHTML = escapeHtml(message).replace(/\n/g, '<br>');
+        okBtn.textContent = options.okText || 'Так';
+        cancelBtn.textContent = options.cancelText || 'Скасувати';
+        
+        // Danger mode
+        if(options.danger) {
+            okBtn.style.background = '#ef4444';
+        } else {
+            okBtn.style.background = '';
+        }
+        
+        modal.classList.add('active');
+        overlay.classList.add('active');
+        
+        // Focus на OK кнопці
+        setTimeout(() => okBtn.focus(), 100);
+        
+        // Escape для закриття
+        const handleKeydown = (e) => {
+            if(e.key === 'Escape') {
+                closeConfirmModal(false);
+                document.removeEventListener('keydown', handleKeydown);
+            }
+            if(e.key === 'Enter') {
+                closeConfirmModal(true);
+                document.removeEventListener('keydown', handleKeydown);
+            }
+        };
+        document.addEventListener('keydown', handleKeydown);
+    });
+}
+
+function closeConfirmModal(result) {
+    document.getElementById('confirm-modal').classList.remove('active');
+    document.getElementById('confirm-modal-overlay').classList.remove('active');
+    if(confirmModalCallback) {
+        confirmModalCallback(result);
+        confirmModalCallback = null;
     }
 }
 
@@ -2133,8 +2373,13 @@ async function handleAuth(){
     }
 }
 
-function logout(){
-    if(confirm('Вийти з акаунту?')){
+async function logout(){
+    const confirmed = await confirmModal('Вийти з акаунту?', {
+        title: 'Вихід',
+        okText: 'Вийти',
+        cancelText: 'Залишитись'
+    });
+    if(confirmed) {
         auth.signOut();
     }
 }
@@ -2180,7 +2425,7 @@ auth.onAuthStateChanged(async (user) => {
 
 // ===== SUPER ADMIN MODE =====
 async function initSuperAdminMode(){
-    console.log('Super Admin mode activated');
+    // Super Admin mode
     showAdminPanel();
     
     // Завантажуємо ВСІ організації для ADMIN панелі
@@ -2204,7 +2449,7 @@ async function initSuperAdminMode(){
             // Оновлюємо UI
             document.getElementById('org-selector-btn').innerHTML = `
                 <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-                ${currentOrg.name}
+                ${escapeHtml(currentOrg.name || '')}
                 <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
             `;
             
@@ -2244,7 +2489,9 @@ function showSuperAdminOnlyMessage(){
 }
 
 async function createOrgForSuperAdmin(){
-    const name = prompt('Назва вашої організації:');
+    const name = await promptModal('Назва вашої організації:', '', {
+        placeholder: 'Моя компанія'
+    });
     if(!name) return;
     
     try {
@@ -2282,7 +2529,8 @@ async function createOrgForSuperAdmin(){
             joinedAt: new Date().toISOString()
         });
         
-        alert('Організацію створено! Сторінка перезавантажиться.');
+        showToast('Організацію створено! Сторінка перезавантажиться.');
+        setTimeout(() => location.reload(), 1500);
         location.reload();
         
     } catch(err) {
@@ -2293,7 +2541,7 @@ async function createOrgForSuperAdmin(){
 
 // ===== USER MODE =====
 async function initUserMode(){
-    console.log('User mode');
+    // User mode
     hideAdminPanel();
     
     // Шукаємо організацію користувача
@@ -2385,7 +2633,7 @@ async function selectOrganization(orgId){
     if(currentOrg){
         document.getElementById('org-selector-btn').innerHTML = `
             <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-            ${currentOrg.name}
+            ${escapeHtml(currentOrg.name || '')}
             <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
         `;
         initFirestoreListener();
@@ -2493,10 +2741,15 @@ async function submitCreateOrganization(){
         // Копіюємо посилання
         if(navigator.clipboard){
             await navigator.clipboard.writeText(link);
-            alert(`Організацію "${name}" створено!\n\nПосилання для ${ownerEmail} скопійовано:\n${link}`);
         } else {
-            prompt(`Організацію "${name}" створено!\n\nНадішліть це посилання ${ownerEmail}:`, link);
+            const tempInput = document.createElement('input');
+            tempInput.value = link;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempInput);
         }
+        showToast(`Організацію "${escapeHtml(name)}" створено! Посилання скопійовано.`);
         
     } catch(err){
         console.error('Error creating org:', err);
@@ -2582,9 +2835,16 @@ async function createInvite(role = 'employee'){
         
         if(navigator.clipboard){
             await navigator.clipboard.writeText(link);
-            alert('Посилання скопійовано!\n\n' + link);
+            showToast('Посилання скопійовано!');
         } else {
-            prompt('Скопіюйте посилання:', link);
+            // Fallback - створюємо тимчасовий input
+            const tempInput = document.createElement('input');
+            tempInput.value = link;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempInput);
+            showToast('Посилання скопійовано!');
         }
         
     } catch(err){
@@ -2656,10 +2916,10 @@ function renderOrgSelector(){
             <div style="display:flex;flex-direction:column;align-items:flex-start;flex:1;min-width:0">
                 <div style="display:flex;align-items:center;gap:8px;width:100%">
                     <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
-                    <span style="font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${org.name}</span>
+                    <span style="font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escapeHtml(org.name || '')}</span>
                     <span class="org-item-count">${org.leadsCount || 0}</span>
                 </div>
-                ${org.ownerEmail ? `<div style="font-size:11px;color:#6b7280;margin-left:24px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:200px">${org.ownerEmail}</div>` : ''}
+                ${org.ownerEmail ? `<div style="font-size:11px;color:#6b7280;margin-left:24px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:200px">${escapeHtml(org.ownerEmail)}</div>` : ''}
             </div>
         </button>
     `).join('');
@@ -2803,10 +3063,10 @@ function renderTeamMembers(members){
     
     container.innerHTML = members.map(m => `
         <div class="team-member">
-            <div class="team-member-avatar">${m.email?.[0]?.toUpperCase() || '?'}</div>
+            <div class="team-member-avatar">${escapeHtml(m.email?.[0]?.toUpperCase() || '?')}</div>
             <div class="team-member-info">
-                <div class="team-member-email">${m.email}</div>
-                <div class="team-member-role" style="color:${roleColors[m.role]}">${roleLabels[m.role] || m.role}</div>
+                <div class="team-member-email">${escapeHtml(m.email || '')}</div>
+                <div class="team-member-role" style="color:${roleColors[m.role]}">${roleLabels[m.role] || escapeHtml(m.role || '')}</div>
             </div>
             ${m.id !== currentUser.uid && (currentRole === 'owner' || currentRole === 'superadmin') ? `
                 <button class="btn btn-s" onclick="removeTeamMember('${m.id}')" title="Видалити">
@@ -2818,7 +3078,12 @@ function renderTeamMembers(members){
 }
 
 async function removeTeamMember(userId){
-    if(!confirm('Видалити цього користувача з організації?')) return;
+    const confirmed = await confirmModal('Видалити цього користувача з організації?', {
+        title: 'Видалення учасника',
+        okText: 'Видалити',
+        danger: true
+    });
+    if(!confirmed) return;
     
     try {
         await db.collection('users').doc(userId).update({
@@ -2847,15 +3112,7 @@ const STATUS_COLORS = [
 let editingStatusId = null;
 let colorPickerTarget = null;
 
-function openSettingsPanel(){
-    if(!currentOrg) return;
-    
-    renderStatusList();
-    renderColorPicker();
-    
-    document.getElementById('settings-overlay').classList.add('active');
-    document.getElementById('settings-panel').classList.add('active');
-}
+// openSettingsPanel - перенесено нижче з повною логікою (рядок ~3149)
 
 function closeSettingsPanel(){
     document.getElementById('settings-overlay').classList.remove('active');
@@ -3023,7 +3280,7 @@ function addNewStatus(){
     }, 100);
 }
 
-function deleteStatus(statusId){
+async function deleteStatus(statusId){
     const statuses = getOrgStatuses();
     
     // Перевіряємо чи є ліди з цим статусом
@@ -3038,7 +3295,12 @@ function deleteStatus(statusId){
         return;
     }
     
-    if(!confirm('Видалити цей статус?')) return;
+    const confirmed = await confirmModal('Видалити цей статус?', {
+        title: 'Видалення статусу',
+        okText: 'Видалити',
+        danger: true
+    });
+    if(!confirmed) return;
     
     delete statuses[statusId];
     saveStatuses();
@@ -3191,26 +3453,29 @@ function selectFunnelForEdit(funnelId){
 }
 
 function addNewFunnel(){
-    const name = prompt('Назва нової воронки:', 'Нова воронка');
-    if(!name) return;
-    
-    const funnels = getOrgFunnels();
-    const newFunnel = {
-        id: 'funnel_' + Date.now(),
-        name: name.trim(),
-        statuses: getDefaultStatuses(),
-        isDefault: false
-    };
-    
-    funnels.push(newFunnel);
-    saveFunnels(funnels);
-    
-    selectedFunnelForEdit = newFunnel.id;
-    renderFunnelList();
-    renderStatusList();
+    promptModal('Назва нової воронки:', 'Нова воронка', {
+        placeholder: 'Введіть назву воронки'
+    }).then(name => {
+        if(!name) return;
+        
+        const funnels = getOrgFunnels();
+        const newFunnel = {
+            id: 'funnel_' + Date.now(),
+            name: name.trim(),
+            statuses: getDefaultStatuses(),
+            isDefault: false
+        };
+        
+        funnels.push(newFunnel);
+        saveFunnels(funnels);
+        
+        selectedFunnelForEdit = newFunnel.id;
+        renderFunnelList();
+        renderStatusList();
+    });
 }
 
-function deleteFunnel(funnelId){
+async function deleteFunnel(funnelId){
     const funnels = getOrgFunnels();
     const funnel = funnels.find(f => f.id === funnelId);
     
@@ -3225,7 +3490,12 @@ function deleteFunnel(funnelId){
         return;
     }
     
-    if(!confirm(`Видалити воронку "${funnel?.name}"?`)) return;
+    const confirmed = await confirmModal(`Видалити воронку "${escapeHtml(funnel?.name)}"?`, {
+        title: 'Видалення воронки',
+        okText: 'Видалити',
+        danger: true
+    });
+    if(!confirmed) return;
     
     const newFunnels = funnels.filter(f => f.id !== funnelId);
     saveFunnels(newFunnels);
@@ -3571,7 +3841,6 @@ function initFirestoreListener(){
     if(unsubscribe) { unsubscribe(); unsubscribe = null; }
     
     if(!currentOrg?.id){
-        console.log('No organization selected');
         leads = [];
         render();
         return;
@@ -3614,8 +3883,13 @@ async function saveLead(leadData){
     
     setSyncStatus('syncing', 'Збереження...');
     try {
-        const docRef = db.collection('organizations').doc(currentOrg.id).collection('leads').doc(leadData.id);
-        await docRef.set(leadData);
+        // Clean undefined values (Firebase doesn't accept them)
+        const cleanData = JSON.parse(JSON.stringify(leadData, (key, value) => 
+            value === undefined ? null : value
+        ));
+        
+        const docRef = db.collection('organizations').doc(currentOrg.id).collection('leads').doc(cleanData.id);
+        await docRef.set(cleanData);
         setSyncStatus('synced', 'Синхронізовано');
     } catch(err){
         console.error('Save error:', err);
@@ -4117,9 +4391,9 @@ function renderTaskRow(t, status) {
             <div class="task-time-date">${dateLabel}</div>
         </div>
         <div class="task-main-info">
-            <span class="task-action-text">${action}</span>
+            <span class="task-action-text">${escapeHtml(action)}</span>
             ${renderPrimaryContact(t.l)}
-            ${t.l.biz ? `<span class="task-biz">${t.l.biz}</span>` : ''}
+            ${t.l.biz ? `<span class="task-biz">${escapeHtml(t.l.biz)}</span>` : ''}
             <span class="task-score ${scoreClass}">${score}</span>
         </div>
         <div class="task-status-wrap" onclick="event.stopPropagation()">
@@ -4175,16 +4449,25 @@ async function taskAction(id,a){
             break;
         case'fail':
             updatedLead.status='failed';
-            updatedLead.failReason=prompt('Причина відмови:','');
-            updatedLead.reactDate=addDays(today(),90);
+            updatedLead.failReason = await promptModal('Причина відмови:', '', {
+                placeholder: 'Наприклад: дорого, немає бюджету, конкурент...'
+            });
+            if(updatedLead.failReason === null) return; // Скасовано
+            updatedLead.reactDate=addDays(today(), REACTIVATION_DAYS);
             updatedLead.nextDate=updatedLead.reactDate;
             updatedLead.nextAction='Реактивація';
             addLog(updatedLead,'status','Відмова: '+(updatedLead.failReason||'не вказано')+'. Реактивація через 3 міс.');
             break;
         case'freeze':
             updatedLead.status='frozen';
-            const freezeMonths = prompt('Через скільки місяців повернутися? (1-12)', '3');
-            const months = parseInt(freezeMonths) || 3;
+            const freezeMonths = await promptModal('Через скільки місяців повернутися?', '3', {
+                type: 'number',
+                min: '1',
+                max: '12',
+                placeholder: '1-12'
+            });
+            if(freezeMonths === null) return; // Скасовано
+            const months = parseInt(freezeMonths) || DEFAULT_FREEZE_MONTHS;
             updatedLead.reactDate=addDays(today(), months * 30);
             updatedLead.nextDate=updatedLead.reactDate;
             updatedLead.nextAction='Реактивація';
@@ -4213,7 +4496,7 @@ async function taskAction(id,a){
             break;
         case'noshow':
             updatedLead.noshow=(updatedLead.noshow||0)+1;
-            const noShowDelay = updatedLead.noshow === 1 ? 7 : updatedLead.noshow === 2 ? 30 : 90;
+            const noShowDelay = NOSHOW_DELAYS[Math.min(updatedLead.noshow - 1, NOSHOW_DELAYS.length - 1)];
             updatedLead.nextDate = addDays(today(), noShowDelay);
             updatedLead.nextTime = '10:00';
             updatedLead.nextAction = 'Перепризначити консультацію';
@@ -4259,20 +4542,20 @@ async function taskAction(id,a){
             addLog(updatedLead,'status','Повторна консультація #'+(updatedLead.repeatCount));
             break;
         case'deposit':
-            const amt=prompt('Сума завдатку:','');
-            if(amt){
+            const amt = await promptModal('Сума завдатку:', '', {type: 'number', placeholder: 'Наприклад: 5000'});
+            if(amt && amt !== null){
                 updatedLead.status='deposit';
                 updatedLead.finDep=+amt;
                 updatedLead.finDepDate=today();
-                updatedLead.nextDate=addDays(today(),7);
+                updatedLead.nextDate=addDays(today(), DEPOSIT_REMINDER_DAYS);
                 updatedLead.nextTime='10:00';
                 updatedLead.nextAction='Нагадати про повну оплату';
                 addLog(updatedLead,'status','Завдаток '+amt);
             }else return;
             break;
         case'paid':
-            const p=prompt('Повна сума:',updatedLead.finTotal||'');
-            if(p){
+            const p = await promptModal('Повна сума:', updatedLead.finTotal || '', {type: 'number', placeholder: 'Наприклад: 50000'});
+            if(p && p !== null){
                 updatedLead.status='paid';
                 updatedLead.finTotal=+p;
                 updatedLead.finPaidDate=today();
@@ -4282,7 +4565,7 @@ async function taskAction(id,a){
             }else return;
             break;
         case'dep_later':
-            updatedLead.nextDate=addDays(today(),7);
+            updatedLead.nextDate=addDays(today(), DEPOSIT_REMINDER_DAYS);
             updatedLead.nextTime='10:00';
             addLog(updatedLead,'call','Нагадав, +тиждень');
             break;
@@ -4297,7 +4580,7 @@ async function taskAction(id,a){
             addLog(updatedLead,'status','Реактивація — знову в роботі!');
             break;
         case'react_later':
-            updatedLead.reactDate=addDays(today(),90);
+            updatedLead.reactDate=addDays(today(), REACTIVATION_DAYS);
             updatedLead.nextDate=updatedLead.reactDate;
             addLog(updatedLead,'call','Реактивація +3 міс');
             break;
@@ -4311,42 +4594,42 @@ async function taskAction(id,a){
 }
 
 // Quick actions from task list
-function quickComplete(id) {
+async function quickComplete(id) {
     const l = leads.find(x => x.id === id);
     if(!l) return;
     
     // Показуємо швидкий діалог для наступної дії
-    const nextAction = prompt('Що далі? (наступна дія)', l.nextAction || 'Зателефонувати');
+    const nextAction = await promptModal('Що далі? (наступна дія)', l.nextAction || 'Зателефонувати', {
+        placeholder: 'Наприклад: зателефонувати, надіслати КП...'
+    });
     if(nextAction === null) return;
     
-    const nextDate = prompt('Коли? (YYYY-MM-DD)', tomorrow());
-    if(nextDate === null) return;
+    const nextDate = await promptDateTime('Коли виконати?', tomorrow() + 'T10:00');
+    if(!nextDate) return;
     
-    const nextTime = prompt('О котрій? (HH:MM)', '10:00');
-    if(nextTime === null) return;
+    const [date, time] = nextDate.split('T');
     
     const updatedLead = {...l};
     updatedLead.calls = (updatedLead.calls || 0) + 1;
     updatedLead.nextAction = nextAction;
-    updatedLead.nextDate = nextDate;
-    updatedLead.nextTime = nextTime;
+    updatedLead.nextDate = date;
+    updatedLead.nextTime = time || '10:00';
     addLog(updatedLead, 'call', 'Виконано: ' + (l.nextAction || 'дзвінок'));
     saveLead(updatedLead);
 }
 
-function quickReschedule(id) {
+async function quickReschedule(id) {
     const l = leads.find(x => x.id === id);
     if(!l) return;
     
-    const nextDate = prompt('Перенести на дату (YYYY-MM-DD):', tomorrow());
-    if(!nextDate) return;
+    const nextDateTime = await promptDateTime('Перенести на:', tomorrow() + 'T' + (l.nextTime || '10:00'));
+    if(!nextDateTime) return;
     
-    const nextTime = prompt('Час (HH:MM):', l.nextTime || '10:00');
-    if(nextTime === null) return;
+    const [nextDate, nextTime] = nextDateTime.split('T');
     
     const updatedLead = {...l};
     updatedLead.nextDate = nextDate;
-    updatedLead.nextTime = nextTime;
+    updatedLead.nextTime = nextTime || '10:00';
     addLog(updatedLead, 'status', 'Перенесено на ' + nextDate + ' ' + nextTime);
     saveLead(updatedLead);
 }
@@ -4425,10 +4708,10 @@ function kCard(l){
     const scoreClass=score>=70?'hot':score>=50?'warm':'cold';
     return`<div class="k-card ${alert?'has-'+(alert.crit?'critical':'alert'):''}" draggable="true" ondragstart="dStart(event,'${l.id}')" ondragend="dEnd(event)" onclick="openModal('${l.id}')">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
-            <div class="k-card-name">${l.tg||l.phone||'—'}</div>
+            <div class="k-card-name">${escapeHtml(l.tg||l.phone||'—')}</div>
             <div class="score ${scoreClass}"><div class="score-bar"><div class="score-fill ${scoreClass}" style="width:${score}%"></div></div>${score}</div>
         </div>
-        ${l.biz?`<div class="k-card-biz">${l.biz}</div>`:''}
+        ${l.biz?`<div class="k-card-biz">${escapeHtml(l.biz)}</div>`:''}
         <div class="k-card-footer">
             <span>${SRC[l.source]||''}</span>
             ${amt?`<span class="k-card-amount">${amt}${CUR[l.finTotalCur||l.finDepCur]||''}</span>`:''}
@@ -4449,13 +4732,18 @@ function dStart(e,id){dragId=id;e.target.classList.add('dragging');}
 function dEnd(e){e.target.classList.remove('dragging');dragId=null;}
 function dOver(e){e.preventDefault();e.currentTarget.classList.add('drag-over');}
 function dLeave(e){e.currentTarget.classList.remove('drag-over');}
-function dDrop(e,status){
+async function dDrop(e,status){
     e.preventDefault();e.currentTarget.classList.remove('drag-over');
     if(!dragId)return;
     const l=leads.find(x=>x.id===dragId);if(!l)return;
     const updatedLead = {...l};
     if(status==='paid'&&!updatedLead.finTotal){alert('Вкажіть суму!');openModal(updatedLead.id);return;}
-    if(status==='deposit'&&!updatedLead.finDep){const a=prompt('Сума завдатку:');if(!a)return;updatedLead.finDep=+a;updatedLead.finDepDate=today();}
+    if(status==='deposit'&&!updatedLead.finDep){
+        const a = await promptModal('Сума завдатку:', '', {type: 'number', placeholder: 'Наприклад: 5000'});
+        if(!a)return;
+        updatedLead.finDep=+a;
+        updatedLead.finDepDate=today();
+    }
     const old=updatedLead.status;updatedLead.status=status;updatedLead.stageDate=new Date().toISOString();
     if(status==='completed'){updatedLead.calls=0;updatedLead.sms=0;}
     if(status==='report_sent'){updatedLead.reportDate=today();updatedLead.calls=0;updatedLead.sms=0;updatedLead.nextDate=tomorrow();}
@@ -5159,7 +5447,7 @@ async function saveLeadForm(){
             data.assignedAt = new Date().toISOString();
         }
     }
-    if(data.status==='failed'&&!data.reactDate)data.reactDate=addDays(today(),90);
+    if(data.status==='failed'&&!data.reactDate)data.reactDate=addDays(today(), REACTIVATION_DAYS);
     
     const saveBtn = document.querySelector('.modal-foot .btn-p');
     if(saveBtn) { saveBtn.disabled = true; saveBtn.textContent = 'Збереження...'; }
@@ -5176,7 +5464,12 @@ async function saveLeadForm(){
 }
 async function delLeadForm(){
     if(!editing)return;
-    if(!confirm('Видалити ліда?'))return;
+    const confirmed = await confirmModal('Видалити ліда?\n\nЦю дію неможливо скасувати.', {
+        title: 'Видалення ліда',
+        okText: 'Видалити',
+        danger: true
+    });
+    if(!confirmed)return;
     try { await deleteLead(editing); closeModal(); }
     catch(err) { console.error('Delete error:', err); alert('Помилка: ' + err.message); }
 }
@@ -5277,7 +5570,7 @@ function addComm(){
     addLog(l,type,text);
     if(type==='call'){l.calls=(l.calls||0)+1;document.getElementById('f-calls').value=l.calls;}
     if(type==='sms'){l.sms=(l.sms||0)+1;document.getElementById('f-sms').value=l.sms;}
-    save();renderCommLog(l);
+    saveLead(l);renderCommLog(l);
     document.getElementById('comm-text').value='';
 }
 function addLog(l,type,text){if(!l.log)l.log=[];l.log.push({type,text,date:new Date().toISOString()});}
@@ -5286,7 +5579,7 @@ function qAction(a){if(!editing)return;closeModal();taskAction(editing,a==='call
 
 // ===== IMPORT/EXPORT =====
 function exportXLS(){
-    if(!leads.length){alert('Немає даних');return;}
+    if(!leads.length){showToast('Немає даних для експорту');return;}
     const data=leads.map(l=>({Телеграм:l.tg,Телефон:l.phone,Бізнес:l.biz,Джерело:SRC[l.source]||l.source,Статус:ST[l.status]||l.status,Консультація:l.consult,Дзвінки:l.calls,SMS:l.sms,'Наступна дія':l.nextDate,Завдаток:l.finDep,'Повна сума':l.finTotal,Примітки:l.notes}));
     const ws=XLSX.utils.json_to_sheet(data);
     const wb=XLSX.utils.book_new();
@@ -5315,7 +5608,6 @@ function importXLS(e){
             if(headerRow===-1)headerRow=0;
             
             const headers=rows[headerRow].map(h=>String(h).toLowerCase().trim());
-            console.log('Headers found at row',headerRow,':',headers);
             
             // Маппінг колонок
             const colMap={};
@@ -5330,7 +5622,6 @@ function importXLS(e){
                 if(h.includes('mk_name')||h.includes('назва'))colMap.mkName=i;
                 if(h.includes('status')||h.includes('статус'))colMap.status=i;
             });
-            console.log('Column mapping:',colMap);
             
             let n=0,skip=0;
             for(let i=headerRow+1;i<rows.length;i++){
@@ -5396,7 +5687,7 @@ function importXLS(e){
                 saveLead(newLead); // Firebase save
                 n++;
             }
-            alert('Імпортовано: '+n+(skip?' (пропущено: '+skip+')':''));
+            showToast('Імпортовано: '+n+(skip?' (пропущено: '+skip+')':''));
         }catch(err){console.error(err);alert('Помилка: '+err.message);}
     };
     reader.readAsArrayBuffer(file);
@@ -5405,7 +5696,13 @@ function importXLS(e){
 
 // ===== DEMO =====
 async function loadDemo(){
-    if(leads.length&&!confirm('Додати демо-дані?'))return;
+    if(leads.length) {
+        const confirmed = await confirmModal('Додати демо-дані?\n\nЦе додасть 5 тестових лідів до вашої бази.', {
+            title: 'Демо-дані',
+            okText: 'Додати'
+        });
+        if(!confirmed) return;
+    }
     const demoLeads=[
         {id:'d1',tg:'@iryna_dental',phone:'+380501234567',biz:'Стоматологія-15',source:'mk_clinic',status:'new',calls:0,sms:0,noshow:0,nextDate:today(),nextAction:'Подзвонити',created:addDays(today(),-2),stageDate:addDays(today(),-2),log:[]},
         {id:'d2',tg:'@petro_meble',phone:'+380672345678',biz:'Меблі-25',source:'mk_prod',status:'scheduled',consult:tomorrow()+'T14:00',calls:1,sms:0,noshow:0,nextDate:today(),nextAction:'Підтвердити',created:addDays(today(),-5),stageDate:addDays(today(),-3),log:[{type:'call',text:'Призначили',date:addDays(today(),-3)}]},
@@ -5416,7 +5713,7 @@ async function loadDemo(){
     for(const lead of demoLeads){
         await saveLead(lead);
     }
-    alert('Демо-дані додано!');
+    showToast('Демо-дані додано!');
 }
 
 function toggleHelp(){document.getElementById('help').classList.toggle('active');}
@@ -5478,30 +5775,48 @@ async function aiAsk(type){
         return;
     }
     
+    // Build lead context for AI
+    const leadContext = lead ? `
+ІНФОРМАЦІЯ ПРО ЛІДА:
+- Контакт: ${lead.tg || ''} ${lead.phone || ''}
+- Бізнес: ${lead.biz || 'не вказано'}
+- Джерело: ${lead.source || 'не вказано'}
+- Статус: ${getStatusName(lead.status, lead.funnelId)}
+- Дзвінків: ${lead.calls || 0}, SMS: ${lead.sms || 0}
+- No-show: ${lead.noshow || 0}
+- Наступна дія: ${lead.nextAction || 'не вказано'}
+${lead.consult ? '- Дата консультації: ' + fmtDT(lead.consult) : ''}
+${lead.report ? '\nЗВІТ КОНСУЛЬТАЦІЇ:\n' + lead.report : ''}
+${lead.notes ? '\nПРИМІТКИ:\n' + lead.notes : ''}
+${lead.log && lead.log.length ? '\nОСТАННІ ДІЇ:\n' + lead.log.slice(-5).map(e => '- ' + e.text).join('\n') : ''}
+` : '';
+    
     const prompts = {
-        script: `Згенеруй детальний скрипт дзвінка для цього ліда. 
+        script: `${leadContext}
+
+Згенеруй детальний скрипт дзвінка для цього ліда. 
 Структура:
 1. Привітання (з урахуванням як ми познайомились)
 2. Причина дзвінка
 3. Виявлення болю (2-3 питання)
 4. Презентація рішення
 5. Робота з запереченнями
-6. Закриття на наступний крок
+6. Закриття на наступний крок`,
 
-Враховуй: статус ліда, історію контактів, розмір бізнесу, джерело.`,
+        analysis: `${leadContext}
 
-        analysis: `Проаналізуй цього ліда детально:
+Проаналізуй цього ліда детально:
 
 1. СКОРИНГ (0-100): оціни ймовірність закриття
 2. СИЛЬНІ СТОРОНИ: що грає на нашу користь
 3. СЛАБКІ СТОРОНИ: що може завадити
 4. РЕКОМЕНДОВАНА СТРАТЕГІЯ: конкретні кроки
 5. ОПТИМАЛЬНИЙ ЧАС: коли краще дзвонити
-6. ПРОГНОЗ: скільки ще контактів до закриття
+6. ПРОГНОЗ: скільки ще контактів до закриття`,
 
-${lead.report ? 'Враховуй звіт консультації: ' + lead.report : ''}`,
+        objections: `${leadContext}
 
-        objections: `Опрацюй заперечення для цього ліда через методологію СПІН:
+Опрацюй заперечення для цього ліда через методологію СПІН:
 
 СПІН = Ситуаційні → Проблемні → Імплікаційні → Напрямні питання
 
@@ -5512,23 +5827,21 @@ ${lead.report ? 'Враховуй звіт консультації: ' + lead.re
 4. І — Імплікаційне питання (показуємо наслідки)
 5. Н — Напрямне питання (ведемо до рішення)
 
-Типові заперечення: дорого, немає часу, подумаю, порадюсь, вже є консультант, не вірю в консалтинг.
+Типові заперечення: дорого, немає часу, подумаю, порадюсь, вже є консультант, не вірю в консалтинг.`,
 
-${lead.report ? 'Враховуй звіт консультації: ' + lead.report : ''}
-${lead.biz ? 'Бізнес клієнта: ' + lead.biz : ''}`,
+        sms: `${leadContext}
 
-        sms: `Напиши 3 варіанти SMS для цього ліда (кожен до 160 символів).
+Напиши 3 варіанти SMS для цього ліда (кожен до 160 символів).
 
 Варіант 1: М'який (нагадування)
 Варіант 2: Цінність (користь від зустрічі)  
 Варіант 3: Терміновість (дедлайн/обмеження)
 
-Мета: підштовхнути до наступного кроку у воронці.
-Поточний статус: ${ST[lead.status] || lead.status}`,
+Мета: підштовхнути до наступного кроку у воронці.`,
 
-        report_analysis: `Проаналізуй звіт консультації та дай рекомендації:
+        report_analysis: `${leadContext}
 
-ЗВІТ: ${lead.report || 'Звіт відсутній'}
+Проаналізуй звіт консультації та дай рекомендації:
 
 Визнач:
 1. Головний біль клієнта
@@ -5588,11 +5901,33 @@ async function aiSend(){
     
     try {
         const lead = getSelectedLead();
+        
+        // Build lead context
+        let fullMessage = text;
+        if(lead) {
+            const leadContext = `
+ІНФОРМАЦІЯ ПРО ЛІДА:
+- Контакт: ${lead.tg || ''} ${lead.phone || ''}
+- Бізнес: ${lead.biz || 'не вказано'}
+- Джерело: ${lead.source || 'не вказано'}
+- Статус: ${getStatusName(lead.status, lead.funnelId)}
+- Дзвінків: ${lead.calls || 0}, SMS: ${lead.sms || 0}
+- No-show: ${lead.noshow || 0}
+- Наступна дія: ${lead.nextAction || 'не вказано'}
+${lead.consult ? '- Дата консультації: ' + fmtDT(lead.consult) : ''}
+${lead.report ? '\nЗВІТ КОНСУЛЬТАЦІЇ:\n' + lead.report : ''}
+${lead.notes ? '\nПРИМІТКИ:\n' + lead.notes : ''}
+${lead.log && lead.log.length ? '\nОСТАННІ ДІЇ:\n' + lead.log.slice(-5).map(e => '- ' + e.text).join('\n') : ''}
+
+ПИТАННЯ КОРИСТУВАЧА: `;
+            fullMessage = leadContext + text;
+        }
+        
         const response = await fetch(AI_API_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                messages: [{ role: 'user', content: text }],
+                messages: [{ role: 'user', content: fullMessage }],
                 lead: lead
             })
         });
@@ -5638,42 +5973,126 @@ async function changeLeadStatus(leadId, newStatus) {
     updatedLead.status = newStatus;
     updatedLead.stageDate = new Date().toISOString();
     
-    // Логіка для різних статусів
-    if(newStatus === 'scheduled' && !updatedLead.consult) {
-        const dt = await promptDateTime('Дата консультації:', tomorrow() + 'T14:00');
-        if(dt) {
-            updatedLead.consult = dt;
-            updatedLead.nextDate = addDays(dt.split('T')[0], -1);
+    // Логіка для різних статусів - ЗАВДАННЯ ТА ДАТИ
+    switch(newStatus) {
+        case 'new':
+        case 'contacted':
+            updatedLead.nextDate = today();
+            updatedLead.nextTime = '10:00';
+            updatedLead.nextAction = 'Подзвонити';
+            break;
+            
+        case 'scheduled':
+            if(!updatedLead.consult) {
+                const dt = await promptDateTime('Дата консультації:', tomorrow() + 'T14:00');
+                if(dt) {
+                    updatedLead.consult = dt;
+                    updatedLead.nextDate = addDays(dt.split('T')[0], -1);
+                    updatedLead.nextTime = '10:00';
+                    updatedLead.nextAction = 'Підтвердити консультацію';
+                } else {
+                    return; // Скасовано
+                }
+            } else {
+                updatedLead.nextDate = addDays(updatedLead.consult.split('T')[0], -1);
+                updatedLead.nextTime = '10:00';
+                updatedLead.nextAction = 'Підтвердити консультацію';
+            }
+            break;
+            
+        case 'completed':
+            // Консультація проведена - потрібно написати звіт
+            updatedLead.nextDate = today();
+            updatedLead.nextTime = '10:00';
+            updatedLead.nextAction = 'Написати звіт';
+            updatedLead.calls = 0;
+            updatedLead.sms = 0;
+            break;
+            
+        case 'report_sent':
+            // Звіт відправлено - чекаємо реакцію
+            updatedLead.nextDate = addDays(today(), 2);
+            updatedLead.nextTime = '10:00';
+            updatedLead.nextAction = 'Дізнатись реакцію на звіт';
+            break;
+            
+        case 'repeat':
+            // Повторна консультація
+            if(!updatedLead.consult || new Date(updatedLead.consult) < new Date()) {
+                const dt = await promptDateTime('Дата повторної консультації:', tomorrow() + 'T14:00');
+                if(dt) {
+                    updatedLead.consult = dt;
+                }
+            }
+            updatedLead.repeatCount = (updatedLead.repeatCount || 0) + 1;
+            updatedLead.nextDate = updatedLead.consult ? addDays(updatedLead.consult.split('T')[0], -1) : tomorrow();
             updatedLead.nextTime = '10:00';
             updatedLead.nextAction = 'Підтвердити консультацію';
-        } else {
-            return; // Скасовано
-        }
+            updatedLead.calls = 0;
+            updatedLead.sms = 0;
+            updatedLead.noshow = 0;
+            break;
+            
+        case 'deposit':
+            const amt = await promptModal('Сума завдатку:', '', {
+                type: 'number',
+                placeholder: 'Наприклад: 5000'
+            });
+            if(amt && amt !== null) {
+                updatedLead.finDep = +amt;
+                updatedLead.finDepDate = today();
+                updatedLead.nextDate = addDays(today(), DEPOSIT_REMINDER_DAYS);
+                updatedLead.nextTime = '10:00';
+                updatedLead.nextAction = 'Нагадати про повну оплату';
+            } else {
+                return;
+            }
+            break;
+            
+        case 'paid':
+            const paidAmt = await promptModal('Повна сума:', updatedLead.finTotal || '', {
+                type: 'number',
+                placeholder: 'Наприклад: 50000'
+            });
+            if(paidAmt && paidAmt !== null) {
+                updatedLead.finTotal = +paidAmt;
+                updatedLead.finPaidDate = today();
+                // Закрита угода - немає наступного завдання
+                updatedLead.nextDate = '';
+                updatedLead.nextAction = '';
+            } else {
+                return;
+            }
+            break;
+            
+        case 'failed':
+            const reason = await promptModal('Причина відмови:', '', {
+                placeholder: 'Наприклад: дорого, немає бюджету...'
+            });
+            if(reason === null) return;
+            updatedLead.failReason = reason || '';
+            updatedLead.reactDate = addDays(today(), REACTIVATION_DAYS);
+            updatedLead.nextDate = updatedLead.reactDate;
+            updatedLead.nextTime = '10:00';
+            updatedLead.nextAction = 'Реактивація';
+            break;
+            
+        case 'frozen':
+            const months = await promptModal('Через скільки місяців повернутися?', '3', {
+                type: 'number',
+                min: '1',
+                max: '12'
+            });
+            if(months === null) return;
+            const m = parseInt(months) || DEFAULT_FREEZE_MONTHS;
+            updatedLead.reactDate = addDays(today(), m * 30);
+            updatedLead.nextDate = updatedLead.reactDate;
+            updatedLead.nextTime = '10:00';
+            updatedLead.nextAction = 'Реактивація';
+            break;
     }
     
-    if(newStatus === 'failed') {
-        const reason = prompt('Причина відмови:', '');
-        updatedLead.failReason = reason || '';
-        updatedLead.reactDate = addDays(today(), 90);
-    }
-    
-    if(newStatus === 'deposit') {
-        const amt = prompt('Сума завдатку:', '');
-        if(amt) {
-            updatedLead.finDep = +amt;
-            updatedLead.finDepDate = today();
-        }
-    }
-    
-    if(newStatus === 'paid') {
-        const amt = prompt('Повна сума:', updatedLead.finTotal || '');
-        if(amt) {
-            updatedLead.finTotal = +amt;
-            updatedLead.finPaidDate = today();
-        }
-    }
-    
-    addLog(updatedLead, 'status', `${ST[oldStatus] || 'Новий'} → ${ST[newStatus]}`);
+    addLog(updatedLead, 'status', `${getStatusName(oldStatus, updatedLead.funnelId)} → ${getStatusName(newStatus, updatedLead.funnelId)}`);
     saveLead(updatedLead);
     
     // Закрити dropdown
@@ -5700,29 +6119,62 @@ let quickState = {
     note: ''
 };
 
-// Messenger links
+// ===== CONTACT LINKS =====
+const CONTACT_LINK_CONFIG = {
+    tg: {
+        getLink: (val) => `https://t.me/${val.replace('@', '').trim()}`,
+        icon: `<svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>`,
+        class: 'tg'
+    },
+    phone: {
+        getLink: (val) => `tel:+${val.replace(/\D/g, '')}`,
+        icon: `<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>`,
+        class: 'phone'
+    },
+    viber: {
+        getLink: (val) => `viber://chat?number=%2B${val.replace(/\D/g, '')}`,
+        icon: `<svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><path d="M11.398.002C9.473.028 5.331.344 3.014 2.467 1.294 4.182.518 6.792.377 10.967c-.14 4.175-.324 12.001 7.326 14.127h.006l-.006 3.09s-.048.757.47 1.076c.626.386 1.04.169 1.665-.437.345-.334 1.056-1.09 1.497-1.556 4.13.36 7.3-.453 7.657-.562.821-.254 5.469-.863 6.223-7.049.777-6.379-.389-10.413-2.566-12.24-1.276-1.136-6.397-2.81-11.25-3.414z"/></svg>`,
+        class: 'viber'
+    },
+    whatsapp: {
+        getLink: (val) => `https://wa.me/${val.replace(/\D/g, '')}`,
+        icon: `<svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/></svg>`,
+        class: 'whatsapp'
+    },
+    email: {
+        getLink: (val) => `mailto:${val}`,
+        icon: `<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>`,
+        class: 'email'
+    }
+};
+
+function getContactLink(type, value) {
+    if(!value) return null;
+    const config = CONTACT_LINK_CONFIG[type];
+    if(!config) return null;
+    return config.getLink(value);
+}
+
+// Legacy functions for compatibility
 function getTelegramLink(username) {
-    if(!username) return null;
-    const clean = username.replace('@', '').trim();
-    return `https://t.me/${clean}`;
+    return getContactLink('tg', username);
 }
 
 function getViberLink(phone) {
-    if(!phone) return null;
-    const clean = phone.replace(/\D/g, '');
-    return `viber://chat?number=%2B${clean}`;
+    return getContactLink('viber', phone);
 }
 
 function getWhatsAppLink(phone) {
-    if(!phone) return null;
-    const clean = phone.replace(/\D/g, '');
-    return `https://wa.me/${clean}`;
+    return getContactLink('whatsapp', phone);
 }
 
 function getPhoneLink(phone) {
-    if(!phone) return null;
-    const clean = phone.replace(/\D/g, '');
-    return `tel:+${clean}`;
+    return getContactLink('phone', phone);
+}
+
+function getEmailLink(email) {
+    return getContactLink('email', email);
+}
 }
 
 function getEmailLink(email) {
@@ -5740,67 +6192,40 @@ function renderPrimaryContact(l) {
         channel = 'tg';
     }
     
-    // Channel icons (SVG)
-    const icons = {
-        tg: `<svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>`,
-        phone: `<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>`,
-        viber: `<svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><path d="M11.398.002C9.473.028 5.331.344 3.014 2.467 1.294 4.182.518 6.792.377 10.967c-.14 4.175-.324 12.001 7.326 14.127h.006l-.006 3.09s-.048.757.47 1.076c.626.386 1.04.169 1.665-.437.345-.334 1.056-1.09 1.497-1.556 4.13.36 7.3-.453 7.657-.562.821-.254 5.469-.863 6.223-7.049.777-6.379-.389-10.413-2.566-12.24-1.276-1.136-6.397-2.81-11.25-3.414z"/></svg>`,
-        whatsapp: `<svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/></svg>`,
-        email: `<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>`
+    // Get contact value based on channel
+    const channelValues = {
+        tg: l.tg,
+        phone: l.phone,
+        viber: l.viber || l.phone,
+        whatsapp: l.whatsapp || l.phone,
+        email: l.email
     };
     
-    const classes = {
-        tg: 'tg',
-        phone: 'phone',
-        viber: 'viber',
-        whatsapp: 'whatsapp',
-        email: 'email'
-    };
-    
-    // Get contact value and link based on channel
-    let value, link, displayValue;
-    
-    switch(channel) {
-        case 'tg':
-            value = l.tg || '';
-            link = getTelegramLink(l.tg);
-            displayValue = l.tg || '';
-            break;
-        case 'viber':
-            value = l.viber || l.phone || '';
-            link = getViberLink(l.viber || l.phone);
-            displayValue = l.viber || l.phone || '';
-            break;
-        case 'whatsapp':
-            value = l.whatsapp || l.phone || '';
-            link = getWhatsAppLink(l.whatsapp || l.phone);
-            displayValue = l.whatsapp || l.phone || '';
-            break;
-        case 'email':
-            value = l.email || '';
-            link = getEmailLink(l.email);
-            displayValue = l.email || '';
-            break;
-        default: // phone
-            value = l.phone || '';
-            link = getPhoneLink(l.phone);
-            displayValue = l.phone || '';
-    }
+    let value = channelValues[channel] || '';
     
     // Fallback to any available contact
     if(!value) {
-        if(l.tg) { value = l.tg; link = getTelegramLink(l.tg); displayValue = l.tg; channel = 'tg'; }
-        else if(l.phone) { value = l.phone; link = getPhoneLink(l.phone); displayValue = l.phone; channel = 'phone'; }
-        else if(l.email) { value = l.email; link = getEmailLink(l.email); displayValue = l.email; channel = 'email'; }
-        else return '<span class="task-contact-link">—</span>';
+        for(const ch of ['tg', 'phone', 'email']) {
+            if(channelValues[ch]) {
+                value = channelValues[ch];
+                channel = ch;
+                break;
+            }
+        }
     }
     
-    // Final safety check
-    if(!displayValue || displayValue === 'undefined') displayValue = '—';
+    if(!value || value === 'undefined') {
+        return '<span class="task-contact-link">—</span>';
+    }
     
-    return `<a href="${link || '#'}" target="_blank" class="task-contact-link ${classes[channel] || ''}" onclick="event.stopPropagation()" title="${channel ? channel.toUpperCase() : ''}">
-        ${icons[channel] || ''}
-        ${displayValue}
+    const config = CONTACT_LINK_CONFIG[channel];
+    if(!config) return '<span class="task-contact-link">—</span>';
+    
+    const link = config.getLink(value);
+    
+    return `<a href="${link || '#'}" target="_blank" class="task-contact-link ${config.class}" onclick="event.stopPropagation()" title="${channel.toUpperCase()}">
+        ${config.icon}
+        ${escapeHtml(value)}
     </a>`;
 }
 
@@ -5858,7 +6283,6 @@ function openQuickPanel(id) {
         notesTextEl.textContent = l.notes;
         notesEl.style.display = 'block';
     } else if(l.report && l.report.trim()) {
-        // Або звіт якщо немає приміток
         notesTextEl.textContent = l.report;
         notesEl.style.display = 'block';
     } else {
@@ -5867,11 +6291,21 @@ function openQuickPanel(id) {
     
     // Reset sections
     document.getElementById('quick-outcome-section').style.display = 'block';
+    document.getElementById('quick-comment-section').style.display = 'none';
     document.getElementById('quick-next-section').style.display = 'none';
     document.getElementById('quick-action-section').style.display = 'none';
     document.getElementById('quick-final-section').style.display = 'none';
     document.getElementById('quick-confirm-btn').style.display = 'none';
     document.getElementById('quick-note').value = '';
+    document.getElementById('quick-comment').value = '';
+    
+    // Show/hide confirm consultation button based on task
+    const confirmConsultSection = document.getElementById('quick-confirm-consult-section');
+    if(confirmConsultSection) {
+        const taskLower = (l.nextAction || '').toLowerCase();
+        const isConfirmTask = taskLower.includes('підтвердити') && (taskLower.includes('консультац') || taskLower.includes('зустріч'));
+        confirmConsultSection.style.display = isConfirmTask ? 'block' : 'none';
+    }
     
     // Clear selections
     document.querySelectorAll('.quick-btn.selected, .time-btn.selected').forEach(b => b.classList.remove('selected'));
@@ -5879,6 +6313,34 @@ function openQuickPanel(id) {
     // Show panel
     document.getElementById('quick-panel').classList.add('active');
     document.querySelector('.quick-panel-overlay').classList.add('active');
+    
+    // Reset notes expand state
+    const notesText = document.getElementById('quick-lead-notes-text');
+    const expandBtn = document.getElementById('notes-expand-btn');
+    if(notesText && expandBtn) {
+        notesText.style.maxHeight = '80px';
+        expandBtn.textContent = 'Розгорнути ▼';
+        expandBtn.dataset.expanded = 'false';
+    }
+}
+
+let notesExpanded = false;
+function toggleNotesExpand() {
+    const notesText = document.getElementById('quick-lead-notes-text');
+    const btn = document.getElementById('notes-expand-btn');
+    if(!notesText || !btn) return;
+    
+    notesExpanded = !notesExpanded;
+    
+    if(notesExpanded) {
+        notesText.style.maxHeight = '300px';
+        notesText.style.overflowY = 'auto';
+        btn.textContent = 'Згорнути ▲';
+    } else {
+        notesText.style.maxHeight = '80px';
+        notesText.style.overflowY = 'hidden';
+        btn.textContent = 'Розгорнути ▼';
+    }
 }
 
 function closeQuickPanel() {
@@ -5887,12 +6349,37 @@ function closeQuickPanel() {
     quickLeadId = null;
 }
 
+function confirmConsultation() {
+    const l = leads.find(x => x.id === quickLeadId);
+    if(!l) return;
+    
+    const updatedLead = {...l};
+    updatedLead.confirmedToday = true;
+    updatedLead.calls = (updatedLead.calls || 0) + 1;
+    
+    // Встановлюємо наступне завдання на день консультації
+    if(updatedLead.consult) {
+        const consultDate = updatedLead.consult.split('T')[0];
+        updatedLead.nextDate = consultDate;
+        updatedLead.nextTime = updatedLead.consult.split('T')[1] || '10:00';
+        updatedLead.nextAction = 'Провести консультацію';
+    }
+    
+    addLog(updatedLead, 'call', 'Консультація підтверджена');
+    
+    saveLead(updatedLead);
+    closeQuickPanel();
+}
+
 function setQuickOutcome(outcome) {
     quickState.outcome = outcome;
     
     // Highlight selected
     document.querySelectorAll('#quick-outcome-buttons .quick-btn').forEach(b => b.classList.remove('selected'));
     event.target.closest('.quick-btn').classList.add('selected');
+    
+    // Always show comment section
+    document.getElementById('quick-comment-section').style.display = 'block';
     
     // Show next section based on outcome
     if(outcome === 'answered') {
@@ -5914,9 +6401,9 @@ function setQuickOutcome(outcome) {
         quickState.action = 'Подзвонити (після SMS)';
     }
     
-    // Scroll to next section
+    // Scroll to comment section
     setTimeout(() => {
-        document.getElementById('quick-next-section').scrollIntoView({ behavior: 'smooth', block: 'center' });
+        document.getElementById('quick-comment-section').scrollIntoView({ behavior: 'smooth', block: 'center' });
     }, 100);
 }
 
@@ -5981,10 +6468,13 @@ async function setQuickFinal(finalAction) {
         updatedLead.nextAction = 'Написати звіт';
         addLog(updatedLead, 'status', 'Консультація проведена');
     } else if(finalAction === 'failed') {
-        const reason = prompt('Причина відмови:', '');
+        const reason = await promptModal('Причина відмови:', '', {
+            placeholder: 'Наприклад: дорого, немає бюджету...'
+        });
+        if(reason === null) return;
         updatedLead.status = 'failed';
         updatedLead.failReason = reason || '';
-        updatedLead.reactDate = addDays(today(), 90);
+        updatedLead.reactDate = addDays(today(), REACTIVATION_DAYS);
         addLog(updatedLead, 'status', 'Відмова: ' + (reason || 'не вказано'));
     }
     
@@ -5997,7 +6487,9 @@ function confirmQuickAction() {
     if(!l) return;
     
     const updatedLead = {...l};
-    const note = document.getElementById('quick-note').value.trim();
+    const comment = document.getElementById('quick-comment')?.value.trim() || '';
+    const note = document.getElementById('quick-note')?.value.trim() || '';
+    const combinedNote = comment || note;
     
     // Calculate next date/time
     const nextDateTime = calculateNextDateTime(quickState.time);
@@ -6008,20 +6500,23 @@ function confirmQuickAction() {
     // Update counters based on outcome
     if(quickState.outcome === 'no_answer') {
         updatedLead.calls = (updatedLead.calls || 0) + 1;
-        addLog(updatedLead, 'call', 'Не взяв трубку' + (note ? ': ' + note : ''));
+        addLog(updatedLead, 'call', 'Не взяв трубку' + (combinedNote ? ': ' + combinedNote : ''));
     } else if(quickState.outcome === 'sms') {
         updatedLead.sms = (updatedLead.sms || 0) + 1;
-        addLog(updatedLead, 'sms', 'SMS надіслано' + (note ? ': ' + note : ''));
+        addLog(updatedLead, 'sms', 'SMS надіслано' + (combinedNote ? ': ' + combinedNote : ''));
     } else if(quickState.outcome === 'callback') {
-        addLog(updatedLead, 'call', 'Чекаю дзвінок' + (note ? ': ' + note : ''));
+        addLog(updatedLead, 'call', 'Чекаю дзвінок' + (combinedNote ? ': ' + combinedNote : ''));
     } else if(quickState.outcome === 'answered') {
         updatedLead.calls = (updatedLead.calls || 0) + 1;
-        addLog(updatedLead, 'call', 'Розмова: ' + (quickState.action || '') + (note ? ' | ' + note : ''));
+        const logText = combinedNote || quickState.action || 'Розмова';
+        addLog(updatedLead, 'call', logText);
     }
     
-    // Add notes if provided
-    if(note && !quickState.outcome) {
-        updatedLead.notes = ((updatedLead.notes || '') + '\n' + note).trim();
+    // Save comment to notes if it's meaningful
+    if(combinedNote && combinedNote.length > 10) {
+        const dateStr = new Date().toLocaleDateString('uk-UA');
+        const existingNotes = updatedLead.notes || '';
+        updatedLead.notes = (existingNotes + '\n[' + dateStr + '] ' + combinedNote).trim();
     }
     
     saveLead(updatedLead);
@@ -6166,7 +6661,13 @@ function copyOrgId(orgId){
     navigator.clipboard.writeText(orgId).then(() => {
         showToast('ID скопійовано: ' + orgId);
     }).catch(() => {
-        prompt('Скопіюйте ID:', orgId);
+        const tempInput = document.createElement('input');
+        tempInput.value = orgId;
+        document.body.appendChild(tempInput);
+        tempInput.select();
+        document.execCommand('copy');
+        document.body.removeChild(tempInput);
+        showToast('ID скопійовано: ' + orgId);
     });
 }
 
