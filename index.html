@@ -6175,12 +6175,6 @@ function getPhoneLink(phone) {
 function getEmailLink(email) {
     return getContactLink('email', email);
 }
-}
-
-function getEmailLink(email) {
-    if(!email) return null;
-    return `mailto:${email}`;
-}
 
 // Render primary contact based on primaryChannel setting
 function renderPrimaryContact(l) {
