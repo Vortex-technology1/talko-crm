@@ -461,12 +461,14 @@
         .status-picker-body{padding:20px 24px;overflow-y:auto;max-height:calc(85vh - 80px)}
         .status-group{margin-bottom:24px}
         .status-group:last-child{margin-bottom:0}
-        .status-group-title{font-size:11px;font-weight:600;text-transform:uppercase;color:#9ca3af;margin-bottom:12px;letter-spacing:0.5px}
+        .status-group-title{font-size:11px;font-weight:600;text-transform:uppercase;color:#9ca3af;margin-bottom:12px;letter-spacing:0.5px;display:flex;align-items:center;gap:6px}
+        .status-group-title svg{stroke:#9ca3af}
         .status-grid{display:grid;grid-template-columns:repeat(auto-fill, minmax(160px, 1fr));gap:10px}
         .status-card{padding:16px;border-radius:12px;border:2px solid #e5e7eb;cursor:pointer;transition:all 0.2s;display:flex;flex-direction:column;gap:8px;background:#fff}
         .status-card:hover{border-color:#d1d5db;background:#f9fafb;transform:translateY(-2px)}
         .status-card.active{border-color:var(--p);background:#f0fdf4}
-        .status-card-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px}
+        .status-card-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center}
+        .status-card-icon svg{width:22px;height:22px}
         .status-card-name{font-size:14px;font-weight:600;color:#1f2937}
         .status-card-desc{font-size:11px;color:#6b7280;line-height:1.4}
         .status-card.current{border-color:var(--p);background:linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)}
@@ -601,6 +603,21 @@
         .time-btn .time{font-size:16px;font-weight:600;color:#1a73e8;display:block;margin-bottom:2px}
         .time-btn .label{font-size:11px;color:#5f6368}
         .time-btn.selected{border-color:#1a73e8;background:#e8f0fe}
+        .time-btn-custom{border-style:dashed;background:#f8fafc}
+        .time-btn-custom:hover{background:#e8f0fe;border-style:solid}
+        .time-btn-custom .time{display:flex;align-items:center;justify-content:center}
+        .time-btn-custom .time svg{stroke:#1a73e8}
+        
+        /* Custom datetime picker */
+        .custom-datetime-picker{margin-top:12px;padding:16px;background:#f8fafc;border-radius:12px;border:1px solid #e5e7eb}
+        .custom-datetime-row{display:flex;gap:12px;align-items:flex-end}
+        .custom-datetime-field{flex:1;display:flex;flex-direction:column;gap:4px}
+        .custom-datetime-field label{font-size:11px;font-weight:600;color:#6b7280;text-transform:uppercase}
+        .custom-datetime-field input{padding:10px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:14px;background:#fff}
+        .custom-datetime-field input:focus{outline:none;border-color:#1a73e8}
+        .custom-datetime-confirm{width:48px;height:44px;border:none;background:#22c55e;border-radius:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.2s}
+        .custom-datetime-confirm:hover{background:#16a34a;transform:scale(1.05)}
+        .custom-datetime-confirm svg{stroke:#fff}
         
         /* Note input */
         .quick-note{width:100%;padding:12px 16px;border:1px solid #dadce0;border-radius:12px;font-size:14px;resize:none;min-height:60px;margin-top:12px}
@@ -2039,6 +2056,28 @@
                     <span class="time">+тиждень</span>
                     <span class="label">Через 7 днів</span>
                 </button>
+                <button class="time-btn time-btn-custom" onclick="showCustomDateTime()">
+                    <span class="time">
+                        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                    </span>
+                    <span class="label">Обрати дату</span>
+                </button>
+            </div>
+            <!-- Custom date/time picker -->
+            <div class="custom-datetime-picker" id="custom-datetime-picker" style="display:none">
+                <div class="custom-datetime-row">
+                    <div class="custom-datetime-field">
+                        <label>Дата</label>
+                        <input type="date" id="quick-custom-date">
+                    </div>
+                    <div class="custom-datetime-field">
+                        <label>Час</label>
+                        <input type="time" id="quick-custom-time" value="10:00">
+                    </div>
+                    <button class="custom-datetime-confirm" onclick="confirmCustomDateTime()">
+                        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                    </button>
+                </div>
             </div>
         </div>
         
@@ -8253,25 +8292,39 @@ initReportDates();
 let activeDropdown = null;
 let statusPickerLeadId = null;
 
+// SVG іконки для статусів
+const STATUS_ICONS = {
+    'new': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>',
+    'contacted': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>',
+    'scheduled': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>',
+    'completed': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>',
+    'report_sent': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>',
+    'deposit': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 18V6"/></svg>',
+    'paid': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>',
+    'failed': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>',
+    'frozen': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="2" x2="12" y2="22"/><path d="M17 7l-5 5-5-5"/><path d="M17 17l-5-5-5 5"/><line x1="2" y1="12" x2="22" y2="12"/></svg>',
+    'custom': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>'
+};
+
 // Іконки та описи для статусів
 const STATUS_META = {
-    'new': { icon: '🆕', desc: 'Новий лід, потребує першого контакту', group: 'start' },
-    'contacted': { icon: '📞', desc: 'Був контакт, чекаємо відповідь', group: 'start' },
-    'scheduled': { icon: '📅', desc: 'Призначена консультація', group: 'progress' },
-    'completed': { icon: '✅', desc: 'Консультація проведена', group: 'progress' },
-    'report_sent': { icon: '📋', desc: 'Звіт надісланий клієнту', group: 'progress' },
-    'deposit': { icon: '💰', desc: 'Отримано завдаток', group: 'money' },
-    'paid': { icon: '💵', desc: 'Повністю оплачено', group: 'money' },
-    'failed': { icon: '❌', desc: 'Відмова від послуг', group: 'end' },
-    'frozen': { icon: '❄️', desc: 'Тимчасово заморожено', group: 'end' }
+    'new': { icon: STATUS_ICONS.new, desc: 'Новий лід, потребує першого контакту', group: 'start' },
+    'contacted': { icon: STATUS_ICONS.contacted, desc: 'Був контакт, чекаємо відповідь', group: 'start' },
+    'scheduled': { icon: STATUS_ICONS.scheduled, desc: 'Призначена консультація', group: 'progress' },
+    'completed': { icon: STATUS_ICONS.completed, desc: 'Консультація проведена', group: 'progress' },
+    'report_sent': { icon: STATUS_ICONS.report_sent, desc: 'Звіт надісланий клієнту', group: 'progress' },
+    'deposit': { icon: STATUS_ICONS.deposit, desc: 'Отримано завдаток', group: 'money' },
+    'paid': { icon: STATUS_ICONS.paid, desc: 'Повністю оплачено', group: 'money' },
+    'failed': { icon: STATUS_ICONS.failed, desc: 'Відмова від послуг', group: 'end' },
+    'frozen': { icon: STATUS_ICONS.frozen, desc: 'Тимчасово заморожено', group: 'end' }
 };
 
 const STATUS_GROUPS = {
-    'start': { title: '🚀 Початок роботи', order: 1 },
-    'progress': { title: '⚡ В процесі', order: 2 },
-    'money': { title: '💰 Фінанси', order: 3 },
-    'end': { title: '🏁 Завершення', order: 4 },
-    'custom': { title: '⭐ Кастомні статуси', order: 5 }
+    'start': { title: 'Початок роботи', icon: '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>', order: 1 },
+    'progress': { title: 'В процесі', icon: '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>', order: 2 },
+    'money': { title: 'Фінанси', icon: '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 18V6"/></svg>', order: 3 },
+    'end': { title: 'Завершення', icon: '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>', order: 4 },
+    'custom': { title: 'Кастомні статуси', icon: '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>', order: 5 }
 };
 
 function openStatusPicker(leadId) {
@@ -8293,7 +8346,7 @@ function openStatusPicker(leadId) {
     // Групуємо статуси
     const grouped = {};
     statuses.forEach(statusId => {
-        const meta = STATUS_META[statusId] || { icon: '📌', desc: 'Кастомний статус', group: 'custom' };
+        const meta = STATUS_META[statusId] || { icon: STATUS_ICONS.custom, desc: 'Кастомний статус', group: 'custom' };
         const group = meta.group;
         if(!grouped[group]) grouped[group] = [];
         grouped[group].push({
@@ -8313,14 +8366,14 @@ function openStatusPicker(leadId) {
     );
     
     sortedGroups.forEach(([groupKey, items]) => {
-        const groupInfo = STATUS_GROUPS[groupKey] || { title: 'Інші', order: 99 };
+        const groupInfo = STATUS_GROUPS[groupKey] || { title: 'Інші', icon: '', order: 99 };
         html += `
             <div class="status-group">
-                <div class="status-group-title">${groupInfo.title}</div>
+                <div class="status-group-title">${groupInfo.icon || ''} ${groupInfo.title}</div>
                 <div class="status-grid">
                     ${items.map(s => `
                         <div class="status-card ${s.isCurrent ? 'current' : ''}" onclick="selectStatus('${s.id}')">
-                            <div class="status-card-icon" style="background:${s.color}20;color:${s.color}">${s.icon}</div>
+                            <div class="status-card-icon" style="background:${s.color}20;--icon-color:${s.color}">${s.icon.replace('stroke="currentColor"', `stroke="${s.color}"`)}</div>
                             <div class="status-card-name">${s.name}</div>
                             <div class="status-card-desc">${s.desc}</div>
                         </div>
@@ -8847,6 +8900,9 @@ function setQuickOutcome(outcome) {
 function setQuickTime(time) {
     quickState.time = time;
     
+    // Hide custom picker if was shown
+    document.getElementById('custom-datetime-picker').style.display = 'none';
+    
     // Highlight selected
     document.querySelectorAll('.time-btn').forEach(b => b.classList.remove('selected'));
     event.target.closest('.time-btn').classList.add('selected');
@@ -8859,6 +8915,69 @@ function setQuickTime(time) {
         }, 100);
     } else {
         // For no_answer/sms/callback - show confirm button directly
+        document.getElementById('quick-confirm-btn').style.display = 'flex';
+        setTimeout(() => {
+            document.getElementById('quick-confirm-btn').scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 100);
+    }
+}
+
+function showCustomDateTime() {
+    const picker = document.getElementById('custom-datetime-picker');
+    const dateInput = document.getElementById('quick-custom-date');
+    const timeInput = document.getElementById('quick-custom-time');
+    
+    // Set default to tomorrow
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    dateInput.value = tomorrow.toISOString().split('T')[0];
+    dateInput.min = new Date().toISOString().split('T')[0]; // Мінімум - сьогодні
+    timeInput.value = '10:00';
+    
+    picker.style.display = 'block';
+    dateInput.focus();
+    
+    // Scroll to picker
+    setTimeout(() => {
+        picker.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 100);
+}
+
+function confirmCustomDateTime() {
+    const dateInput = document.getElementById('quick-custom-date');
+    const timeInput = document.getElementById('quick-custom-time');
+    
+    if(!dateInput.value) {
+        showWarning('Оберіть дату');
+        return;
+    }
+    
+    // Store as custom datetime
+    quickState.time = 'custom';
+    quickState.customDate = dateInput.value;
+    quickState.customTime = timeInput.value || '10:00';
+    
+    // Hide picker
+    document.getElementById('custom-datetime-picker').style.display = 'none';
+    
+    // Highlight the custom button
+    document.querySelectorAll('.time-btn').forEach(b => b.classList.remove('selected'));
+    document.querySelector('.time-btn-custom').classList.add('selected');
+    
+    // Format for display
+    const dateObj = new Date(dateInput.value + 'T' + (timeInput.value || '10:00'));
+    const formattedDate = dateObj.toLocaleDateString('uk-UA', { day: 'numeric', month: 'short' });
+    const formattedTime = timeInput.value || '10:00';
+    
+    showToast(`Обрано: ${formattedDate} о ${formattedTime}`);
+    
+    // Show action section if answered
+    if(quickState.outcome === 'answered') {
+        document.getElementById('quick-action-section').style.display = 'block';
+        setTimeout(() => {
+            document.getElementById('quick-action-section').scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 100);
+    } else {
         document.getElementById('quick-confirm-btn').style.display = 'flex';
         setTimeout(() => {
             document.getElementById('quick-confirm-btn').scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -8964,6 +9083,14 @@ function calculateNextDateTime(timeCode) {
     const now = new Date();
     let targetDate = new Date();
     let targetTime = '10:00';
+    
+    // Handle custom datetime
+    if(timeCode === 'custom' && quickState.customDate) {
+        return {
+            date: quickState.customDate,
+            time: quickState.customTime || '10:00'
+        };
+    }
     
     switch(timeCode) {
         case '30m':
