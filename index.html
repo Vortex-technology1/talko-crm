@@ -508,6 +508,7 @@
         .datetime-modal-overlay.active{display:block}
         .datetime-modal{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#fff;border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,0.3);z-index:201;width:340px;display:none}
         .datetime-modal.active{display:block}
+        #templates-modal{width:420px;max-width:95vw}
         .datetime-header{padding:16px 20px;border-bottom:1px solid #e5e7eb;display:flex;justify-content:space-between;align-items:center}
         .datetime-header span{font-size:16px;font-weight:600;color:#1a1a1a}
         .datetime-close{width:28px;height:28px;border:none;background:none;font-size:24px;color:#666;cursor:pointer;display:flex;align-items:center;justify-content:center;border-radius:50%}
@@ -4970,48 +4971,58 @@ function showMessageTemplates(leadId) {
     const lead = leads.find(l => l.id === leadId);
     if (!lead) return;
     
+    // Створюємо overlay якщо немає
+    let overlay = document.getElementById('templates-overlay');
+    if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.id = 'templates-overlay';
+        overlay.className = 'datetime-modal-overlay';
+        overlay.onclick = closeTemplatesModal;
+        document.body.appendChild(overlay);
+    }
+    
     let modal = document.getElementById('templates-modal');
     if (!modal) {
         modal = document.createElement('div');
         modal.id = 'templates-modal';
-        modal.className = 'modal';
+        modal.className = 'datetime-modal';
         document.body.appendChild(modal);
     }
     
     const templatesHtml = Object.entries(MESSAGE_TEMPLATES).map(([id, tmpl]) => {
         const text = getMessageTemplate(id, lead);
         return `
-            <div class="template-item" style="padding:12px;background:#f9fafb;border-radius:8px;margin-bottom:8px">
-                <div style="font-weight:600;font-size:13px;margin-bottom:4px">${tmpl.name}</div>
-                <div style="font-size:13px;color:#4b5563;margin-bottom:8px">${text}</div>
-                <div style="display:flex;gap:8px">
-                    <button class="btn btn-s" onclick="copyTemplate('${id}', '${leadId}')">
+            <div style="padding:12px;background:#f9fafb;border-radius:12px;margin-bottom:10px">
+                <div style="font-weight:600;font-size:14px;color:#1a1a1a;margin-bottom:6px">${tmpl.name}</div>
+                <div style="font-size:13px;color:#4b5563;margin-bottom:10px;line-height:1.4">${text}</div>
+                <div style="display:flex;gap:8px;flex-wrap:wrap">
+                    <button onclick="copyTemplate('${id}', '${leadId}')" style="display:inline-flex;align-items:center;gap:6px;padding:8px 12px;background:#f3f4f6;border:none;border-radius:8px;font-size:13px;font-weight:500;color:#374151;cursor:pointer">
                         <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
                         Копіювати
                     </button>
-                    ${lead.phone ? `<a href="https://wa.me/${lead.phone.replace(/\D/g, '')}?text=${encodeURIComponent(text)}" target="_blank" class="btn btn-s" style="background:#25D366;color:white">WhatsApp</a>` : ''}
-                    ${lead.tg ? `<a href="https://t.me/${lead.tg.replace('@', '')}?text=${encodeURIComponent(text)}" target="_blank" class="btn btn-s" style="background:#0088cc;color:white">Telegram</a>` : ''}
+                    ${lead.phone ? `<a href="https://wa.me/${lead.phone.replace(/\D/g, '')}?text=${encodeURIComponent(text)}" target="_blank" style="display:inline-flex;align-items:center;gap:6px;padding:8px 12px;background:#25D366;border:none;border-radius:8px;font-size:13px;font-weight:500;color:white;text-decoration:none">WhatsApp</a>` : ''}
+                    ${lead.tg ? `<a href="https://t.me/${lead.tg.replace('@', '')}?text=${encodeURIComponent(text)}" target="_blank" style="display:inline-flex;align-items:center;gap:6px;padding:8px 12px;background:#0088cc;border:none;border-radius:8px;font-size:13px;font-weight:500;color:white;text-decoration:none">Telegram</a>` : ''}
                 </div>
             </div>
         `;
     }).join('');
     
     modal.innerHTML = `
-        <div class="modal-content" style="max-width:500px">
-            <div class="modal-header">
-                <h2>📝 Шаблони повідомлень</h2>
-                <button class="close-modal" onclick="closeTemplatesModal()">×</button>
-            </div>
-            <div style="padding:16px;max-height:70vh;overflow-y:auto">
-                ${templatesHtml}
-            </div>
+        <div class="datetime-header">
+            <span>Шаблони повідомлень</span>
+            <button class="datetime-close" onclick="closeTemplatesModal()">×</button>
+        </div>
+        <div class="datetime-body" style="max-height:60vh;overflow-y:auto">
+            ${templatesHtml}
         </div>
     `;
     
+    overlay.classList.add('active');
     modal.classList.add('active');
 }
 
 function closeTemplatesModal() {
+    document.getElementById('templates-overlay')?.classList.remove('active');
     document.getElementById('templates-modal')?.classList.remove('active');
 }
 
