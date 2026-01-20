@@ -448,6 +448,29 @@
         
         .task-status-dropdown{position:absolute;top:100%;right:0;margin-top:4px;background:#fff;border-radius:12px;box-shadow:0 10px 40px rgba(0,0,0,0.2);z-index:1001;min-width:180px;padding:8px 0;display:none;max-height:300px;overflow-y:auto}
         .task-status-dropdown.drop-up{top:auto;bottom:100%;margin-top:0;margin-bottom:4px;box-shadow:0 -10px 40px rgba(0,0,0,0.2)}
+        
+        /* Status Picker Modal */
+        .status-picker-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:2000;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px)}
+        .status-picker-overlay.active{display:flex}
+        .status-picker{background:#fff;border-radius:20px;width:100%;max-width:600px;max-height:85vh;overflow:hidden;animation:modalSlide 0.25s ease}
+        .status-picker-header{padding:20px 24px;border-bottom:1px solid #e5e7eb;display:flex;justify-content:space-between;align-items:center}
+        .status-picker-title{font-size:18px;font-weight:600;color:#1f2937}
+        .status-picker-subtitle{font-size:13px;color:#6b7280;margin-top:2px}
+        .status-picker-close{width:36px;height:36px;border:none;background:#f3f4f6;border-radius:10px;cursor:pointer;font-size:20px;color:#6b7280;transition:all 0.2s}
+        .status-picker-close:hover{background:#e5e7eb;color:#1f2937}
+        .status-picker-body{padding:20px 24px;overflow-y:auto;max-height:calc(85vh - 80px)}
+        .status-group{margin-bottom:24px}
+        .status-group:last-child{margin-bottom:0}
+        .status-group-title{font-size:11px;font-weight:600;text-transform:uppercase;color:#9ca3af;margin-bottom:12px;letter-spacing:0.5px}
+        .status-grid{display:grid;grid-template-columns:repeat(auto-fill, minmax(160px, 1fr));gap:10px}
+        .status-card{padding:16px;border-radius:12px;border:2px solid #e5e7eb;cursor:pointer;transition:all 0.2s;display:flex;flex-direction:column;gap:8px;background:#fff}
+        .status-card:hover{border-color:#d1d5db;background:#f9fafb;transform:translateY(-2px)}
+        .status-card.active{border-color:var(--p);background:#f0fdf4}
+        .status-card-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px}
+        .status-card-name{font-size:14px;font-weight:600;color:#1f2937}
+        .status-card-desc{font-size:11px;color:#6b7280;line-height:1.4}
+        .status-card.current{border-color:var(--p);background:linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)}
+        .status-card.current::after{content:'✓ Поточний';font-size:10px;color:var(--p);font-weight:600}
         .task-status-dropdown.active{display:block}
         .task-status-option{display:flex;align-items:center;gap:8px;padding:8px 12px;font-size:12px;cursor:pointer;transition:background .1s}
         .task-status-option:hover{background:#f5f5f5}
@@ -6038,7 +6061,7 @@ function renderTaskRow(t, status) {
             <span class="task-score ${scoreClass}">${score}</span>
         </div>
         <div class="task-status-wrap" onclick="event.stopPropagation()">
-            <button class="task-status-btn" style="background:${getStatusColor(t.l.status || 'new')}20;color:${getStatusColor(t.l.status || 'new')};border-color:${getStatusColor(t.l.status || 'new')}" onclick="toggleStatusDropdown('${t.l.id}', this)">
+            <button class="task-status-btn" style="background:${getStatusColor(t.l.status || 'new')}20;color:${getStatusColor(t.l.status || 'new')};border-color:${getStatusColor(t.l.status || 'new')}" onclick="openStatusPicker('${t.l.id}')">
                 ${getStatusName(t.l.status || 'new')}
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
             </button>
@@ -8228,6 +8251,108 @@ initReportDates();
 
 // ===== STATUS DROPDOWN =====
 let activeDropdown = null;
+let statusPickerLeadId = null;
+
+// Іконки та описи для статусів
+const STATUS_META = {
+    'new': { icon: '🆕', desc: 'Новий лід, потребує першого контакту', group: 'start' },
+    'contacted': { icon: '📞', desc: 'Був контакт, чекаємо відповідь', group: 'start' },
+    'scheduled': { icon: '📅', desc: 'Призначена консультація', group: 'progress' },
+    'completed': { icon: '✅', desc: 'Консультація проведена', group: 'progress' },
+    'report_sent': { icon: '📋', desc: 'Звіт надісланий клієнту', group: 'progress' },
+    'deposit': { icon: '💰', desc: 'Отримано завдаток', group: 'money' },
+    'paid': { icon: '💵', desc: 'Повністю оплачено', group: 'money' },
+    'failed': { icon: '❌', desc: 'Відмова від послуг', group: 'end' },
+    'frozen': { icon: '❄️', desc: 'Тимчасово заморожено', group: 'end' }
+};
+
+const STATUS_GROUPS = {
+    'start': { title: '🚀 Початок роботи', order: 1 },
+    'progress': { title: '⚡ В процесі', order: 2 },
+    'money': { title: '💰 Фінанси', order: 3 },
+    'end': { title: '🏁 Завершення', order: 4 },
+    'custom': { title: '⭐ Кастомні статуси', order: 5 }
+};
+
+function openStatusPicker(leadId) {
+    const lead = leads.find(l => l.id === leadId);
+    if(!lead) return;
+    
+    statusPickerLeadId = leadId;
+    
+    // Закриваємо старі dropdown
+    document.querySelectorAll('.task-status-dropdown.active').forEach(d => d.classList.remove('active'));
+    
+    // Встановлюємо назву ліда
+    document.getElementById('status-picker-lead-name').textContent = lead.name || lead.tg || 'Без імені';
+    
+    // Отримуємо статуси для поточної воронки
+    const funnelId = lead.funnelId || currentFunnelId || 'default';
+    const statuses = getStatusIds(funnelId);
+    
+    // Групуємо статуси
+    const grouped = {};
+    statuses.forEach(statusId => {
+        const meta = STATUS_META[statusId] || { icon: '📌', desc: 'Кастомний статус', group: 'custom' };
+        const group = meta.group;
+        if(!grouped[group]) grouped[group] = [];
+        grouped[group].push({
+            id: statusId,
+            name: getStatusName(statusId, funnelId),
+            icon: meta.icon,
+            desc: meta.desc,
+            color: getStatusColor(statusId, funnelId),
+            isCurrent: lead.status === statusId
+        });
+    });
+    
+    // Генеруємо HTML
+    let html = '';
+    const sortedGroups = Object.entries(grouped).sort((a, b) => 
+        (STATUS_GROUPS[a[0]]?.order || 99) - (STATUS_GROUPS[b[0]]?.order || 99)
+    );
+    
+    sortedGroups.forEach(([groupKey, items]) => {
+        const groupInfo = STATUS_GROUPS[groupKey] || { title: 'Інші', order: 99 };
+        html += `
+            <div class="status-group">
+                <div class="status-group-title">${groupInfo.title}</div>
+                <div class="status-grid">
+                    ${items.map(s => `
+                        <div class="status-card ${s.isCurrent ? 'current' : ''}" onclick="selectStatus('${s.id}')">
+                            <div class="status-card-icon" style="background:${s.color}20;color:${s.color}">${s.icon}</div>
+                            <div class="status-card-name">${s.name}</div>
+                            <div class="status-card-desc">${s.desc}</div>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        `;
+    });
+    
+    document.getElementById('status-picker-body').innerHTML = html;
+    document.getElementById('status-picker-overlay').classList.add('active');
+}
+
+function closeStatusPicker() {
+    document.getElementById('status-picker-overlay').classList.remove('active');
+    statusPickerLeadId = null;
+}
+
+async function selectStatus(newStatus) {
+    if(!statusPickerLeadId) return;
+    
+    const lead = leads.find(l => l.id === statusPickerLeadId);
+    if(!lead || lead.status === newStatus) {
+        closeStatusPicker();
+        return;
+    }
+    
+    closeStatusPicker();
+    
+    // Використовуємо існуючу логіку changeLeadStatus
+    await changeLeadStatus(statusPickerLeadId, newStatus);
+}
 
 function toggleStatusDropdown(leadId, btn) {
     const dropdown = document.getElementById(`status-dropdown-${leadId}`);
@@ -9479,5 +9604,21 @@ document.addEventListener('keydown', (e) => {
     }
 });
 </script>
+<!-- Status Picker Modal -->
+<div class="status-picker-overlay" id="status-picker-overlay" onclick="if(event.target===this)closeStatusPicker()">
+    <div class="status-picker">
+        <div class="status-picker-header">
+            <div>
+                <div class="status-picker-title">Змінити статус</div>
+                <div class="status-picker-subtitle" id="status-picker-lead-name"></div>
+            </div>
+            <button class="status-picker-close" onclick="closeStatusPicker()">×</button>
+        </div>
+        <div class="status-picker-body" id="status-picker-body">
+            <!-- Заповнюється динамічно -->
+        </div>
+    </div>
+</div>
+
 </body>
 </html>
