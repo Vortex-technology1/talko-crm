@@ -6686,12 +6686,8 @@ function handleColumnDrop(e) {
     e.preventDefault();
     e.stopPropagation();
     const status = e.currentTarget.dataset.status;
-    console.log('handleColumnDrop called:', status, 'dragId:', dragId);
     if(status) {
         dDrop(e, status);
-    } else {
-        console.error('No status found on column');
-        showWarning('Помилка: статус колонки не знайдено');
     }
 }
 
@@ -6700,15 +6696,12 @@ async function dDrop(e, status) {
     e.stopPropagation();
     e.currentTarget?.classList?.remove('drag-over');
     
-    // Отримуємо ID з dataTransfer (надійніше) або з глобальної змінної
+    // Отримуємо ID з dataTransfer або з глобальної змінної
     let leadId = null;
     if(e.dataTransfer) {
         leadId = e.dataTransfer.getData('application/x-lead-id') || e.dataTransfer.getData('text/plain');
     }
     if(!leadId) leadId = dragId;
-    
-    // DEBUG
-    console.log('dDrop:', { status, leadId, dragId });
     
     if(!leadId){
         showWarning('Оберіть картку для переміщення');
@@ -6721,19 +6714,10 @@ async function dDrop(e, status) {
         return;
     }
     
-    // DEBUG - показуємо поточний і новий статус
-    console.log('Status check:', { current: l.status, new: status, same: l.status === status });
-    
     // Якщо статус не змінився - нічого не робимо
     if(l.status === status) {
-        showInfo('Статус не змінився');
         return;
     }
-    
-    console.log('Proceeding with status change...');
-    
-    // Перевіряємо funnelId
-    console.log('Lead funnelId:', l.funnelId, 'Current funnel:', currentFunnelId);
     
     // Валідація перед переміщенням
     const updatedLead = {...l};
@@ -6772,29 +6756,29 @@ async function dDrop(e, status) {
     }
     
     const old=updatedLead.status;updatedLead.status=status;updatedLead.stageDate=new Date().toISOString();
-    console.log('About to save:', { old, new: status, leadId: updatedLead.id });
-    
     if(status==='completed'){updatedLead.calls=0;updatedLead.sms=0;}
     if(status==='report_sent'){updatedLead.reportDate=today();updatedLead.calls=0;updatedLead.sms=0;updatedLead.nextDate=tomorrow();}
     addLog(updatedLead,'status',getStatusName(old, updatedLead.funnelId)+' → '+getStatusName(status, updatedLead.funnelId));
     
     try {
-        console.log('Updating local array...');
-        // Оновлюємо локальний масив
+        // ОПТИМІСТИЧНЕ ОНОВЛЕННЯ - оновлюємо UI одразу
         const idx = leads.findIndex(x => x.id === updatedLead.id);
-        console.log('Lead index:', idx);
         if(idx >= 0) {
-            leads[idx] = updatedLead;
-            console.log('Local array updated');
+            leads[idx] = {...updatedLead}; // Clone щоб уникнути reference issues
         }
         
-        console.log('Saving to Firebase...');
-        // Зберігаємо в Firebase
-        const saved = await saveLead(updatedLead);
-        console.log('Firebase save result:', saved);
+        // Перемальовуємо UI ПЕРЕД збереженням
+        render();
         
-        // НЕ викликаємо renderKanban() тут - onSnapshot сам оновить UI
-        // коли Firebase поверне оновлені дані
+        // Зберігаємо в Firebase (async, не блокує UI)
+        saveLead(updatedLead).then(saved => {
+            if(!saved) {
+                // Якщо помилка - відкатуємо
+                if(idx >= 0) leads[idx] = l;
+                render();
+                showError('Помилка збереження');
+            }
+        });
         
         showToast(`${getStatusName(old)} → ${getStatusName(status)}`);
     } catch(err) {
