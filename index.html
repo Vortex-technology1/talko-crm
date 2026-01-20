@@ -446,7 +446,8 @@
         .task-status-btn.st-repeat{background:#ede7f6;color:#512da8}
         .task-status-btn.st-frozen{background:#eceff1;color:#546e7a}
         
-        .task-status-dropdown{position:absolute;bottom:100%;right:0;margin-bottom:4px;background:#fff;border-radius:12px;box-shadow:0 -10px 40px rgba(0,0,0,0.2);z-index:1000;min-width:180px;padding:8px 0;display:none;max-height:300px;overflow-y:auto}
+        .task-status-dropdown{position:absolute;top:100%;right:0;margin-top:4px;background:#fff;border-radius:12px;box-shadow:0 10px 40px rgba(0,0,0,0.2);z-index:1001;min-width:180px;padding:8px 0;display:none;max-height:300px;overflow-y:auto}
+        .task-status-dropdown.drop-up{top:auto;bottom:100%;margin-top:0;margin-bottom:4px;box-shadow:0 -10px 40px rgba(0,0,0,0.2)}
         .task-status-dropdown.active{display:block}
         .task-status-option{display:flex;align-items:center;gap:8px;padding:8px 12px;font-size:12px;cursor:pointer;transition:background .1s}
         .task-status-option:hover{background:#f5f5f5}
@@ -8256,12 +8257,17 @@ function toggleStatusDropdown(leadId, btn) {
         const dropRect = dropdown.getBoundingClientRect();
         const viewportHeight = window.innerHeight;
         
-        // Якщо dropdown виходить за межі viewport знизу - показуємо зверху
-        if(btnRect.bottom + dropRect.height > viewportHeight - 20) {
-            dropdown.style.top = 'auto';
-            dropdown.style.bottom = '100%';
-            dropdown.style.marginTop = '0';
-            dropdown.style.marginBottom = '4px';
+        // Скидаємо попередні стилі
+        dropdown.classList.remove('drop-up');
+        dropdown.style.cssText = '';
+        
+        // Визначаємо чи є місце внизу (300px для dropdown)
+        const spaceBelow = viewportHeight - btnRect.bottom;
+        const spaceAbove = btnRect.top;
+        
+        // Якщо внизу менше 320px і вгорі більше місця - показуємо вгору
+        if(spaceBelow < 320 && spaceAbove > spaceBelow) {
+            dropdown.classList.add('drop-up');
         }
     }, 0);
 }
