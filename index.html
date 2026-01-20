@@ -4412,10 +4412,12 @@ async function bulkChangeStatus() {
     if(selectedLeadIds.size === 0) return;
     
     const statuses = getOrgStatuses();
-    const options = Object.entries(statuses).map(([id, s]) => ({
-        value: id,
-        label: s.label
-    }));
+    const options = Object.entries(statuses)
+        .sort((a, b) => (a[1].order || 0) - (b[1].order || 0))
+        .map(([id, s]) => ({
+            value: id,
+            label: s.name || id
+        }));
     
     const newStatus = await promptModal('Змінити статус на:', '', {
         type: 'select',
@@ -4432,7 +4434,7 @@ async function bulkChangeStatus() {
             if(lead) {
                 lead.status = newStatus;
                 lead.stageDate = today();
-                addLog(lead, 'status', `Масова зміна на: ${statuses[newStatus]?.label || newStatus}`);
+                addLog(lead, 'status', `Масова зміна на: ${statuses[newStatus]?.name || newStatus}`);
                 await saveLead(lead);
             }
         }
@@ -7141,7 +7143,7 @@ function renderConversionFunnel(statusIds, statuses) {
                 
                 return `
                     <div class="conversion-step">
-                        <span class="conversion-label">${status?.label || id}</span>
+                        <span class="conversion-label">${status?.name || id}</span>
                         <div class="conversion-bar">
                             <div class="conversion-fill" style="width:${width}%;background:linear-gradient(90deg,${color},${color}dd)">${count}</div>
                         </div>
