@@ -6732,6 +6732,9 @@ async function dDrop(e, status) {
     
     console.log('Proceeding with status change...');
     
+    // Перевіряємо funnelId
+    console.log('Lead funnelId:', l.funnelId, 'Current funnel:', currentFunnelId);
+    
     // Валідація перед переміщенням
     const updatedLead = {...l};
     
@@ -6790,11 +6793,8 @@ async function dDrop(e, status) {
         const saved = await saveLead(updatedLead);
         console.log('Firebase save result:', saved);
         
-        console.log('Rendering UI...');
-        // Перемальовуємо UI
-        renderKanban();
-        renderTasks();
-        console.log('UI rendered');
+        // НЕ викликаємо renderKanban() тут - onSnapshot сам оновить UI
+        // коли Firebase поверне оновлені дані
         
         showToast(`${getStatusName(old)} → ${getStatusName(status)}`);
     } catch(err) {
