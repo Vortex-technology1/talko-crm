@@ -6708,82 +6708,70 @@ async function dDrop(e, status) {
         return;
     }
     
-    const l = leads.find(x => x.id === leadId);
-    if(!l){
+    // Знаходимо індекс ліда
+    const idx = leads.findIndex(x => x.id === leadId);
+    if(idx < 0){
         showWarning('Лід не знайдено');
         return;
     }
     
+    const lead = leads[idx];
+    const oldStatus = lead.status;
+    
     // Якщо статус не змінився - нічого не робимо
-    if(l.status === status) {
+    if(oldStatus === status) {
         return;
     }
     
-    // Валідація перед переміщенням
-    const updatedLead = {...l};
-    
-    // Для paid потрібна сума
-    if(status==='paid'&&!updatedLead.finTotal){
+    // Валідація для спеціальних статусів
+    if(status === 'paid' && !lead.finTotal){
         showWarning('Вкажіть суму оплати!');
-        openModal(updatedLead.id);
+        openModal(lead.id);
         setTimeout(() => document.getElementById('fin-total')?.focus(), 300);
         return;
     }
     
-    // Для deposit потрібна сума завдатку
-    if(status==='deposit'&&!updatedLead.finDep){
+    if(status === 'deposit' && !lead.finDep){
         const a = await promptModal('Сума завдатку:', '', {type: 'number', placeholder: 'Наприклад: 5000'});
-        if(!a){showInfo('Переміщення скасовано');return;}
-        updatedLead.finDep=+a;
-        updatedLead.finDepDate=today();
+        if(!a){ showInfo('Переміщення скасовано'); return; }
+        lead.finDep = +a;
+        lead.finDepDate = today();
     }
     
-    // Для scheduled (тільки базовий статус) потрібна дата консультації
-    // Кастомні статуси пропускаємо - користувач сам вирішує
-    if(status==='scheduled'&&!updatedLead.consult){
+    if(status === 'scheduled' && !lead.consult){
         const dt = await promptDateTime('Оберіть дату та час консультації');
-        if(!dt){showInfo('Переміщення скасовано');return;}
-        updatedLead.consult = dt;
-        updatedLead.noshow = 0;
+        if(!dt){ showInfo('Переміщення скасовано'); return; }
+        lead.consult = dt;
+        lead.noshow = 0;
     }
     
-    // Для failed потрібна причина (тільки якщо ще немає)
-    if(status==='failed'&&!updatedLead.failReason){
+    if(status === 'failed' && !lead.failReason){
         const reason = await promptModal('Причина відмови:', '', {placeholder: 'Наприклад: дорого, не актуально'});
-        if(!reason){showInfo('Переміщення скасовано');return;}
-        updatedLead.failReason = reason;
-        updatedLead.reactDate = addDays(today(), REACTIVATION_DAYS);
+        if(!reason){ showInfo('Переміщення скасовано'); return; }
+        lead.failReason = reason;
+        lead.reactDate = addDays(today(), REACTIVATION_DAYS);
     }
     
-    const old=updatedLead.status;updatedLead.status=status;updatedLead.stageDate=new Date().toISOString();
-    if(status==='completed'){updatedLead.calls=0;updatedLead.sms=0;}
-    if(status==='report_sent'){updatedLead.reportDate=today();updatedLead.calls=0;updatedLead.sms=0;updatedLead.nextDate=tomorrow();}
-    addLog(updatedLead,'status',getStatusName(old, updatedLead.funnelId)+' → '+getStatusName(status, updatedLead.funnelId));
+    // Оновлюємо статус напряму в об'єкті
+    lead.status = status;
+    lead.stageDate = new Date().toISOString();
     
-    try {
-        // ОПТИМІСТИЧНЕ ОНОВЛЕННЯ - оновлюємо UI одразу
-        const idx = leads.findIndex(x => x.id === updatedLead.id);
-        if(idx >= 0) {
-            leads[idx] = {...updatedLead}; // Clone щоб уникнути reference issues
-        }
-        
-        // Перемальовуємо UI ПЕРЕД збереженням
+    if(status === 'completed'){ lead.calls = 0; lead.sms = 0; }
+    if(status === 'report_sent'){ lead.reportDate = today(); lead.calls = 0; lead.sms = 0; lead.nextDate = tomorrow(); }
+    
+    addLog(lead, 'status', getStatusName(oldStatus, lead.funnelId) + ' → ' + getStatusName(status, lead.funnelId));
+    
+    // Зберігаємо в Firebase
+    const saved = await saveLead(lead);
+    
+    if(saved) {
         render();
-        
-        // Зберігаємо в Firebase (async, не блокує UI)
-        saveLead(updatedLead).then(saved => {
-            if(!saved) {
-                // Якщо помилка - відкатуємо
-                if(idx >= 0) leads[idx] = l;
-                render();
-                showError('Помилка збереження');
-            }
-        });
-        
-        showToast(`${getStatusName(old)} → ${getStatusName(status)}`);
-    } catch(err) {
-        showError('Помилка збереження: ' + err.message);
-        console.error('saveLead error:', err);
+        showToast(`${getStatusName(oldStatus)} → ${getStatusName(status)}`);
+    } else {
+        // Відкатуємо якщо помилка
+        lead.status = oldStatus;
+        render();
+        showError('Помилка збереження');
     }
 }
 
