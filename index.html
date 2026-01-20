@@ -6761,17 +6761,20 @@ async function dDrop(e, status) {
     
     addLog(lead, 'status', getStatusName(oldStatus, lead.funnelId) + ' → ' + getStatusName(status, lead.funnelId));
     
-    // Зберігаємо в Firebase
-    const saved = await saveLead(lead);
-    
-    if(saved) {
-        // НЕ викликаємо render() тут - onSnapshot автоматично оновить UI
-        // коли Firebase поверне нові дані
+    // Зберігаємо в Firebase напряму (обходимо saveLead який має проблеми з sanitize)
+    try {
+        // Clean undefined values
+        const cleanData = JSON.parse(JSON.stringify(lead, (key, value) => 
+            value === undefined ? null : value
+        ));
+        
+        await db.collection('organizations').doc(currentOrg.id).collection('leads').doc(lead.id).set(cleanData);
         showToast(`${getStatusName(oldStatus)} → ${getStatusName(status)}`);
-    } else {
+    } catch(err) {
         // Відкатуємо якщо помилка
         lead.status = oldStatus;
-        showError('Помилка збереження');
+        showError('Помилка збереження: ' + err.message);
+        console.error('Save error:', err);
     }
 }
 
