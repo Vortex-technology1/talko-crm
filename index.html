@@ -6385,9 +6385,11 @@ function renderKanban(){
     document.getElementById('kanban').innerHTML = cols.map(s => {
         const items = filtered.filter(l => l.status === s);
         const color = getStatusColor(s);
-        return `<div class="column" data-status="${s}">
+        // Екрануємо ID для безпечного використання в HTML
+        const safeId = escapeHtml(s);
+        return `<div class="column" data-status="${safeId}">
             <div class="column-header" style="border-top:3px solid ${color}"><span>${getStatusName(s)}</span><span class="column-count">${items.length}</span></div>
-            <div class="column-cards" ondragover="dOver(event)" ondrop="dDrop(event,'${s}')" ondragleave="dLeave(event)">
+            <div class="column-cards" data-status="${safeId}" ondragover="dOver(event)" ondrop="handleColumnDrop(event)" ondragleave="dLeave(event)">
                 ${items.map(l => kCard(l)).join('')}
             </div>
         </div>`;
@@ -6451,7 +6453,7 @@ function kCard(l){
     const score=calcScore(l);
     const scoreClass=score>=70?'hot':score>=50?'warm':'cold';
     const isSelected = selectedLeadIds.has(l.id);
-    return`<div class="k-card ${alert?'has-'+(alert.crit?'critical':'alert'):''} ${isSelected?'selected':''}" draggable="true" ondragstart="dStart(event,'${l.id}')" ondragend="dEnd(event)" onclick="handleCardClick(event,'${l.id}')" style="position:relative">
+    return`<div class="k-card ${alert?'has-'+(alert.crit?'critical':'alert'):''} ${isSelected?'selected':''}" draggable="true" ondragstart="dStart(event,'${l.id}')" ondragend="dEnd(event)" onclick="handleCardClick(event,'${l.id}')" ontouchstart="touchStart(event,'${l.id}')" ontouchmove="touchMove(event)" ontouchend="touchEnd(event)" style="position:relative;touch-action:none">
         <div class="select-checkbox" onclick="event.stopPropagation();toggleLeadSelection('${l.id}')"></div>
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
             <div class="k-card-name">${highlightSearch(l.tg||l.phone||'—')}</div>
@@ -6479,15 +6481,23 @@ function getAlert(l){
 let dragId = null;
 let dragElement = null;
 
+// Touch drag для мобільних
+let touchDragId = null;
+let touchStartY = 0;
+let touchStartX = 0;
+let touchDragElement = null;
+let touchDragClone = null;
+
 function dStart(e, id) {
     dragId = id;
     dragElement = e.target;
     e.target.classList.add('dragging');
     
-    // Встановлюємо drag image
+    // Зберігаємо ID в dataTransfer - це надійніше
     if(e.dataTransfer) {
         e.dataTransfer.effectAllowed = 'move';
         e.dataTransfer.setData('text/plain', id);
+        e.dataTransfer.setData('application/x-lead-id', id);
     }
     
     // Підсвічуємо всі колонки як можливі drop targets
@@ -6498,20 +6508,160 @@ function dStart(e, id) {
     }, 0);
 }
 
+// Touch start - для мобільних
+function touchStart(e, id) {
+    if(e.touches.length !== 1) return;
+    
+    touchDragId = id;
+    touchDragElement = e.currentTarget;
+    touchStartX = e.touches[0].clientX;
+    touchStartY = e.touches[0].clientY;
+    
+    // Long press detection
+    touchDragElement.touchTimeout = setTimeout(() => {
+        if(touchDragId) {
+            touchDragElement.classList.add('dragging');
+            // Показуємо всі колонки
+            document.querySelectorAll('.column-cards').forEach(col => {
+                col.style.minHeight = '120px';
+                col.style.border = '2px dashed #22c55e';
+            });
+            // Haptic feedback якщо доступно
+            if(navigator.vibrate) navigator.vibrate(50);
+        }
+    }, 300);
+}
+
+function touchMove(e) {
+    if(!touchDragId || !touchDragElement.classList.contains('dragging')) {
+        // Скасовуємо якщо рух до long press
+        clearTimeout(touchDragElement?.touchTimeout);
+        return;
+    }
+    
+    e.preventDefault();
+    
+    const touch = e.touches[0];
+    
+    // Highlight колонки під пальцем
+    document.querySelectorAll('.column-cards').forEach(col => {
+        const rect = col.getBoundingClientRect();
+        if(touch.clientX >= rect.left && touch.clientX <= rect.right &&
+           touch.clientY >= rect.top && touch.clientY <= rect.bottom) {
+            col.classList.add('drag-over');
+        } else {
+            col.classList.remove('drag-over');
+        }
+    });
+}
+
+function touchEnd(e) {
+    clearTimeout(touchDragElement?.touchTimeout);
+    
+    if(!touchDragId || !touchDragElement?.classList.contains('dragging')) {
+        touchDragId = null;
+        touchDragElement = null;
+        return;
+    }
+    
+    const touch = e.changedTouches[0];
+    
+    // Знаходимо колонку під пальцем
+    let targetColumn = null;
+    document.querySelectorAll('.column-cards').forEach(col => {
+        const rect = col.getBoundingClientRect();
+        if(touch.clientX >= rect.left && touch.clientX <= rect.right &&
+           touch.clientY >= rect.top && touch.clientY <= rect.bottom) {
+            targetColumn = col;
+        }
+        col.classList.remove('drag-over');
+        col.style.minHeight = '';
+        col.style.border = '';
+    });
+    
+    if(targetColumn) {
+        // Отримуємо статус з колонки
+        const column = targetColumn.closest('.column');
+        const status = column?.dataset?.status;
+        if(status && touchDragId) {
+            // Викликаємо drop
+            handleTouchDrop(touchDragId, status);
+        }
+    }
+    
+    touchDragElement?.classList.remove('dragging');
+    touchDragId = null;
+    touchDragElement = null;
+}
+
+async function handleTouchDrop(leadId, status) {
+    const l = leads.find(x => x.id === leadId);
+    if(!l) {
+        showWarning('Лід не знайдено');
+        return;
+    }
+    
+    if(l.status === status) {
+        return; // Статус не змінився
+    }
+    
+    // Використовуємо ту ж логіку що й dDrop
+    const updatedLead = {...l};
+    
+    // Валідація
+    if(status === 'paid' && !updatedLead.finTotal) {
+        showWarning('Вкажіть суму оплати!');
+        openModal(updatedLead.id);
+        return;
+    }
+    
+    if(status === 'deposit' && !updatedLead.finDep) {
+        const a = await promptModal('Сума завдатку:', '', {type: 'number', placeholder: 'Наприклад: 5000'});
+        if(!a) { showInfo('Переміщення скасовано'); return; }
+        updatedLead.finDep = +a;
+        updatedLead.finDepDate = today();
+    }
+    
+    if(status === 'scheduled' && !updatedLead.consult) {
+        const dt = await promptDateTime('Оберіть дату та час консультації');
+        if(!dt) { showInfo('Переміщення скасовано'); return; }
+        updatedLead.consult = dt;
+        updatedLead.noshow = 0;
+    }
+    
+    if(status === 'failed' && !updatedLead.failReason) {
+        const reason = await promptModal('Причина відмови:', '', {placeholder: 'Наприклад: дорого, не актуально'});
+        if(!reason) { showInfo('Переміщення скасовано'); return; }
+        updatedLead.failReason = reason;
+        updatedLead.reactDate = addDays(today(), REACTIVATION_DAYS);
+    }
+    
+    const old = updatedLead.status;
+    updatedLead.status = status;
+    updatedLead.stageDate = new Date().toISOString();
+    
+    if(status === 'completed') { updatedLead.calls = 0; updatedLead.sms = 0; }
+    if(status === 'report_sent') { updatedLead.reportDate = today(); updatedLead.calls = 0; updatedLead.sms = 0; updatedLead.nextDate = tomorrow(); }
+    
+    addLog(updatedLead, 'status', getStatusName(old, updatedLead.funnelId) + ' → ' + getStatusName(status, updatedLead.funnelId));
+    saveLead(updatedLead);
+    showToast('Статус змінено');
+}
+
 function dEnd(e) {
     e.target.classList.remove('dragging');
-    
-    // Затримка перед очищенням - щоб dDrop встиг обробити
-    setTimeout(() => {
-        dragId = null;
-        dragElement = null;
-    }, 100);
     
     // Знімаємо підсвітку з усіх колонок
     document.querySelectorAll('.column-cards').forEach(col => {
         col.classList.remove('drag-over');
         col.style.minHeight = '';
     });
+    
+    // Очищуємо з затримкою
+    setTimeout(() => {
+        dragId = null;
+        dragElement = null;
+    }, 50);
 }
 
 function dOver(e) {
@@ -6531,11 +6681,48 @@ function dLeave(e) {
     }
 }
 
+// Wrapper для безпечного отримання статусу з data-атрибуту
+function handleColumnDrop(e) {
+    const status = e.currentTarget.dataset.status;
+    if(status) {
+        dDrop(e, status);
+    } else {
+        console.error('No status found on column');
+        showWarning('Помилка: статус колонки не знайдено');
+    }
+}
+
 async function dDrop(e, status) {
-    e.preventDefault();e.currentTarget.classList.remove('drag-over');
-    if(!dragId){showWarning('Оберіть картку для переміщення');return;}
-    const l=leads.find(x=>x.id===dragId);
-    if(!l){showWarning('Лід не знайдено');return;}
+    e.preventDefault();
+    e.stopPropagation();
+    e.currentTarget.classList.remove('drag-over');
+    
+    // Отримуємо ID з dataTransfer (надійніше) або з глобальної змінної
+    let leadId = null;
+    if(e.dataTransfer) {
+        leadId = e.dataTransfer.getData('application/x-lead-id') || e.dataTransfer.getData('text/plain');
+    }
+    if(!leadId) leadId = dragId;
+    
+    // DEBUG - показуємо що dDrop викликався
+    console.log('dDrop:', { status, leadId, dragId });
+    
+    if(!leadId){
+        showWarning('Оберіть картку для переміщення');
+        return;
+    }
+    
+    const l = leads.find(x => x.id === leadId);
+    if(!l){
+        showWarning('Лід не знайдено');
+        return;
+    }
+    
+    // Якщо статус не змінився - нічого не робимо
+    if(l.status === status) {
+        showInfo('Статус не змінився');
+        return;
+    }
     
     // Валідація перед переміщенням
     const updatedLead = {...l};
