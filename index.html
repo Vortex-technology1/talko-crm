@@ -6683,7 +6683,10 @@ function dLeave(e) {
 
 // Wrapper для безпечного отримання статусу з data-атрибуту
 function handleColumnDrop(e) {
+    e.preventDefault();
+    e.stopPropagation();
     const status = e.currentTarget.dataset.status;
+    console.log('handleColumnDrop called:', status, 'dragId:', dragId);
     if(status) {
         dDrop(e, status);
     } else {
@@ -6695,7 +6698,7 @@ function handleColumnDrop(e) {
 async function dDrop(e, status) {
     e.preventDefault();
     e.stopPropagation();
-    e.currentTarget.classList.remove('drag-over');
+    e.currentTarget?.classList?.remove('drag-over');
     
     // Отримуємо ID з dataTransfer (надійніше) або з глобальної змінної
     let leadId = null;
@@ -6704,8 +6707,9 @@ async function dDrop(e, status) {
     }
     if(!leadId) leadId = dragId;
     
-    // DEBUG - показуємо що dDrop викликався
+    // DEBUG
     console.log('dDrop:', { status, leadId, dragId });
+    showToast(`Drop: ${status}, Lead: ${leadId}`, 'info');
     
     if(!leadId){
         showWarning('Оберіть картку для переміщення');
