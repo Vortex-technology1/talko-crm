@@ -6709,7 +6709,6 @@ async function dDrop(e, status) {
     
     // DEBUG
     console.log('dDrop:', { status, leadId, dragId });
-    showToast(`Drop: ${status}, Lead: ${leadId}`, 'info');
     
     if(!leadId){
         showWarning('Оберіть картку для переміщення');
@@ -6768,7 +6767,26 @@ async function dDrop(e, status) {
     if(status==='completed'){updatedLead.calls=0;updatedLead.sms=0;}
     if(status==='report_sent'){updatedLead.reportDate=today();updatedLead.calls=0;updatedLead.sms=0;updatedLead.nextDate=tomorrow();}
     addLog(updatedLead,'status',getStatusName(old, updatedLead.funnelId)+' → '+getStatusName(status, updatedLead.funnelId));
-    saveLead(updatedLead);
+    
+    try {
+        // Оновлюємо локальний масив
+        const idx = leads.findIndex(x => x.id === updatedLead.id);
+        if(idx >= 0) {
+            leads[idx] = updatedLead;
+        }
+        
+        // Зберігаємо в Firebase
+        await saveLead(updatedLead);
+        
+        // Перемальовуємо UI
+        renderKanban();
+        renderTasks();
+        
+        showToast(`${getStatusName(old)} → ${getStatusName(status)}`);
+    } catch(err) {
+        showError('Помилка збереження: ' + err.message);
+        console.error('saveLead error:', err);
+    }
 }
 
 // ===== REPORTS =====
