@@ -6498,8 +6498,12 @@ function dStart(e, id) {
 
 function dEnd(e) {
     e.target.classList.remove('dragging');
-    dragId = null;
-    dragElement = null;
+    
+    // Затримка перед очищенням - щоб dDrop встиг обробити
+    setTimeout(() => {
+        dragId = null;
+        dragElement = null;
+    }, 100);
     
     // Знімаємо підсвітку з усіх колонок
     document.querySelectorAll('.column-cards').forEach(col => {
