@@ -6765,12 +6765,12 @@ async function dDrop(e, status) {
     const saved = await saveLead(lead);
     
     if(saved) {
-        render();
+        // НЕ викликаємо render() тут - onSnapshot автоматично оновить UI
+        // коли Firebase поверне нові дані
         showToast(`${getStatusName(oldStatus)} → ${getStatusName(status)}`);
     } else {
         // Відкатуємо якщо помилка
         lead.status = oldStatus;
-        render();
         showError('Помилка збереження');
     }
 }
