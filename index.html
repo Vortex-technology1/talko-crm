@@ -782,8 +782,8 @@
         /* Modal */
         .modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;align-items:flex-start;justify-content:center;padding:20px;overflow-y:auto}
         .modal-bg.active{display:flex}
-        .modal{background:var(--w);border-radius:16px;width:100%;max-width:640px;margin:40px 0}
-        .modal-head{padding:16px 20px;border-bottom:1px solid #e5e7eb;display:flex;justify-content:space-between;align-items:center}
+        .modal{background:var(--w);border-radius:16px;width:100%;max-width:640px;margin:40px 0;overflow:visible}
+        .modal-head{padding:16px 20px;border-bottom:1px solid #e5e7eb;display:flex;justify-content:space-between;align-items:center;position:relative;overflow:visible}
         .modal-title{font-size:18px;font-weight:600}
         .modal-close{width:32px;height:32px;border:none;background:var(--gl);border-radius:8px;cursor:pointer;font-size:18px}
         .modal-body{padding:20px;max-height:65vh;overflow-y:auto}
