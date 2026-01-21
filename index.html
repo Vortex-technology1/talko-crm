@@ -8455,72 +8455,77 @@ function toggleStatusDropdown(leadId, btn) {
 }
 
 async function changeLeadStatus(leadId, newStatus) {
-    const l = leads.find(x => x.id === leadId);
-    if(!l) return;
+    const idx = leads.findIndex(x => x.id === leadId);
+    if(idx < 0) return;
     
-    const updatedLead = {...l};
-    const oldStatus = updatedLead.status;
-    updatedLead.status = newStatus;
-    updatedLead.stageDate = new Date().toISOString();
+    const lead = leads[idx]; // Працюємо з оригіналом!
+    const oldStatus = lead.status;
+    
+    // Якщо статус не змінився - виходимо
+    if(oldStatus === newStatus) return;
+    
+    lead.status = newStatus;
+    lead.stageDate = new Date().toISOString();
     
     // Логіка для різних статусів - ЗАВДАННЯ ТА ДАТИ
     switch(newStatus) {
         case 'new':
         case 'contacted':
-            updatedLead.nextDate = today();
-            updatedLead.nextTime = '10:00';
-            updatedLead.nextAction = 'Подзвонити';
+            lead.nextDate = today();
+            lead.nextTime = '10:00';
+            lead.nextAction = 'Подзвонити';
             break;
             
         case 'scheduled':
-            if(!updatedLead.consult) {
+            if(!lead.consult) {
                 const dt = await promptDateTime('Дата консультації:', tomorrow() + 'T14:00');
                 if(dt) {
-                    updatedLead.consult = dt;
-                    updatedLead.nextDate = getDayBefore(dt);
-                    updatedLead.nextTime = '10:00';
-                    updatedLead.nextAction = 'Підтвердити консультацію';
+                    lead.consult = dt;
+                    lead.nextDate = getDayBefore(dt);
+                    lead.nextTime = '10:00';
+                    lead.nextAction = 'Підтвердити консультацію';
                 } else {
-                    return; // Скасовано
+                    lead.status = oldStatus; // Відкатуємо
+                    return;
                 }
             } else {
-                updatedLead.nextDate = getDayBefore(updatedLead.consult);
-                updatedLead.nextTime = '10:00';
-                updatedLead.nextAction = 'Підтвердити консультацію';
+                lead.nextDate = getDayBefore(lead.consult);
+                lead.nextTime = '10:00';
+                lead.nextAction = 'Підтвердити консультацію';
             }
             break;
             
         case 'completed':
-            // Консультація проведена - потрібно написати звіт
-            updatedLead.nextDate = today();
-            updatedLead.nextTime = '10:00';
-            updatedLead.nextAction = 'Написати звіт';
-            updatedLead.calls = 0;
-            updatedLead.sms = 0;
+            lead.nextDate = today();
+            lead.nextTime = '10:00';
+            lead.nextAction = 'Написати звіт';
+            lead.calls = 0;
+            lead.sms = 0;
             break;
             
         case 'report_sent':
-            // Звіт відправлено - чекаємо реакцію
-            updatedLead.nextDate = addDays(today(), 2);
-            updatedLead.nextTime = '10:00';
-            updatedLead.nextAction = 'Дізнатись реакцію на звіт';
+            lead.nextDate = addDays(today(), 2);
+            lead.nextTime = '10:00';
+            lead.nextAction = 'Дізнатись реакцію на звіт';
             break;
             
         case 'repeat':
-            // Повторна консультація
-            if(!updatedLead.consult || new Date(updatedLead.consult) < new Date()) {
+            if(!lead.consult || new Date(lead.consult) < new Date()) {
                 const dt = await promptDateTime('Дата повторної консультації:', tomorrow() + 'T14:00');
                 if(dt) {
-                    updatedLead.consult = dt;
+                    lead.consult = dt;
+                } else {
+                    lead.status = oldStatus;
+                    return;
                 }
             }
-            updatedLead.repeatCount = (updatedLead.repeatCount || 0) + 1;
-            updatedLead.nextDate = getDayBefore(updatedLead.consult);
-            updatedLead.nextTime = '10:00';
-            updatedLead.nextAction = 'Підтвердити консультацію';
-            updatedLead.calls = 0;
-            updatedLead.sms = 0;
-            updatedLead.noshow = 0;
+            lead.repeatCount = (lead.repeatCount || 0) + 1;
+            lead.nextDate = getDayBefore(lead.consult);
+            lead.nextTime = '10:00';
+            lead.nextAction = 'Підтвердити консультацію';
+            lead.calls = 0;
+            lead.sms = 0;
+            lead.noshow = 0;
             break;
             
         case 'deposit':
@@ -8529,28 +8534,29 @@ async function changeLeadStatus(leadId, newStatus) {
                 placeholder: 'Наприклад: 5000'
             });
             if(amt && amt !== null) {
-                updatedLead.finDep = +amt;
-                updatedLead.finDepDate = today();
-                updatedLead.nextDate = addDays(today(), DEPOSIT_REMINDER_DAYS);
-                updatedLead.nextTime = '10:00';
-                updatedLead.nextAction = 'Нагадати про повну оплату';
+                lead.finDep = +amt;
+                lead.finDepDate = today();
+                lead.nextDate = addDays(today(), DEPOSIT_REMINDER_DAYS);
+                lead.nextTime = '10:00';
+                lead.nextAction = 'Нагадати про повну оплату';
             } else {
+                lead.status = oldStatus;
                 return;
             }
             break;
             
         case 'paid':
-            const paidAmt = await promptModal('Повна сума:', updatedLead.finTotal || '', {
+            const paidAmt = await promptModal('Повна сума:', lead.finTotal || '', {
                 type: 'number',
                 placeholder: 'Наприклад: 50000'
             });
             if(paidAmt && paidAmt !== null) {
-                updatedLead.finTotal = +paidAmt;
-                updatedLead.finPaidDate = today();
-                // Закрита угода - немає наступного завдання
-                updatedLead.nextDate = '';
-                updatedLead.nextAction = '';
+                lead.finTotal = +paidAmt;
+                lead.finPaidDate = today();
+                lead.nextDate = '';
+                lead.nextAction = '';
             } else {
+                lead.status = oldStatus;
                 return;
             }
             break;
@@ -8559,12 +8565,15 @@ async function changeLeadStatus(leadId, newStatus) {
             const reason = await promptModal('Причина відмови:', '', {
                 placeholder: 'Наприклад: дорого, немає бюджету...'
             });
-            if(reason === null) return;
-            updatedLead.failReason = reason || '';
-            updatedLead.reactDate = addDays(today(), REACTIVATION_DAYS);
-            updatedLead.nextDate = updatedLead.reactDate;
-            updatedLead.nextTime = '10:00';
-            updatedLead.nextAction = 'Реактивація';
+            if(reason === null) {
+                lead.status = oldStatus;
+                return;
+            }
+            lead.failReason = reason || '';
+            lead.reactDate = addDays(today(), REACTIVATION_DAYS);
+            lead.nextDate = lead.reactDate;
+            lead.nextTime = '10:00';
+            lead.nextAction = 'Реактивація';
             break;
             
         case 'frozen':
@@ -8573,31 +8582,34 @@ async function changeLeadStatus(leadId, newStatus) {
                 min: '1',
                 max: '12'
             });
-            if(months === null) return;
+            if(months === null) {
+                lead.status = oldStatus;
+                return;
+            }
             const m = parseInt(months) || DEFAULT_FREEZE_MONTHS;
-            updatedLead.reactDate = addDays(today(), m * 30);
-            updatedLead.nextDate = updatedLead.reactDate;
-            updatedLead.nextTime = '10:00';
-            updatedLead.nextAction = 'Реактивація';
+            lead.reactDate = addDays(today(), m * 30);
+            lead.nextDate = lead.reactDate;
+            lead.nextTime = '10:00';
+            lead.nextAction = 'Реактивація';
             break;
             
         default:
-            // Кастомні статуси - просто змінюємо статус без додаткової логіки
+            // Кастомні статуси - просто змінюємо статус
             break;
     }
     
-    addLog(updatedLead, 'status', `${getStatusName(oldStatus, updatedLead.funnelId)} → ${getStatusName(newStatus, updatedLead.funnelId)}`);
+    addLog(lead, 'status', `${getStatusName(oldStatus, lead.funnelId)} → ${getStatusName(newStatus, lead.funnelId)}`);
     
-    // Зберігаємо в Firebase напряму (обходимо saveLead який має проблеми з sanitize)
+    // Зберігаємо в Firebase напряму
     try {
-        // Clean undefined values
-        const cleanData = JSON.parse(JSON.stringify(updatedLead, (key, value) => 
+        const cleanData = JSON.parse(JSON.stringify(lead, (key, value) => 
             value === undefined ? null : value
         ));
         
-        await db.collection('organizations').doc(currentOrg.id).collection('leads').doc(updatedLead.id).set(cleanData);
+        await db.collection('organizations').doc(currentOrg.id).collection('leads').doc(lead.id).set(cleanData);
         showToast(`${getStatusName(oldStatus)} → ${getStatusName(newStatus)}`);
     } catch(err) {
+        lead.status = oldStatus; // Відкатуємо при помилці
         showError('Помилка збереження: ' + err.message);
         console.error('Save error:', err);
     }
