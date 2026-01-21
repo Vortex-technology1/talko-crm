@@ -4459,11 +4459,16 @@ async function bulkAssign() {
             const lead = leads.find(l => l.id === leadId);
             if(lead) {
                 lead.assignedTo = assignee;
-                await saveLead(lead);
+                // Зберігаємо напряму в Firebase
+                const cleanData = JSON.parse(JSON.stringify(lead, (key, value) => 
+                    value === undefined ? null : value
+                ));
+                await db.collection('organizations').doc(currentOrg.id).collection('leads').doc(lead.id).set(cleanData);
             }
         }
         showToast(`Призначено ${selectedLeadIds.size} лідів`);
         clearBulkSelection();
+        render();
     } catch(err) {
         showError(err.message);
     } finally {
@@ -4498,11 +4503,16 @@ async function bulkChangeStatus() {
                 lead.status = newStatus;
                 lead.stageDate = today();
                 addLog(lead, 'status', `Масова зміна на: ${statuses[newStatus]?.name || newStatus}`);
-                await saveLead(lead);
+                // Зберігаємо напряму в Firebase
+                const cleanData = JSON.parse(JSON.stringify(lead, (key, value) => 
+                    value === undefined ? null : value
+                ));
+                await db.collection('organizations').doc(currentOrg.id).collection('leads').doc(lead.id).set(cleanData);
             }
         }
         showToast(`Статус змінено для ${selectedLeadIds.size} лідів`);
         clearBulkSelection();
+        render();
     } catch(err) {
         showError(err.message);
     } finally {
@@ -4525,11 +4535,16 @@ async function bulkSetNextDate() {
                 lead.nextDate = result.date;
                 lead.nextTime = result.time;
                 addLog(lead, 'call', `Масове встановлення дати: ${result.date} ${result.time}`);
-                await saveLead(lead);
+                // Зберігаємо напряму в Firebase
+                const cleanData = JSON.parse(JSON.stringify(lead, (key, value) => 
+                    value === undefined ? null : value
+                ));
+                await db.collection('organizations').doc(currentOrg.id).collection('leads').doc(lead.id).set(cleanData);
             }
         }
         showToast(`Дату встановлено для ${selectedLeadIds.size} лідів`);
         clearBulkSelection();
+        render();
     } catch(err) {
         showError(err.message);
     } finally {
@@ -4866,27 +4881,27 @@ async function migrateAndCleanData(options = {}) {
         details: []
     };
     
-    for (const lead of leads) {
+    for (let i = 0; i < leads.length; i++) {
+        const lead = leads[i]; // Працюємо з оригіналом!
         results.checked++;
         const fixes = [];
-        const updatedLead = { ...lead };
         
         // Фікс невалідних дат
         if (fixDates) {
             ['nextDate', 'consult', 'reactDate', 'finDepDate', 'finPaidDate'].forEach(field => {
                 if (lead[field] && !validateDate(lead[field])) {
-                    updatedLead[field] = null;
-                    fixes.push(`${field}: "${lead[field]}" → null`);
+                    lead[field] = null;
+                    fixes.push(`${field}: invalid → null`);
                 }
             });
         }
         
         // Фікс відсутнього статусу
         if (fixStatus && !lead.status) {
-            updatedLead.status = 'new';
-            updatedLead.nextDate = updatedLead.nextDate || today();
-            updatedLead.nextTime = updatedLead.nextTime || '10:00';
-            updatedLead.nextAction = updatedLead.nextAction || 'Подзвонити';
+            lead.status = 'new';
+            lead.nextDate = lead.nextDate || today();
+            lead.nextTime = lead.nextTime || '10:00';
+            lead.nextAction = lead.nextAction || 'Подзвонити';
             fixes.push('status: null → "new"');
         }
         
@@ -4896,7 +4911,10 @@ async function migrateAndCleanData(options = {}) {
             
             if (!dryRun) {
                 try {
-                    await saveLead(updatedLead);
+                    const cleanData = JSON.parse(JSON.stringify(lead, (key, value) => 
+                        value === undefined ? null : value
+                    ));
+                    await db.collection('organizations').doc(currentOrg.id).collection('leads').doc(lead.id).set(cleanData);
                     results.fixed++;
                 } catch (err) {
                     results.errors++;
@@ -4906,6 +4924,10 @@ async function migrateAndCleanData(options = {}) {
                 results.fixed++;
             }
         }
+    }
+    
+    if (!dryRun && results.fixed > 0) {
+        render();
     }
     
     return results;
@@ -5140,14 +5162,29 @@ async function undo() {
                 if (currentLead) {
                     redoStack.push({ action: 'update_lead', data: { ...currentLead } });
                 }
-                await saveLead(item.data);
+                // Знаходимо індекс і оновлюємо оригінал
+                const idx = leads.findIndex(l => l.id === item.data.id);
+                if (idx >= 0) {
+                    Object.assign(leads[idx], item.data);
+                    const cleanData = JSON.parse(JSON.stringify(leads[idx], (key, value) => 
+                        value === undefined ? null : value
+                    ));
+                    await db.collection('organizations').doc(currentOrg.id).collection('leads').doc(item.data.id).set(cleanData);
+                }
                 showSuccess('Скасовано');
+                render();
                 break;
                 
             case 'delete_lead':
-                await saveLead(item.data);
+                // Відновлюємо видаленого ліда
+                leads.push(item.data);
+                const cleanDataDel = JSON.parse(JSON.stringify(item.data, (key, value) => 
+                    value === undefined ? null : value
+                ));
+                await db.collection('organizations').doc(currentOrg.id).collection('leads').doc(item.data.id).set(cleanDataDel);
                 redoStack.push({ action: 'delete_lead', data: item.data });
                 showSuccess('Лід відновлено');
+                render();
                 break;
                 
             case 'status_change':
@@ -5157,8 +5194,13 @@ async function undo() {
                         action: 'status_change', 
                         data: { id: lead.id, oldStatus: lead.status, newStatus: item.data.oldStatus }
                     });
-                    await saveLead({ ...lead, status: item.data.oldStatus });
+                    lead.status = item.data.oldStatus;
+                    const cleanDataStatus = JSON.parse(JSON.stringify(lead, (key, value) => 
+                        value === undefined ? null : value
+                    ));
+                    await db.collection('organizations').doc(currentOrg.id).collection('leads').doc(lead.id).set(cleanDataStatus);
                     showSuccess('Статус повернено');
+                    render();
                 }
                 break;
         }
@@ -5183,14 +5225,23 @@ async function redo() {
                 if (currentLead) {
                     undoStack.push({ action: 'update_lead', data: { ...currentLead } });
                 }
-                await saveLead(item.data);
+                const idx = leads.findIndex(l => l.id === item.data.id);
+                if (idx >= 0) {
+                    Object.assign(leads[idx], item.data);
+                    const cleanData = JSON.parse(JSON.stringify(leads[idx], (key, value) => 
+                        value === undefined ? null : value
+                    ));
+                    await db.collection('organizations').doc(currentOrg.id).collection('leads').doc(item.data.id).set(cleanData);
+                }
                 showSuccess('Повторено');
+                render();
                 break;
                 
             case 'delete_lead':
                 undoStack.push({ action: 'delete_lead', data: item.data });
                 await deleteLead(item.data.id);
                 showSuccess('Видалено знову');
+                render();
                 break;
         }
     } catch (err) {
@@ -5218,12 +5269,20 @@ const AUTO_STATUS_RULES = [
 async function applyAutoStatusRules() {
     let applied = 0;
     
-    for (const lead of leads) {
+    for (let i = 0; i < leads.length; i++) {
+        const lead = leads[i]; // Працюємо з оригіналом!
         for (const rule of AUTO_STATUS_RULES) {
             if (rule.condition(lead)) {
-                const updatedLead = rule.action(lead);
-                addLog(updatedLead, 'auto', rule.message);
-                await saveLead(updatedLead);
+                // Застосовуємо зміни до оригіналу
+                const changes = rule.action(lead);
+                Object.assign(lead, changes);
+                addLog(lead, 'auto', rule.message);
+                
+                // Зберігаємо напряму в Firebase
+                const cleanData = JSON.parse(JSON.stringify(lead, (key, value) => 
+                    value === undefined ? null : value
+                ));
+                await db.collection('organizations').doc(currentOrg.id).collection('leads').doc(lead.id).set(cleanData);
                 applied++;
             }
         }
@@ -5231,6 +5290,7 @@ async function applyAutoStatusRules() {
     
     if (applied > 0) {
         console.log(`Auto-status rules applied to ${applied} leads`);
+        render();
     }
     
     return applied;
@@ -6129,44 +6189,44 @@ function renderTaskRow(t, status) {
 }
 
 async function taskAction(id,a){
-    const l=leads.find(x=>x.id===id);if(!l)return;
-    const updatedLead = {...l}; // clone
+    const idx=leads.findIndex(x=>x.id===id);if(idx<0)return;
+    const lead = leads[idx]; // Працюємо з оригіналом!
     switch(a){
         case'open':openModal(id);return;
         case'schedule':
-            updatedLead.status='scheduled';
-            updatedLead.consult=await promptDateTime('Дата консультації:',tomorrow()+'T14:00');
-            if(!updatedLead.consult) return; // Скасовано
-            updatedLead.noshow=0;
-            updatedLead.nextDate=getDayBefore(updatedLead.consult);
-            updatedLead.nextTime='10:00';
-            updatedLead.nextAction='Підтвердити консультацію';
-            addLog(updatedLead,'status','Консультація призначена на '+fmtDT(updatedLead.consult));
+            lead.status='scheduled';
+            lead.consult=await promptDateTime('Дата консультації:',tomorrow()+'T14:00');
+            if(!lead.consult) return; // Скасовано
+            lead.noshow=0;
+            lead.nextDate=getDayBefore(lead.consult);
+            lead.nextTime='10:00';
+            lead.nextAction='Підтвердити консультацію';
+            addLog(lead,'status','Консультація призначена на '+fmtDT(lead.consult));
             break;
         case'call_later':
-            updatedLead.calls=(updatedLead.calls||0)+1;
-            updatedLead.nextDate=tomorrow();
-            updatedLead.nextTime='10:00';
-            updatedLead.nextAction='Подзвонити';
-            addLog(updatedLead,'call','Не взяв трубку');
+            lead.calls=(lead.calls||0)+1;
+            lead.nextDate=tomorrow();
+            lead.nextTime='10:00';
+            lead.nextAction='Подзвонити';
+            addLog(lead,'call','Не взяв трубку');
             break;
         case'call':
-            updatedLead.calls=(updatedLead.calls||0)+1;
-            addLog(updatedLead,'call','Ще спроба');
+            lead.calls=(lead.calls||0)+1;
+            addLog(lead,'call','Ще спроба');
             break;
         case'fail':
-            updatedLead.status='failed';
-            updatedLead.failReason = await promptModal('Причина відмови:', '', {
+            lead.status='failed';
+            lead.failReason = await promptModal('Причина відмови:', '', {
                 placeholder: 'Наприклад: дорого, немає бюджету, конкурент...'
             });
-            if(updatedLead.failReason === null) return; // Скасовано
-            updatedLead.reactDate=addDays(today(), REACTIVATION_DAYS);
-            updatedLead.nextDate=updatedLead.reactDate;
-            updatedLead.nextAction='Реактивація';
-            addLog(updatedLead,'status','Відмова: '+(updatedLead.failReason||'не вказано')+'. Реактивація через 3 міс.');
+            if(lead.failReason === null) return; // Скасовано
+            lead.reactDate=addDays(today(), REACTIVATION_DAYS);
+            lead.nextDate=lead.reactDate;
+            lead.nextAction='Реактивація';
+            addLog(lead,'status','Відмова: '+(lead.failReason||'не вказано')+'. Реактивація через 3 міс.');
             break;
         case'freeze':
-            updatedLead.status='frozen';
+            lead.status='frozen';
             const freezeMonths = await promptModal('Через скільки місяців повернутися?', '3', {
                 type: 'number',
                 min: '1',
@@ -6175,209 +6235,213 @@ async function taskAction(id,a){
             });
             if(freezeMonths === null) return; // Скасовано
             const months = parseInt(freezeMonths) || DEFAULT_FREEZE_MONTHS;
-            updatedLead.reactDate=addDays(today(), months * 30);
-            updatedLead.nextDate=updatedLead.reactDate;
-            updatedLead.nextAction='Реактивація';
-            addLog(updatedLead,'status','Заморожено на '+months+' міс.');
+            lead.reactDate=addDays(today(), months * 30);
+            lead.nextDate=lead.reactDate;
+            lead.nextAction='Реактивація';
+            addLog(lead,'status','Заморожено на '+months+' міс.');
             break;
         case'confirm':
-            updatedLead.confirmedToday = false;
+            lead.confirmedToday = false;
             // Якщо консультація сьогодні чи завтра - підтвердили і чекаємо
-            if(updatedLead.consult){
-                const cd = updatedLead.consult.split('T')[0];
-                updatedLead.nextDate = cd;
-                updatedLead.nextTime = updatedLead.consult.split('T')[1] || '10:00';
-                updatedLead.nextAction = 'Провести консультацію';
+            if(lead.consult){
+                const cd = lead.consult.split('T')[0];
+                lead.nextDate = cd;
+                lead.nextTime = lead.consult.split('T')[1] || '10:00';
+                lead.nextAction = 'Провести консультацію';
             }
-            addLog(updatedLead,'call','Підтвердив консультацію');
+            addLog(lead,'call','Підтвердив консультацію');
             break;
         case'confirm_today':
-            updatedLead.confirmedToday = true;
-            updatedLead.confirmedDate = today(); // Зберігаємо дату підтвердження
-            updatedLead.nextDate = today();
-            if(updatedLead.consult){
-                updatedLead.nextTime = updatedLead.consult.split('T')[1] || '10:00';
+            lead.confirmedToday = true;
+            lead.confirmedDate = today(); // Зберігаємо дату підтвердження
+            lead.nextDate = today();
+            if(lead.consult){
+                lead.nextTime = lead.consult.split('T')[1] || '10:00';
             }
-            updatedLead.nextAction = 'Провести консультацію';
-            addLog(updatedLead,'call','Підтвердив на сьогодні');
+            lead.nextAction = 'Провести консультацію';
+            addLog(lead,'call','Підтвердив на сьогодні');
             break;
         case'confirm_sms':
-            updatedLead.sms=(updatedLead.sms||0)+1;
-            addLog(updatedLead,'sms','SMS підтвердження');
+            lead.sms=(lead.sms||0)+1;
+            addLog(lead,'sms','SMS підтвердження');
             break;
         case'complete':
-            updatedLead.status='completed';
-            updatedLead.calls=0;
-            updatedLead.sms=0;
-            updatedLead.nextDate=today();
-            updatedLead.nextTime='10:00';
-            updatedLead.nextAction='Написати звіт';
-            addLog(updatedLead,'status','Консультація проведена');
+            lead.status='completed';
+            lead.calls=0;
+            lead.sms=0;
+            lead.nextDate=today();
+            lead.nextTime='10:00';
+            lead.nextAction='Написати звіт';
+            addLog(lead,'status','Консультація проведена');
             break;
         case'noshow':
-            updatedLead.noshow=(updatedLead.noshow||0)+1;
-            const noShowDelay = NOSHOW_DELAYS[Math.min(updatedLead.noshow - 1, NOSHOW_DELAYS.length - 1)];
-            updatedLead.nextDate = addDays(today(), noShowDelay);
-            updatedLead.nextTime = '10:00';
-            updatedLead.nextAction = 'Перепризначити консультацію';
-            addLog(updatedLead,'status','Не прийшов ('+updatedLead.noshow+' раз). Наступна спроба через '+noShowDelay+' днів');
+            lead.noshow=(lead.noshow||0)+1;
+            const noShowDelay = NOSHOW_DELAYS[Math.min(lead.noshow - 1, NOSHOW_DELAYS.length - 1)];
+            lead.nextDate = addDays(today(), noShowDelay);
+            lead.nextTime = '10:00';
+            lead.nextAction = 'Перепризначити консультацію';
+            addLog(lead,'status','Не прийшов ('+lead.noshow+' раз). Наступна спроба через '+noShowDelay+' днів');
             break;
         case'reschedule':
-            updatedLead.consult=await promptDateTime('Нова дата консультації:',tomorrow()+'T14:00');
-            if(!updatedLead.consult) return; // Скасовано
-            updatedLead.noshow=0;
-            updatedLead.nextDate=updatedLead.consult?getDayBefore(updatedLead.consult):tomorrow();
-            updatedLead.nextTime='10:00';
-            updatedLead.nextAction='Підтвердити консультацію';
-            addLog(updatedLead,'status','Перенесено на '+fmtDT(updatedLead.consult));
+            lead.consult=await promptDateTime('Нова дата консультації:',tomorrow()+'T14:00');
+            if(!lead.consult) return; // Скасовано
+            lead.noshow=0;
+            lead.nextDate=lead.consult?getDayBefore(lead.consult):tomorrow();
+            lead.nextTime='10:00';
+            lead.nextAction='Підтвердити консультацію';
+            addLog(lead,'status','Перенесено на '+fmtDT(lead.consult));
             break;
         case'send_report':
-            updatedLead.status='report_sent';
-            updatedLead.reportDate=today();
-            updatedLead.calls=0;
-            updatedLead.sms=0;
-            updatedLead.nextDate=addDays(today(),2);
-            updatedLead.nextTime='10:00';
-            updatedLead.nextAction='Дізнатись реакцію на звіт';
-            addLog(updatedLead,'status','Звіт відправлено');
+            lead.status='report_sent';
+            lead.reportDate=today();
+            lead.calls=0;
+            lead.sms=0;
+            lead.nextDate=addDays(today(),2);
+            lead.nextTime='10:00';
+            lead.nextAction='Дізнатись реакцію на звіт';
+            addLog(lead,'status','Звіт відправлено');
             break;
         case'followup':
-            updatedLead.calls=(updatedLead.calls||0)+1;
-            updatedLead.nextDate=addDays(today(),2);
-            updatedLead.nextTime='10:00';
-            updatedLead.nextAction='Дожати рішення';
-            addLog(updatedLead,'call','Думає, передзвоню');
+            lead.calls=(lead.calls||0)+1;
+            lead.nextDate=addDays(today(),2);
+            lead.nextTime='10:00';
+            lead.nextAction='Дожати рішення';
+            addLog(lead,'call','Думає, передзвоню');
             break;
         case'repeat':
-            updatedLead.status='repeat';
-            updatedLead.repeatCount=(updatedLead.repeatCount||0)+1;
-            updatedLead.calls=0;
-            updatedLead.sms=0;
-            updatedLead.noshow=0;
-            updatedLead.consult=await promptDateTime('Дата повторної консультації:',tomorrow()+'T14:00');
-            if(!updatedLead.consult) return; // Скасовано
-            updatedLead.nextDate=updatedLead.consult?getDayBefore(updatedLead.consult):tomorrow();
-            updatedLead.nextTime='10:00';
-            updatedLead.nextAction='Підтвердити консультацію';
-            addLog(updatedLead,'status','Повторна консультація #'+(updatedLead.repeatCount));
+            lead.status='repeat';
+            lead.repeatCount=(lead.repeatCount||0)+1;
+            lead.calls=0;
+            lead.sms=0;
+            lead.noshow=0;
+            lead.consult=await promptDateTime('Дата повторної консультації:',tomorrow()+'T14:00');
+            if(!lead.consult) return; // Скасовано
+            lead.nextDate=lead.consult?getDayBefore(lead.consult):tomorrow();
+            lead.nextTime='10:00';
+            lead.nextAction='Підтвердити консультацію';
+            addLog(lead,'status','Повторна консультація #'+(lead.repeatCount));
             break;
         case'deposit':
             const amt = await promptModal('Сума завдатку:', '', {type: 'number', placeholder: 'Наприклад: 5000'});
             if(amt && amt !== null){
-                updatedLead.status='deposit';
-                updatedLead.finDep=+amt;
-                updatedLead.finDepDate=today();
-                updatedLead.nextDate=addDays(today(), DEPOSIT_REMINDER_DAYS);
-                updatedLead.nextTime='10:00';
-                updatedLead.nextAction='Нагадати про повну оплату';
-                addLog(updatedLead,'status','Завдаток '+amt);
+                lead.status='deposit';
+                lead.finDep=+amt;
+                lead.finDepDate=today();
+                lead.nextDate=addDays(today(), DEPOSIT_REMINDER_DAYS);
+                lead.nextTime='10:00';
+                lead.nextAction='Нагадати про повну оплату';
+                addLog(lead,'status','Завдаток '+amt);
             }else return;
             break;
         case'paid':
-            const p = await promptModal('Повна сума:', updatedLead.finTotal || '', {type: 'number', placeholder: 'Наприклад: 50000'});
+            const p = await promptModal('Повна сума:', lead.finTotal || '', {type: 'number', placeholder: 'Наприклад: 50000'});
             if(p && p !== null){
-                updatedLead.status='paid';
-                updatedLead.finTotal=+p;
-                updatedLead.finPaidDate=today();
-                updatedLead.nextDate=null;
-                updatedLead.nextAction=null;
-                addLog(updatedLead,'status','Оплачено '+p);
+                lead.status='paid';
+                lead.finTotal=+p;
+                lead.finPaidDate=today();
+                lead.nextDate=null;
+                lead.nextAction=null;
+                addLog(lead,'status','Оплачено '+p);
             }else return;
             break;
         case'dep_later':
-            updatedLead.nextDate=addDays(today(), DEPOSIT_REMINDER_DAYS);
-            updatedLead.nextTime='10:00';
-            addLog(updatedLead,'call','Нагадав, +тиждень');
+            lead.nextDate=addDays(today(), DEPOSIT_REMINDER_DAYS);
+            lead.nextTime='10:00';
+            addLog(lead,'call','Нагадав, +тиждень');
             break;
         case'react_ok':
-            updatedLead.status='new';
-            updatedLead.calls=0;
-            updatedLead.sms=0;
-            updatedLead.noshow=0;
-            updatedLead.nextDate=today();
-            updatedLead.nextTime='10:00';
-            updatedLead.nextAction='Подзвонити';
-            addLog(updatedLead,'status','Реактивація — знову в роботі!');
+            lead.status='new';
+            lead.calls=0;
+            lead.sms=0;
+            lead.noshow=0;
+            lead.nextDate=today();
+            lead.nextTime='10:00';
+            lead.nextAction='Подзвонити';
+            addLog(lead,'status','Реактивація — знову в роботі!');
             break;
         case'react_later':
-            updatedLead.reactDate=addDays(today(), REACTIVATION_DAYS);
-            updatedLead.nextDate=updatedLead.reactDate;
-            addLog(updatedLead,'call','Реактивація +3 міс');
+            lead.reactDate=addDays(today(), REACTIVATION_DAYS);
+            lead.nextDate=lead.reactDate;
+            addLog(lead,'call','Реактивація +3 міс');
             break;
         case'react_year':
-            updatedLead.reactDate=addDays(today(),365);
-            updatedLead.nextDate=updatedLead.reactDate;
-            addLog(updatedLead,'call','Реактивація +1 рік');
+            lead.reactDate=addDays(today(),365);
+            lead.nextDate=lead.reactDate;
+            addLog(lead,'call','Реактивація +1 рік');
             break;
         
         // ========== НОВІ ACTIONS ==========
         case'do_now':
-            // Зробити зараз замість завтра
-            updatedLead.nextDate=today();
-            updatedLead.nextTime=new Date().getHours().toString().padStart(2,'0')+':00';
-            addLog(updatedLead,'call','Перенесено на зараз');
+            lead.nextDate=today();
+            lead.nextTime=new Date().getHours().toString().padStart(2,'0')+':00';
+            addLog(lead,'call','Перенесено на зараз');
             break;
         case'next_done':
-            // Поточна дія виконана, встановити наступну
-            const nextAction = await promptModal('Наступна дія:', updatedLead.nextAction || 'Подзвонити', {
+            const nextAction = await promptModal('Наступна дія:', lead.nextAction || 'Подзвонити', {
                 placeholder: 'Що зробити далі?'
             });
             if(nextAction === null) return;
             const nextDT = await promptDateTime('Коли?', tomorrow() + 'T10:00');
             if(!nextDT) return;
-            addLog(updatedLead,'call','Виконано: '+(updatedLead.nextAction||'дія'));
-            updatedLead.nextAction = nextAction;
-            updatedLead.nextDate = getDateOnly(nextDT);
-            updatedLead.nextTime = getTimeOnly(nextDT) || '10:00';
+            addLog(lead,'call','Виконано: '+(lead.nextAction||'дія'));
+            lead.nextAction = nextAction;
+            lead.nextDate = getDateOnly(nextDT);
+            lead.nextTime = getTimeOnly(nextDT) || '10:00';
             break;
         case'postpone_1d':
-            // Відкласти на 1 день
-            updatedLead.nextDate = tomorrow();
-            addLog(updatedLead,'call','Відкладено на завтра');
+            lead.nextDate = tomorrow();
+            addLog(lead,'call','Відкладено на завтра');
             break;
         case'send_sms':
-            // Надіслати SMS новому ліду
-            updatedLead.sms=(updatedLead.sms||0)+1;
-            updatedLead.nextDate=tomorrow();
-            updatedLead.nextTime='10:00';
-            updatedLead.nextAction='Подзвонити після SMS';
-            addLog(updatedLead,'sms','SMS надіслано');
+            lead.sms=(lead.sms||0)+1;
+            lead.nextDate=tomorrow();
+            lead.nextTime='10:00';
+            lead.nextAction='Подзвонити після SMS';
+            addLog(lead,'sms','SMS надіслано');
             break;
         case'send_sms_followup':
-            // SMS для дожиму
-            updatedLead.sms=(updatedLead.sms||0)+1;
-            updatedLead.nextDate=addDays(today(),2);
-            updatedLead.nextTime='10:00';
-            updatedLead.nextAction='Дожати після SMS';
-            addLog(updatedLead,'sms','SMS-дожим');
+            lead.sms=(lead.sms||0)+1;
+            lead.nextDate=addDays(today(),2);
+            lead.nextTime='10:00';
+            lead.nextAction='Дожати після SMS';
+            addLog(lead,'sms','SMS-дожим');
             break;
         case'refund':
-            // Повернення завдатку
-            updatedLead.status='failed';
-            updatedLead.failReason='Повернення завдатку';
-            updatedLead.reactDate=addDays(today(), 180); // Через півроку
-            updatedLead.nextDate=updatedLead.reactDate;
-            updatedLead.nextAction='Реактивація';
-            addLog(updatedLead,'status','Повернення завдатку');
+            lead.status='failed';
+            lead.failReason='Повернення завдатку';
+            lead.reactDate=addDays(today(), 180);
+            lead.nextDate=lead.reactDate;
+            lead.nextAction='Реактивація';
+            addLog(lead,'status','Повернення завдатку');
             break;
         case'delete_lead':
-            // Видалити ліда (з підтвердженням)
             if(await confirmModal('Видалити цього ліда назавжди?')){
                 await deleteLead(id);
-                return; // Не зберігаємо, вже видалено
+                render();
+                return;
             }
             return;
     }
-    saveLead(updatedLead);
+    
+    // Зберігаємо напряму в Firebase
+    const cleanData = JSON.parse(JSON.stringify(lead, (key, value) => 
+        value === undefined ? null : value
+    ));
+    db.collection('organizations').doc(currentOrg.id).collection('leads').doc(lead.id).set(cleanData)
+        .catch(err => showError('Помилка збереження: ' + err.message));
+    
+    render();
 }
 
 // Quick actions from task list
 async function quickComplete(id) {
-    const l = leads.find(x => x.id === id);
-    if(!l) return;
+    const idx = leads.findIndex(x => x.id === id);
+    if(idx < 0) return;
+    
+    const lead = leads[idx]; // Працюємо з оригіналом!
     
     // Показуємо швидкий діалог для наступної дії
-    const nextAction = await promptModal('Що далі? (наступна дія)', l.nextAction || 'Зателефонувати', {
+    const nextAction = await promptModal('Що далі? (наступна дія)', lead.nextAction || 'Зателефонувати', {
         placeholder: 'Наприклад: зателефонувати, надіслати КП...'
     });
     if(nextAction === null) return;
@@ -6387,29 +6451,45 @@ async function quickComplete(id) {
     
     const [date, time] = nextDate.split('T');
     
-    const updatedLead = {...l};
-    updatedLead.calls = (updatedLead.calls || 0) + 1;
-    updatedLead.nextAction = nextAction;
-    updatedLead.nextDate = date;
-    updatedLead.nextTime = time || '10:00';
-    addLog(updatedLead, 'call', 'Виконано: ' + (l.nextAction || 'дзвінок'));
-    saveLead(updatedLead);
+    lead.calls = (lead.calls || 0) + 1;
+    lead.nextAction = nextAction;
+    lead.nextDate = date;
+    lead.nextTime = time || '10:00';
+    addLog(lead, 'call', 'Виконано: ' + (lead.nextAction || 'дзвінок'));
+    
+    // Зберігаємо напряму в Firebase
+    const cleanData = JSON.parse(JSON.stringify(lead, (key, value) => 
+        value === undefined ? null : value
+    ));
+    db.collection('organizations').doc(currentOrg.id).collection('leads').doc(lead.id).set(cleanData)
+        .catch(err => showError('Помилка збереження: ' + err.message));
+    
+    render();
 }
 
 async function quickReschedule(id) {
-    const l = leads.find(x => x.id === id);
-    if(!l) return;
+    const idx = leads.findIndex(x => x.id === id);
+    if(idx < 0) return;
     
-    const nextDateTime = await promptDateTime('Перенести на:', tomorrow() + 'T' + (l.nextTime || '10:00'));
+    const lead = leads[idx]; // Працюємо з оригіналом!
+    
+    const nextDateTime = await promptDateTime('Перенести на:', tomorrow() + 'T' + (lead.nextTime || '10:00'));
     if(!nextDateTime) return;
     
     const [nextDate, nextTime] = nextDateTime.split('T');
     
-    const updatedLead = {...l};
-    updatedLead.nextDate = nextDate;
-    updatedLead.nextTime = nextTime || '10:00';
-    addLog(updatedLead, 'status', 'Перенесено на ' + nextDate + ' ' + nextTime);
-    saveLead(updatedLead);
+    lead.nextDate = nextDate;
+    lead.nextTime = nextTime || '10:00';
+    addLog(lead, 'status', 'Перенесено на ' + nextDate + ' ' + nextTime);
+    
+    // Зберігаємо напряму в Firebase
+    const cleanData = JSON.parse(JSON.stringify(lead, (key, value) => 
+        value === undefined ? null : value
+    ));
+    db.collection('organizations').doc(currentOrg.id).collection('leads').doc(lead.id).set(cleanData)
+        .catch(err => showError('Помилка збереження: ' + err.message));
+    
+    render();
 }
 
 function openAIPanel(id) {
@@ -6662,57 +6742,64 @@ function touchEnd(e) {
 }
 
 async function handleTouchDrop(leadId, status) {
-    const l = leads.find(x => x.id === leadId);
-    if(!l) {
+    const idx = leads.findIndex(x => x.id === leadId);
+    if(idx < 0) {
         showWarning('Лід не знайдено');
         return;
     }
     
-    if(l.status === status) {
+    const lead = leads[idx]; // Працюємо з оригіналом!
+    
+    if(lead.status === status) {
         return; // Статус не змінився
     }
     
-    // Використовуємо ту ж логіку що й dDrop
-    const updatedLead = {...l};
-    
     // Валідація
-    if(status === 'paid' && !updatedLead.finTotal) {
+    if(status === 'paid' && !lead.finTotal) {
         showWarning('Вкажіть суму оплати!');
-        openModal(updatedLead.id);
+        openModal(lead.id);
         return;
     }
     
-    if(status === 'deposit' && !updatedLead.finDep) {
+    if(status === 'deposit' && !lead.finDep) {
         const a = await promptModal('Сума завдатку:', '', {type: 'number', placeholder: 'Наприклад: 5000'});
         if(!a) { showInfo('Переміщення скасовано'); return; }
-        updatedLead.finDep = +a;
-        updatedLead.finDepDate = today();
+        lead.finDep = +a;
+        lead.finDepDate = today();
     }
     
-    if(status === 'scheduled' && !updatedLead.consult) {
+    if(status === 'scheduled' && !lead.consult) {
         const dt = await promptDateTime('Оберіть дату та час консультації');
         if(!dt) { showInfo('Переміщення скасовано'); return; }
-        updatedLead.consult = dt;
-        updatedLead.noshow = 0;
+        lead.consult = dt;
+        lead.noshow = 0;
     }
     
-    if(status === 'failed' && !updatedLead.failReason) {
+    if(status === 'failed' && !lead.failReason) {
         const reason = await promptModal('Причина відмови:', '', {placeholder: 'Наприклад: дорого, не актуально'});
         if(!reason) { showInfo('Переміщення скасовано'); return; }
-        updatedLead.failReason = reason;
-        updatedLead.reactDate = addDays(today(), REACTIVATION_DAYS);
+        lead.failReason = reason;
+        lead.reactDate = addDays(today(), REACTIVATION_DAYS);
     }
     
-    const old = updatedLead.status;
-    updatedLead.status = status;
-    updatedLead.stageDate = new Date().toISOString();
+    const old = lead.status;
+    lead.status = status;
+    lead.stageDate = new Date().toISOString();
     
-    if(status === 'completed') { updatedLead.calls = 0; updatedLead.sms = 0; }
-    if(status === 'report_sent') { updatedLead.reportDate = today(); updatedLead.calls = 0; updatedLead.sms = 0; updatedLead.nextDate = tomorrow(); }
+    if(status === 'completed') { lead.calls = 0; lead.sms = 0; }
+    if(status === 'report_sent') { lead.reportDate = today(); lead.calls = 0; lead.sms = 0; lead.nextDate = tomorrow(); }
     
-    addLog(updatedLead, 'status', getStatusName(old, updatedLead.funnelId) + ' → ' + getStatusName(status, updatedLead.funnelId));
-    saveLead(updatedLead);
+    addLog(lead, 'status', getStatusName(old, lead.funnelId) + ' → ' + getStatusName(status, lead.funnelId));
+    
+    // Зберігаємо напряму в Firebase
+    const cleanData = JSON.parse(JSON.stringify(lead, (key, value) => 
+        value === undefined ? null : value
+    ));
+    db.collection('organizations').doc(currentOrg.id).collection('leads').doc(lead.id).set(cleanData)
+        .catch(err => showError('Помилка збереження: ' + err.message));
+    
     showToast('Статус змінено');
+    render();
 }
 
 function dEnd(e) {
@@ -7893,11 +7980,20 @@ function addComm(){
     const type=document.getElementById('comm-type').value;
     const text=document.getElementById('comm-text').value;
     if(!text.trim())return;
-    const l=leads.find(x=>x.id===editing);if(!l)return;
+    const idx=leads.findIndex(x=>x.id===editing);if(idx<0)return;
+    const l=leads[idx]; // Працюємо з оригіналом!
     addLog(l,type,text);
     if(type==='call'){l.calls=(l.calls||0)+1;document.getElementById('f-calls').value=l.calls;}
     if(type==='sms'){l.sms=(l.sms||0)+1;document.getElementById('f-sms').value=l.sms;}
-    saveLead(l);renderCommLog(l);
+    
+    // Зберігаємо напряму в Firebase
+    const cleanData = JSON.parse(JSON.stringify(l, (key, value) => 
+        value === undefined ? null : value
+    ));
+    db.collection('organizations').doc(currentOrg.id).collection('leads').doc(l.id).set(cleanData)
+        .catch(err => showError('Помилка збереження: ' + err.message));
+    
+    renderCommLog(l);
     document.getElementById('comm-text').value='';
 }
 function addLog(l,type,text){if(!l.log)l.log=[];l.log.push({type,text,date:new Date().toISOString()});}
@@ -8011,10 +8107,13 @@ function importXLS(e){
                     stageDate:new Date().toISOString(),
                     log:[]
                 };
-                saveLead(newLead); // Firebase save
+                // Зберігаємо напряму в Firebase
+                leads.push(newLead);
+                db.collection('organizations').doc(currentOrg.id).collection('leads').doc(newLead.id).set(newLead);
                 n++;
             }
             showToast('Імпортовано: '+n+(skip?' (пропущено: '+skip+')':''));
+            render();
         }catch(err){console.error(err);showError(err.message);}
     };
     reader.readAsArrayBuffer(file);
@@ -8038,9 +8137,11 @@ async function loadDemo(){
         {id:'d5',tg:'@natalia_pharm',phone:'+380675678901',biz:'Аптеки-12',source:'ref',status:'deposit',finDep:15000,finDepCur:'UAH',finDepDate:addDays(today(),-10),finTotal:45000,finTotalCur:'UAH',nextDate:addDays(today(),-3),created:addDays(today(),-20),stageDate:addDays(today(),-10),log:[{type:'status',text:'Завдаток 15000',date:addDays(today(),-10)}]}
     ];
     for(const lead of demoLeads){
-        await saveLead(lead);
+        leads.push(lead);
+        await db.collection('organizations').doc(currentOrg.id).collection('leads').doc(lead.id).set(lead);
     }
     showToast('Демо-дані додано!');
+    render();
 }
 
 function toggleHelp(){document.getElementById('help').classList.toggle('active');}
@@ -8876,25 +8977,32 @@ function closeQuickPanel() {
 }
 
 function confirmConsultation() {
-    const l = leads.find(x => x.id === quickLeadId);
-    if(!l) return;
+    const idx = leads.findIndex(x => x.id === quickLeadId);
+    if(idx < 0) return;
     
-    const updatedLead = {...l};
-    updatedLead.confirmedToday = true;
-    updatedLead.calls = (updatedLead.calls || 0) + 1;
+    const lead = leads[idx]; // Працюємо з оригіналом!
+    lead.confirmedToday = true;
+    lead.calls = (lead.calls || 0) + 1;
     
     // Встановлюємо наступне завдання на день консультації
-    if(updatedLead.consult) {
-        const consultDate = updatedLead.consult.split('T')[0];
-        updatedLead.nextDate = consultDate;
-        updatedLead.nextTime = updatedLead.consult.split('T')[1] || '10:00';
-        updatedLead.nextAction = 'Провести консультацію';
+    if(lead.consult) {
+        const consultDate = lead.consult.split('T')[0];
+        lead.nextDate = consultDate;
+        lead.nextTime = lead.consult.split('T')[1] || '10:00';
+        lead.nextAction = 'Провести консультацію';
     }
     
-    addLog(updatedLead, 'call', 'Консультація підтверджена');
+    addLog(lead, 'call', 'Консультація підтверджена');
     
-    saveLead(updatedLead);
+    // Зберігаємо напряму в Firebase
+    const cleanData = JSON.parse(JSON.stringify(lead, (key, value) => 
+        value === undefined ? null : value
+    ));
+    db.collection('organizations').doc(currentOrg.id).collection('leads').doc(lead.id).set(cleanData)
+        .catch(err => showError('Помилка збереження: ' + err.message));
+    
     closeQuickPanel();
+    render();
 }
 
 function setQuickOutcome(outcome) {
@@ -9036,83 +9144,100 @@ function setQuickAction(action) {
 }
 
 async function setQuickFinal(finalAction) {
-    const l = leads.find(x => x.id === quickLeadId);
-    if(!l) return;
+    const idx = leads.findIndex(x => x.id === quickLeadId);
+    if(idx < 0) return;
     
-    const updatedLead = {...l};
+    const lead = leads[idx]; // Працюємо з оригіналом!
     
     if(finalAction === 'scheduled') {
         const dt = await promptDateTime('Дата і час консультації:', tomorrow() + 'T14:00');
         if(!dt) return;
-        updatedLead.status = 'scheduled';
-        updatedLead.consult = dt;
-        updatedLead.noshow = 0;
-        updatedLead.nextDate = getDayBefore(dt);
-        updatedLead.nextTime = '10:00';
-        updatedLead.nextAction = 'Підтвердити консультацію';
-        addLog(updatedLead, 'status', 'Консультація призначена на ' + fmtDT(dt));
+        lead.status = 'scheduled';
+        lead.consult = dt;
+        lead.noshow = 0;
+        lead.nextDate = getDayBefore(dt);
+        lead.nextTime = '10:00';
+        lead.nextAction = 'Підтвердити консультацію';
+        addLog(lead, 'status', 'Консультація призначена на ' + fmtDT(dt));
     } else if(finalAction === 'completed') {
-        updatedLead.status = 'completed';
-        updatedLead.calls = 0;
-        updatedLead.sms = 0;
-        updatedLead.nextDate = today();
-        updatedLead.nextTime = '10:00';
-        updatedLead.nextAction = 'Написати звіт';
-        addLog(updatedLead, 'status', 'Консультація проведена');
+        lead.status = 'completed';
+        lead.calls = 0;
+        lead.sms = 0;
+        lead.nextDate = today();
+        lead.nextTime = '10:00';
+        lead.nextAction = 'Написати звіт';
+        addLog(lead, 'status', 'Консультація проведена');
     } else if(finalAction === 'failed') {
         const reason = await promptModal('Причина відмови:', '', {
             placeholder: 'Наприклад: дорого, немає бюджету...'
         });
         if(reason === null) return;
-        updatedLead.status = 'failed';
-        updatedLead.failReason = reason || '';
-        updatedLead.reactDate = addDays(today(), REACTIVATION_DAYS);
-        addLog(updatedLead, 'status', 'Відмова: ' + (reason || 'не вказано'));
+        lead.status = 'failed';
+        lead.failReason = reason || '';
+        lead.reactDate = addDays(today(), REACTIVATION_DAYS);
+        addLog(lead, 'status', 'Відмова: ' + (reason || 'не вказано'));
     }
     
-    saveLead(updatedLead);
+    // Зберігаємо напряму в Firebase
+    try {
+        const cleanData = JSON.parse(JSON.stringify(lead, (key, value) => 
+            value === undefined ? null : value
+        ));
+        await db.collection('organizations').doc(currentOrg.id).collection('leads').doc(lead.id).set(cleanData);
+    } catch(err) {
+        showError('Помилка збереження: ' + err.message);
+    }
+    
     closeQuickPanel();
+    render();
 }
 
 function confirmQuickAction() {
-    const l = leads.find(x => x.id === quickLeadId);
-    if(!l) return;
+    const idx = leads.findIndex(x => x.id === quickLeadId);
+    if(idx < 0) return;
     
-    const updatedLead = {...l};
+    const lead = leads[idx]; // Працюємо з оригіналом!
     const comment = document.getElementById('quick-comment')?.value.trim() || '';
     const note = document.getElementById('quick-note')?.value.trim() || '';
     const combinedNote = comment || note;
     
     // Calculate next date/time
     const nextDateTime = calculateNextDateTime(quickState.time);
-    updatedLead.nextDate = nextDateTime.date;
-    updatedLead.nextTime = nextDateTime.time;
-    updatedLead.nextAction = quickState.action || 'Подзвонити';
+    lead.nextDate = nextDateTime.date;
+    lead.nextTime = nextDateTime.time;
+    lead.nextAction = quickState.action || 'Подзвонити';
     
     // Update counters based on outcome
     if(quickState.outcome === 'no_answer') {
-        updatedLead.calls = (updatedLead.calls || 0) + 1;
-        addLog(updatedLead, 'call', 'Не взяв трубку' + (combinedNote ? ': ' + combinedNote : ''));
+        lead.calls = (lead.calls || 0) + 1;
+        addLog(lead, 'call', 'Не взяв трубку' + (combinedNote ? ': ' + combinedNote : ''));
     } else if(quickState.outcome === 'sms') {
-        updatedLead.sms = (updatedLead.sms || 0) + 1;
-        addLog(updatedLead, 'sms', 'SMS надіслано' + (combinedNote ? ': ' + combinedNote : ''));
+        lead.sms = (lead.sms || 0) + 1;
+        addLog(lead, 'sms', 'SMS надіслано' + (combinedNote ? ': ' + combinedNote : ''));
     } else if(quickState.outcome === 'callback') {
-        addLog(updatedLead, 'call', 'Чекаю дзвінок' + (combinedNote ? ': ' + combinedNote : ''));
+        addLog(lead, 'call', 'Чекаю дзвінок' + (combinedNote ? ': ' + combinedNote : ''));
     } else if(quickState.outcome === 'answered') {
-        updatedLead.calls = (updatedLead.calls || 0) + 1;
+        lead.calls = (lead.calls || 0) + 1;
         const logText = combinedNote || quickState.action || 'Розмова';
-        addLog(updatedLead, 'call', logText);
+        addLog(lead, 'call', logText);
     }
     
     // Save comment to notes if it's meaningful
     if(combinedNote && combinedNote.length > 10) {
         const dateStr = new Date().toLocaleDateString('uk-UA');
-        const existingNotes = updatedLead.notes || '';
-        updatedLead.notes = (existingNotes + '\n[' + dateStr + '] ' + combinedNote).trim();
+        const existingNotes = lead.notes || '';
+        lead.notes = (existingNotes + '\n[' + dateStr + '] ' + combinedNote).trim();
     }
     
-    saveLead(updatedLead);
+    // Зберігаємо напряму в Firebase
+    const cleanData = JSON.parse(JSON.stringify(lead, (key, value) => 
+        value === undefined ? null : value
+    ));
+    db.collection('organizations').doc(currentOrg.id).collection('leads').doc(lead.id).set(cleanData)
+        .catch(err => showError('Помилка збереження: ' + err.message));
+    
     closeQuickPanel();
+    render();
 }
 
 function calculateNextDateTime(timeCode) {
