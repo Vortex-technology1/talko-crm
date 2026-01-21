@@ -8405,10 +8405,14 @@ async function selectStatus(newStatus) {
         return;
     }
     
+    const leadId = statusPickerLeadId; // Зберігаємо перед закриттям
     closeStatusPicker();
     
     // Використовуємо існуючу логіку changeLeadStatus
-    await changeLeadStatus(statusPickerLeadId, newStatus);
+    await changeLeadStatus(leadId, newStatus);
+    
+    // Оновлюємо UI
+    render();
 }
 
 function toggleStatusDropdown(leadId, btn) {
@@ -8619,6 +8623,9 @@ async function changeLeadStatus(leadId, newStatus) {
         activeDropdown.classList.remove('active');
         activeDropdown = null;
     }
+    
+    // Оновлюємо UI
+    render();
 }
 
 // Закрити dropdown при кліку поза ним
