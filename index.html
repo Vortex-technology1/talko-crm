@@ -4686,10 +4686,13 @@ function sanitizeLead(lead) {
     sanitized.finDep = lead.finDep ? Math.max(0, parseFloat(lead.finDep) || 0) : null;
     sanitized.finTotal = lead.finTotal ? Math.max(0, parseFloat(lead.finTotal) || 0) : null;
     
-    // Валідація статусу
-    const validStatuses = ['new', 'contacted', 'scheduled', 'completed', 'report_sent', 'repeat', 'deposit', 'paid', 'failed', 'frozen'];
-    if (!validStatuses.includes(sanitized.status)) {
-        sanitized.status = 'new';
+    // Валідація статусу - дозволяємо базові та кастомні статуси
+    const baseStatuses = ['new', 'contacted', 'scheduled', 'completed', 'report_sent', 'repeat', 'deposit', 'paid', 'failed', 'frozen'];
+    // Кастомні статуси мають формат 'status_' + timestamp
+    const isCustomStatus = sanitized.status && sanitized.status.startsWith('status_');
+    if (!baseStatuses.includes(sanitized.status) && !isCustomStatus) {
+        // Тільки якщо статус невалідний і не кастомний - скидаємо на new
+        sanitized.status = sanitized.status || 'new';
     }
     
     // Обрізаємо занадто довгі рядки
@@ -4799,7 +4802,8 @@ function analyzeDataQuality() {
         // Перевірка статусу
         if (!l.status) {
             issues.missingStatus.push({ id: l.id, name: l.tg || l.phone });
-        } else if (!validStatuses.includes(l.status)) {
+        } else if (!validStatuses.includes(l.status) && !l.status.startsWith('status_')) {
+            // Дозволяємо кастомні статуси (status_*)
             issues.invalidStatus.push({ id: l.id, status: l.status });
         }
         
@@ -8583,7 +8587,20 @@ async function changeLeadStatus(leadId, newStatus) {
     }
     
     addLog(updatedLead, 'status', `${getStatusName(oldStatus, updatedLead.funnelId)} → ${getStatusName(newStatus, updatedLead.funnelId)}`);
-    saveLead(updatedLead);
+    
+    // Зберігаємо в Firebase напряму (обходимо saveLead який має проблеми з sanitize)
+    try {
+        // Clean undefined values
+        const cleanData = JSON.parse(JSON.stringify(updatedLead, (key, value) => 
+            value === undefined ? null : value
+        ));
+        
+        await db.collection('organizations').doc(currentOrg.id).collection('leads').doc(updatedLead.id).set(cleanData);
+        showToast(`${getStatusName(oldStatus)} → ${getStatusName(newStatus)}`);
+    } catch(err) {
+        showError('Помилка збереження: ' + err.message);
+        console.error('Save error:', err);
+    }
     
     // Закрити dropdown
     if(activeDropdown) {
