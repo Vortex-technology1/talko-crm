@@ -5917,6 +5917,43 @@ function getTasks(){
             return;
         }
         
+        // ========== КАСТОМНІ СТАТУСИ ==========
+        // Якщо статус не стандартний — показуємо задачу на основі nextDate/nextAction
+        if(l.status && l.status.startsWith('status_')){
+            // Прострочено
+            if(l.nextDate && l.nextDate < t){
+                const daysOverdue = Math.floor((new Date(t) - new Date(l.nextDate)) / 864e5);
+                tasks.push({l, p:'critical', icon:'overdue', msg:`Прострочено ${daysOverdue}дн: ${l.nextAction||'виконати'}`, btns:[
+                    {t:'success',l:'Виконано',a:'next_done'},
+                    {t:'secondary',l:'Відкласти',a:'postpone_1d'},
+                    {t:'secondary',l:'Відкрити',a:'open'}
+                ]});
+            }
+            // Сьогодні
+            else if(!l.nextDate || l.nextDate === t){
+                const timeStr = l.nextTime ? ` о ${l.nextTime}` : '';
+                tasks.push({l, p:'warning', icon:'task', msg:`${l.nextAction||'Виконати задачу'}${timeStr}`, btns:[
+                    {t:'success',l:'Виконано',a:'next_done'},
+                    {t:'secondary',l:'Відкласти',a:'postpone_1d'},
+                    {t:'secondary',l:'Відкрити',a:'open'}
+                ]});
+            }
+            // Завтра
+            else if(l.nextDate === tm){
+                tasks.push({l, p:'info', icon:'calendar', msg:`Завтра: ${l.nextAction||'задача'}`, btns:[
+                    {t:'success',l:'Зробити зараз',a:'do_now'},
+                    {t:'secondary',l:'Відкрити',a:'open'}
+                ]});
+            }
+            // Пізніше
+            else {
+                tasks.push({l, p:'info', icon:'calendar', msg:`${fmtDate(l.nextDate)}: ${l.nextAction||'задача'}`, btns:[
+                    {t:'secondary',l:'Відкрити',a:'open'}
+                ]});
+            }
+            return;
+        }
+        
         // ========== FALLBACK — ЛІД БЕЗ ЗАДАЧІ ==========
         // Якщо дійшли сюди — щось не так, лід "загубився"
         if(l.nextDate && l.nextDate < t){
