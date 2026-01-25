@@ -9970,14 +9970,31 @@ document.addEventListener('keydown', (e) => {
 });
 
 // ===== TELEGRAM INTEGRATION =====
+function getOrgId() {
+    return typeof currentOrg === 'object' ? currentOrg.id : currentOrg;
+}
+
+function getUserId() {
+    if (!currentUser) return null;
+    return currentUser.uid || currentUser.id;
+}
+
 async function renderTelegramSection() {
     const container = document.getElementById('telegram-integration-content');
-    if (!container || !currentUser) return;
+    if (!container) return;
+    
+    const orgId = getOrgId();
+    const userId = getUserId();
+    
+    if (!orgId || !userId) {
+        container.innerHTML = '<p style="color:#6b7280;font-size:13px">Увійдіть в систему</p>';
+        return;
+    }
     
     try {
         // Перевіряємо статус підключення
-        const userDoc = await db.collection('organizations').doc(currentOrg)
-            .collection('users').doc(currentUser.uid).get();
+        const userDoc = await db.collection('organizations').doc(orgId)
+            .collection('users').doc(userId).get();
         
         const userData = userDoc.data() || {};
         const isConnected = userData.telegramConnected === true;
@@ -10023,19 +10040,24 @@ async function renderTelegramSection() {
 
 async function generateTelegramCode() {
     const container = document.getElementById('telegram-integration-content');
-    if (!container || !currentUser) return;
+    
+    const orgId = getOrgId();
+    const userId = getUserId();
+    
+    if (!container || !orgId || !userId) return;
     
     // Генеруємо код
     const code = 'TALKO_' + Math.random().toString(36).substring(2, 8).toUpperCase();
     
     try {
         // Зберігаємо в Firestore
-        await db.collection('organizations').doc(currentOrg)
+        await db.collection('organizations').doc(orgId)
             .collection('telegramCodes').doc(code).set({
                 code: code,
                 used: false,
-                userId: currentUser.uid,
-                userPath: 'organizations/' + currentOrg + '/users/' + currentUser.uid,
+                odId: orgId,
+                userId: userId,
+                userPath: 'organizations/' + orgId + '/users/' + userId,
                 createdAt: firebase.firestore.FieldValue.serverTimestamp(),
                 expiresAt: new Date(Date.now() + 10 * 60 * 1000)
             });
@@ -10088,9 +10110,14 @@ function copyTelegramCode(code) {
 async function disconnectTelegram() {
     if (!confirm('Відключити Telegram сповіщення?')) return;
     
+    const orgId = getOrgId();
+    const userId = getUserId();
+    
+    if (!orgId || !userId) return;
+    
     try {
-        await db.collection('organizations').doc(currentOrg)
-            .collection('users').doc(currentUser.uid).update({
+        await db.collection('organizations').doc(orgId)
+            .collection('users').doc(userId).update({
                 telegramConnected: false,
                 telegramChatId: firebase.firestore.FieldValue.delete()
             });
