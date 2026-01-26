@@ -4642,6 +4642,8 @@ function initFirestoreListener(){
     unsubscribe = db.collection('organizations').doc(orgId).collection('leads')
         .onSnapshot(snapshot => {
             if(currentOrg?.id !== orgId) return;
+            console.log('onSnapshot: Received', snapshot.size, 'leads from Firebase');
+            console.log('onSnapshot: Changes:', snapshot.docChanges().map(c => ({type: c.type, id: c.doc.id})));
             leads = [];
             snapshot.forEach(doc => {
                 leads.push({ id: doc.id, ...doc.data() });
@@ -4786,14 +4788,29 @@ async function deleteLead(leadId){
         return false;
     }
     
+    console.log('deleteLead: Starting delete for', leadId);
     setSyncStatus('syncing', 'Видалення...');
+    
     try {
-        await db.collection('organizations').doc(currentOrg.id).collection('leads').doc(leadId).delete();
+        const docRef = db.collection('organizations').doc(currentOrg.id).collection('leads').doc(leadId);
+        
+        // Перевіряємо чи документ існує
+        const docSnap = await docRef.get();
+        console.log('deleteLead: Document exists?', docSnap.exists);
+        
+        if (!docSnap.exists) {
+            console.warn('deleteLead: Document does not exist in Firebase');
+        }
+        
+        // Видаляємо з Firebase
+        await docRef.delete();
+        console.log('deleteLead: Firebase delete completed');
         
         // Видаляємо з локального масиву
         const idx = leads.findIndex(l => l.id === leadId);
         if (idx >= 0) {
             leads.splice(idx, 1);
+            console.log('deleteLead: Removed from local array, new length:', leads.length);
         }
         
         setSyncStatus('synced', 'Синхронізовано');
@@ -4801,6 +4818,7 @@ async function deleteLead(leadId){
         showToast('Ліда видалено');
         return true;
     } catch(err){
+        console.error('deleteLead: ERROR', err);
         logError('deleteLead', err, { leadId });
         setSyncStatus('error', 'Помилка видалення');
         showError('Помилка видалення: ' + err.message);
