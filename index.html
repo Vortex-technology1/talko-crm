@@ -2363,7 +2363,24 @@ const auth = firebase.auth();
 const db = firebase.firestore();
 
 // ===== SUPER ADMIN CONFIG =====
-const SUPER_ADMIN_EMAILS = ['management.talco@gmail.com'];
+// FIX: Super Admin emails - можна також завантажувати з Firestore collection 'config'
+// Для динамічного налаштування створіть документ db.collection('config').doc('superadmins')
+// з полем emails: ['email1@example.com', 'email2@example.com']
+let SUPER_ADMIN_EMAILS = ['management.talco@gmail.com'];
+
+// Функція для завантаження Super Admin з Firestore (опціонально)
+async function loadSuperAdminConfig() {
+    try {
+        const configDoc = await db.collection('config').doc('superadmins').get();
+        if(configDoc.exists && configDoc.data().emails) {
+            SUPER_ADMIN_EMAILS = configDoc.data().emails;
+            console.log('Super admin config loaded from Firestore');
+        }
+    } catch(e) {
+        // Ігноруємо помилку - використовуємо дефолтний список
+        console.log('Using default super admin config');
+    }
+}
 
 // ===== BUSINESS CONSTANTS =====
 const REACTIVATION_DAYS = 90;           // Днів до реактивації після відмови
@@ -3158,6 +3175,23 @@ async function processInvite(code){
             return;
         }
         
+        // FIX: Перевірка терміну дії запрошення (7 днів)
+        if(invite.createdAt) {
+            const createdDate = invite.createdAt.toDate ? invite.createdAt.toDate() : new Date(invite.createdAt);
+            const expirationDays = 7;
+            const expirationDate = new Date(createdDate.getTime() + expirationDays * 24 * 60 * 60 * 1000);
+            if(new Date() > expirationDate) {
+                showWarning('Термін дії запрошення вичерпано. Попросіть нове запрошення.');
+                return;
+            }
+        }
+        
+        // FIX: Перевірка targetEmail якщо вказаний
+        if(invite.targetEmail && invite.targetEmail.toLowerCase() !== currentUser.email.toLowerCase()) {
+            showWarning(`Це запрошення призначене для ${invite.targetEmail}`);
+            return;
+        }
+        
         // Додаємо користувача до організації
         await db.collection('users').doc(currentUser.uid).set({
             email: currentUser.email,
@@ -3177,6 +3211,8 @@ async function processInvite(code){
         // Очищаємо URL
         window.history.replaceState({}, document.title, window.location.pathname);
         
+        showToast(`Ви приєдналися до ${invite.organizationName || 'організації'}`);
+        
         // Ініціалізуємо
         await initUserMode();
         
@@ -3192,12 +3228,14 @@ async function createInvite(role = 'employee'){
     try {
         const code = generateInviteCode();
         
+        // FIX: Додаємо термін дії запрошення
         await db.collection('invites').doc(code).set({
             organizationId: currentOrg.id,
             organizationName: currentOrg.name,
             role: role,
             createdBy: currentUser.uid,
             createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+            expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(), // 7 днів
             used: false
         });
         
@@ -4435,6 +4473,12 @@ function clearBulkSelection() {
 async function bulkAssign() {
     if(selectedLeadIds.size === 0) return;
     
+    // FIX: Перевірка наявності організації
+    if(!currentOrg?.id) {
+        showWarning('Організацію не вибрано');
+        return;
+    }
+    
     // Показуємо dropdown з менеджерами
     const managers = teamMembers.filter(m => m.role === 'owner' || m.role === 'manager');
     
@@ -4461,11 +4505,8 @@ async function bulkAssign() {
             const lead = leads.find(l => l.id === leadId);
             if(lead) {
                 lead.assignedTo = assignee;
-                // Зберігаємо напряму в Firebase
-                const cleanData = JSON.parse(JSON.stringify(lead, (key, value) => 
-                    value === undefined ? null : value
-                ));
-                await db.collection('organizations').doc(currentOrg.id).collection('leads').doc(lead.id).set(cleanData);
+                // FIX: Використовуємо централізовану функцію збереження
+                await saveLeadToFirebase(lead);
             }
         }
         showToast(`Призначено ${selectedLeadIds.size} лідів`);
@@ -4496,6 +4537,12 @@ async function bulkChangeStatus() {
     
     if(!newStatus) return;
     
+    // FIX: Перевірка наявності організації
+    if(!currentOrg?.id) {
+        showWarning('Організацію не вибрано');
+        return;
+    }
+    
     showLoading('Зміна статусу...');
     
     try {
@@ -4503,13 +4550,11 @@ async function bulkChangeStatus() {
             const lead = leads.find(l => l.id === leadId);
             if(lead) {
                 lead.status = newStatus;
-                lead.stageDate = today();
+                // FIX: Використовуємо ISO формат для консистентності
+                lead.stageDate = new Date().toISOString();
                 addLog(lead, 'status', `Масова зміна на: ${statuses[newStatus]?.name || newStatus}`);
-                // Зберігаємо напряму в Firebase
-                const cleanData = JSON.parse(JSON.stringify(lead, (key, value) => 
-                    value === undefined ? null : value
-                ));
-                await db.collection('organizations').doc(currentOrg.id).collection('leads').doc(lead.id).set(cleanData);
+                // FIX: Використовуємо централізовану функцію збереження
+                await saveLeadToFirebase(lead);
             }
         }
         showToast(`Статус змінено для ${selectedLeadIds.size} лідів`);
@@ -4528,20 +4573,26 @@ async function bulkSetNextDate() {
     const result = await promptDateTime('Встановити дату наступної дії');
     if(!result) return;
     
+    // FIX: promptDateTime повертає string "YYYY-MM-DDTHH:MM", а не об'єкт
+    const [dateStr, timeStr] = result.split('T');
+    
+    // FIX: Перевірка наявності організації
+    if(!currentOrg?.id) {
+        showWarning('Організацію не вибрано');
+        return;
+    }
+    
     showLoading('Встановлення дати...');
     
     try {
         for(const leadId of selectedLeadIds) {
             const lead = leads.find(l => l.id === leadId);
             if(lead) {
-                lead.nextDate = result.date;
-                lead.nextTime = result.time;
-                addLog(lead, 'call', `Масове встановлення дати: ${result.date} ${result.time}`);
-                // Зберігаємо напряму в Firebase
-                const cleanData = JSON.parse(JSON.stringify(lead, (key, value) => 
-                    value === undefined ? null : value
-                ));
-                await db.collection('organizations').doc(currentOrg.id).collection('leads').doc(lead.id).set(cleanData);
+                lead.nextDate = dateStr;
+                lead.nextTime = timeStr || '10:00';
+                addLog(lead, 'call', `Масове встановлення дати: ${dateStr} ${timeStr || '10:00'}`);
+                // FIX: Використовуємо централізовану функцію збереження
+                await saveLeadToFirebase(lead);
             }
         }
         showToast(`Дату встановлено для ${selectedLeadIds.size} лідів`);
@@ -4626,8 +4677,25 @@ async function incrementRoundRobinIndex(){
 }
 
 // ===== FIRESTORE SYNC (Organization-based) =====
+// FIX: Додаємо debounce для запобігання швидких перемикань
+let pendingListenerTimeout = null;
+
 function initFirestoreListener(){
-    if(unsubscribe) { unsubscribe(); unsubscribe = null; }
+    // FIX: Очищаємо попередній timeout якщо є
+    if(pendingListenerTimeout) {
+        clearTimeout(pendingListenerTimeout);
+        pendingListenerTimeout = null;
+    }
+    
+    // FIX: Спочатку відписуємось від попереднього listener
+    if(unsubscribe) { 
+        try {
+            unsubscribe(); 
+        } catch(e) {
+            console.warn('Error unsubscribing:', e);
+        }
+        unsubscribe = null; 
+    }
     
     if(!currentOrg?.id){
         leads = [];
@@ -4637,24 +4705,42 @@ function initFirestoreListener(){
     
     setSyncStatus('syncing', 'Синхронізація...');
     showSkeleton(); // Показуємо skeleton поки завантажуються дані
+    
+    // FIX: Зберігаємо ID організації локально
     const orgId = currentOrg.id;
     
-    unsubscribe = db.collection('organizations').doc(orgId).collection('leads')
-        .onSnapshot(snapshot => {
-            if(currentOrg?.id !== orgId) return;
-            console.log('onSnapshot: Received', snapshot.size, 'leads from Firebase');
-            console.log('onSnapshot: Changes:', snapshot.docChanges().map(c => ({type: c.type, id: c.doc.id})));
-            leads = [];
-            snapshot.forEach(doc => {
-                leads.push({ id: doc.id, ...doc.data() });
+    // FIX: Невелика затримка для запобігання race condition при швидкому перемиканні
+    pendingListenerTimeout = setTimeout(() => {
+        // Перевіряємо чи організація не змінилась
+        if(currentOrg?.id !== orgId) {
+            console.log('initFirestoreListener: org changed, aborting');
+            return;
+        }
+        
+        unsubscribe = db.collection('organizations').doc(orgId).collection('leads')
+            .onSnapshot(snapshot => {
+                // FIX: Подвійна перевірка що організація все ще та сама
+                if(currentOrg?.id !== orgId) {
+                    console.log('onSnapshot: org changed, ignoring update');
+                    return;
+                }
+                leads = [];
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    // Фільтруємо видалених лідів
+                    if (!data.deleted) {
+                        leads.push({ id: doc.id, ...data });
+                    }
+                });
+                console.log('onSnapshot: Received', snapshot.size, 'total,', leads.length, 'active leads');
+                render();
+                setSyncStatus('synced', 'Синхронізовано');
+                updateOrgLeadsCount(leads.length);
+            }, err => {
+                console.error('Firestore error:', err);
+                setSyncStatus('error', 'Помилка синхронізації');
             });
-            render();
-            setSyncStatus('synced', 'Синхронізовано');
-            updateOrgLeadsCount(leads.length);
-        }, err => {
-            console.error('Firestore error:', err);
-            setSyncStatus('error', 'Помилка синхронізації');
-        });
+    }, 50); // 50ms затримка
 }
 
 function updateOrgLeadsCount(count){
@@ -4751,6 +4837,43 @@ function getErrorLog() {
     return errorLog;
 }
 
+// ===== CENTRALIZED FIREBASE SAVE (FIX: усуває дублювання коду) =====
+/**
+ * Централізована функція збереження ліда в Firebase
+ * Використовується замість дублювання JSON.parse(JSON.stringify...) скрізь
+ * @param {Object} lead - об'єкт ліда
+ * @param {boolean} showStatus - чи показувати статус синхронізації
+ * @returns {Promise<boolean>}
+ */
+async function saveLeadToFirebase(lead, showStatus = false) {
+    if(!currentOrg?.id) {
+        console.error('saveLeadToFirebase: currentOrg is not set');
+        return false;
+    }
+    if(!lead?.id) {
+        console.error('saveLeadToFirebase: lead.id is not set');
+        return false;
+    }
+    
+    try {
+        if(showStatus) setSyncStatus('syncing', 'Збереження...');
+        
+        // Clean undefined values (Firebase doesn't accept them)
+        const cleanData = JSON.parse(JSON.stringify(lead, (key, value) => 
+            value === undefined ? null : value
+        ));
+        
+        await db.collection('organizations').doc(currentOrg.id).collection('leads').doc(lead.id).set(cleanData);
+        
+        if(showStatus) setSyncStatus('synced', 'Синхронізовано');
+        return true;
+    } catch(err) {
+        logError('saveLeadToFirebase', err, { leadId: lead?.id });
+        if(showStatus) setSyncStatus('error', 'Помилка збереження');
+        throw err; // Re-throw для обробки в caller
+    }
+}
+
 // ===== SAVE/DELETE with Organization =====
 async function saveLead(leadData){
     if(!currentOrg){
@@ -4788,25 +4911,20 @@ async function deleteLead(leadId){
         return false;
     }
     
-    console.log('deleteLead: Starting delete for', leadId);
+    console.log('deleteLead: Soft delete for', leadId);
     setSyncStatus('syncing', 'Видалення...');
     
     try {
         const docRef = db.collection('organizations').doc(currentOrg.id).collection('leads').doc(leadId);
         
-        // Перевіряємо чи документ існує
-        const docSnap = await docRef.get();
-        console.log('deleteLead: Document exists?', docSnap.exists);
+        // М'яке видалення - ставимо deleted: true
+        await docRef.update({
+            deleted: true,
+            deletedAt: new Date().toISOString()
+        });
+        console.log('deleteLead: Marked as deleted in Firebase');
         
-        if (!docSnap.exists) {
-            console.warn('deleteLead: Document does not exist in Firebase');
-        }
-        
-        // Видаляємо з Firebase
-        await docRef.delete();
-        console.log('deleteLead: Firebase delete completed');
-        
-        // Видаляємо з локального масиву
+        // Видаляємо з локального масиву (для UI)
         const idx = leads.findIndex(l => l.id === leadId);
         if (idx >= 0) {
             leads.splice(idx, 1);
@@ -6814,7 +6932,20 @@ function touchEnd(e) {
 }
 
 async function handleTouchDrop(leadId, status) {
-    const idx = leads.findIndex(x => x.id === leadId);
+    // FIX: Перевірка наявності організації
+    if(!currentOrg?.id) {
+        showWarning('Організацію не вибрано');
+        return;
+    }
+    
+    // FIX: Зберігаємо leadId локально для запобігання race condition
+    const localLeadId = leadId;
+    if(!localLeadId) {
+        showWarning('ID ліда не визначено');
+        return;
+    }
+    
+    const idx = leads.findIndex(x => x.id === localLeadId);
     if(idx < 0) {
         showWarning('Лід не знайдено');
         return;
@@ -6863,11 +6994,8 @@ async function handleTouchDrop(leadId, status) {
     
     addLog(lead, 'status', getStatusName(old, lead.funnelId) + ' → ' + getStatusName(status, lead.funnelId));
     
-    // Зберігаємо напряму в Firebase
-    const cleanData = JSON.parse(JSON.stringify(lead, (key, value) => 
-        value === undefined ? null : value
-    ));
-    db.collection('organizations').doc(currentOrg.id).collection('leads').doc(lead.id).set(cleanData)
+    // FIX: Використовуємо централізовану функцію збереження
+    saveLeadToFirebase(lead)
         .catch(err => showError('Помилка збереження: ' + err.message));
     
     showToast('Статус змінено');
@@ -6922,6 +7050,12 @@ async function dDrop(e, status) {
     e.stopPropagation();
     e.currentTarget?.classList?.remove('drag-over');
     
+    // FIX: Перевірка наявності організації
+    if(!currentOrg?.id) {
+        showWarning('Організацію не вибрано');
+        return;
+    }
+    
     // Отримуємо ID з dataTransfer або з глобальної змінної
     let leadId = null;
     if(e.dataTransfer) {
@@ -6929,13 +7063,16 @@ async function dDrop(e, status) {
     }
     if(!leadId) leadId = dragId;
     
-    if(!leadId){
+    // FIX: Зберігаємо leadId локально для запобігання race condition
+    const localLeadId = leadId;
+    
+    if(!localLeadId){
         showWarning('Оберіть картку для переміщення');
         return;
     }
     
     // Знаходимо індекс ліда
-    const idx = leads.findIndex(x => x.id === leadId);
+    const idx = leads.findIndex(x => x.id === localLeadId);
     if(idx < 0){
         showWarning('Лід не знайдено');
         return;
@@ -6987,14 +7124,9 @@ async function dDrop(e, status) {
     
     addLog(lead, 'status', getStatusName(oldStatus, lead.funnelId) + ' → ' + getStatusName(status, lead.funnelId));
     
-    // Зберігаємо в Firebase напряму (обходимо saveLead який має проблеми з sanitize)
+    // FIX: Використовуємо централізовану функцію збереження
     try {
-        // Clean undefined values
-        const cleanData = JSON.parse(JSON.stringify(lead, (key, value) => 
-            value === undefined ? null : value
-        ));
-        
-        await db.collection('organizations').doc(currentOrg.id).collection('leads').doc(lead.id).set(cleanData);
+        await saveLeadToFirebase(lead);
         showToast(`${getStatusName(oldStatus)} → ${getStatusName(status)}`);
     } catch(err) {
         // Відкатуємо якщо помилка
@@ -8095,8 +8227,16 @@ function exportXLS(){
 }
 function importXLS(e){
     const file=e.target.files[0];if(!file)return;
+    
+    // FIX: Перевірка наявності організації
+    if(!currentOrg?.id) {
+        showWarning('Спочатку оберіть організацію');
+        e.target.value='';
+        return;
+    }
+    
     const reader=new FileReader();
-    reader.onload=function(ev){
+    reader.onload=async function(ev){
         try{
             const data=new Uint8Array(ev.target.result);
             const wb=XLSX.read(data,{type:'array',cellDates:true});
@@ -8191,9 +8331,9 @@ function importXLS(e){
                     stageDate:new Date().toISOString(),
                     log:[]
                 };
-                // Зберігаємо напряму в Firebase
+                // FIX: Додаємо await для збереження в Firebase
                 leads.push(newLead);
-                db.collection('organizations').doc(currentOrg.id).collection('leads').doc(newLead.id).set(newLead);
+                await db.collection('organizations').doc(currentOrg.id).collection('leads').doc(newLead.id).set(newLead);
                 n++;
             }
             showToast('Імпортовано: '+n+(skip?' (пропущено: '+skip+')':''));
@@ -8206,6 +8346,12 @@ function importXLS(e){
 
 // ===== DEMO =====
 async function loadDemo(){
+    // FIX: Перевірка наявності організації
+    if(!currentOrg?.id) {
+        showWarning('Спочатку оберіть організацію');
+        return;
+    }
+    
     if(leads.length) {
         const confirmed = await confirmModal('Додати демо-дані?\n\nЦе додасть 5 тестових лідів до вашої бази.', {
             title: 'Демо-дані',
@@ -8214,11 +8360,11 @@ async function loadDemo(){
         if(!confirmed) return;
     }
     const demoLeads=[
-        {id:'d1',tg:'@iryna_dental',phone:'+380501234567',biz:'Стоматологія-15',source:'mk_clinic',status:'new',calls:0,sms:0,noshow:0,nextDate:today(),nextAction:'Подзвонити',created:addDays(today(),-2),stageDate:addDays(today(),-2),log:[]},
-        {id:'d2',tg:'@petro_meble',phone:'+380672345678',biz:'Меблі-25',source:'mk_prod',status:'scheduled',consult:tomorrow()+'T14:00',calls:1,sms:0,noshow:0,nextDate:today(),nextAction:'Підтвердити',created:addDays(today(),-5),stageDate:addDays(today(),-3),log:[{type:'call',text:'Призначили',date:addDays(today(),-3)}]},
-        {id:'d3',tg:'@maria_cosmo',phone:'+380933456789',biz:'Косметологія-8',source:'bot',status:'scheduled',consult:addDays(today(),-1)+'T10:00',calls:2,sms:1,noshow:2,nextDate:today(),created:addDays(today(),-10),stageDate:addDays(today(),-1),log:[{type:'status',text:'Не прийшла 2/3',date:addDays(today(),-1)}]},
-        {id:'d4',tg:'@oleksandr_food',phone:'+380504567890',biz:'Харчування-50',source:'mk_prod',status:'report_sent',calls:1,sms:1,noshow:0,reportDate:addDays(today(),-2),nextDate:today(),linkRecord:'https://youtu.be/ex',linkReport:'https://docs.google.com/ex',created:addDays(today(),-14),stageDate:addDays(today(),-2),log:[{type:'status',text:'Звіт відправлено',date:addDays(today(),-2)}]},
-        {id:'d5',tg:'@natalia_pharm',phone:'+380675678901',biz:'Аптеки-12',source:'ref',status:'deposit',finDep:15000,finDepCur:'UAH',finDepDate:addDays(today(),-10),finTotal:45000,finTotalCur:'UAH',nextDate:addDays(today(),-3),created:addDays(today(),-20),stageDate:addDays(today(),-10),log:[{type:'status',text:'Завдаток 15000',date:addDays(today(),-10)}]}
+        {id:'d1',tg:'@iryna_dental',phone:'+380501234567',biz:'Стоматологія-15',source:'mk_clinic',status:'new',calls:0,sms:0,noshow:0,nextDate:today(),nextAction:'Подзвонити',created:addDays(today(),-2),stageDate:new Date(Date.now() - 2*86400000).toISOString(),log:[]},
+        {id:'d2',tg:'@petro_meble',phone:'+380672345678',biz:'Меблі-25',source:'mk_prod',status:'scheduled',consult:tomorrow()+'T14:00',calls:1,sms:0,noshow:0,nextDate:today(),nextAction:'Підтвердити',created:addDays(today(),-5),stageDate:new Date(Date.now() - 3*86400000).toISOString(),log:[{type:'call',text:'Призначили',date:addDays(today(),-3)}]},
+        {id:'d3',tg:'@maria_cosmo',phone:'+380933456789',biz:'Косметологія-8',source:'bot',status:'scheduled',consult:addDays(today(),-1)+'T10:00',calls:2,sms:1,noshow:2,nextDate:today(),created:addDays(today(),-10),stageDate:new Date(Date.now() - 1*86400000).toISOString(),log:[{type:'status',text:'Не прийшла 2/3',date:addDays(today(),-1)}]},
+        {id:'d4',tg:'@oleksandr_food',phone:'+380504567890',biz:'Харчування-50',source:'mk_prod',status:'report_sent',calls:1,sms:1,noshow:0,reportDate:addDays(today(),-2),nextDate:today(),linkRecord:'https://youtu.be/ex',linkReport:'https://docs.google.com/ex',created:addDays(today(),-14),stageDate:new Date(Date.now() - 2*86400000).toISOString(),log:[{type:'status',text:'Звіт відправлено',date:addDays(today(),-2)}]},
+        {id:'d5',tg:'@natalia_pharm',phone:'+380675678901',biz:'Аптеки-12',source:'ref',status:'deposit',finDep:15000,finDepCur:'UAH',finDepDate:addDays(today(),-10),finTotal:45000,finTotalCur:'UAH',nextDate:addDays(today(),-3),created:addDays(today(),-20),stageDate:new Date(Date.now() - 10*86400000).toISOString(),log:[{type:'status',text:'Завдаток 15000',date:addDays(today(),-10)}]}
     ];
     for(const lead of demoLeads){
         leads.push(lead);
