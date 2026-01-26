@@ -534,6 +534,8 @@
         .datetime-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:200;display:none}
         .datetime-modal-overlay.active{display:block}
         .datetime-modal{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#fff;border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,0.3);z-index:201;width:340px;display:none}
+        #confirm-modal-overlay{z-index:2000}
+        #confirm-modal{z-index:2001}
         .datetime-modal.active{display:block}
         #templates-modal{width:420px;max-width:95vw}
         .datetime-header{padding:16px 20px;border-bottom:1px solid #e5e7eb;display:flex;justify-content:space-between;align-items:center}
@@ -4778,15 +4780,30 @@ async function saveLead(leadData){
 
 async function deleteLead(leadId){
     if(!currentOrg) return false;
+    if(!leadId) {
+        console.error('deleteLead: leadId is empty');
+        showError('Помилка: ID ліда не визначено');
+        return false;
+    }
     
     setSyncStatus('syncing', 'Видалення...');
     try {
         await db.collection('organizations').doc(currentOrg.id).collection('leads').doc(leadId).delete();
+        
+        // Видаляємо з локального масиву
+        const idx = leads.findIndex(l => l.id === leadId);
+        if (idx >= 0) {
+            leads.splice(idx, 1);
+        }
+        
         setSyncStatus('synced', 'Синхронізовано');
+        render();
+        showToast('Ліда видалено');
         return true;
     } catch(err){
         logError('deleteLead', err, { leadId });
         setSyncStatus('error', 'Помилка видалення');
+        showError('Помилка видалення: ' + err.message);
         return false;
     }
 }
@@ -7904,8 +7921,20 @@ async function saveLeadForm(){
     if(saveBtn) { saveBtn.disabled = true; saveBtn.textContent = 'Збереження...'; }
     
     try {
+        // Оновлюємо локальний масив
+        const idx = leads.findIndex(l => l.id === data.id);
+        if (idx >= 0) {
+            leads[idx] = data;
+        } else {
+            leads.push(data);
+        }
+        
+        // Зберігаємо в Firebase
         await saveLead(data);
+        
         closeModal();
+        render();
+        showToast(idx >= 0 ? 'Збережено' : 'Ліда додано');
     } catch(err) {
         console.error('Save error:', err);
         showError('Помилка збереження: ' + err.message);
