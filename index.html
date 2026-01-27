@@ -134,6 +134,14 @@
         .funnel-default-badge{font-size:10px;background:#dbeafe;color:#1d4ed8;padding:2px 6px;border-radius:4px;font-weight:500}
         
         /* Assignment Modes */
+        
+        /* Sources Editor */
+        .source-list{display:flex;flex-direction:column;gap:6px}
+        .source-item{display:flex;align-items:center;gap:10px;padding:10px 12px;background:#f9fafb;border-radius:10px}
+        .source-code{font-family:monospace;font-size:12px;color:#6b7280;background:#e5e7eb;padding:2px 6px;border-radius:4px;min-width:80px}
+        .source-name{flex:1}
+        .source-name input{width:100%;border:none;background:transparent;font-size:14px;font-weight:500;color:#1f2937;outline:none}
+        .source-actions{display:flex;gap:4px}
         .assignment-modes{display:flex;flex-direction:column;gap:8px}
         .assignment-mode{display:flex;align-items:flex-start;gap:12px;padding:14px;background:#f9fafb;border-radius:10px;cursor:pointer;border:2px solid transparent;transition:all .2s}
         .assignment-mode:hover{background:#f3f4f6}
@@ -1777,11 +1785,7 @@
                             <label class="form-label">Джерело</label>
                             <select class="form-select" id="f-source">
                                 <option value="">—</option>
-                                <option value="bot">Бот</option>
-                                <option value="mk_clinic">МК Клініки</option>
-                                <option value="mk_prod">МК Виробництво</option>
-                                <option value="ads">Реклама</option>
-                                <option value="ref">Рекомендація</option>
+                                <!-- Options generated dynamically -->
                             </select>
                         </div>
                     </div>
@@ -2283,6 +2287,21 @@
             <button class="status-add-btn" onclick="addNewStatus()">
                 <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
                 Додати статус
+            </button>
+        </div>
+        
+        <!-- Sources Editor Section -->
+        <div class="settings-section">
+            <div class="settings-section-title">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                Джерела лідів
+            </div>
+            <div class="source-list" id="source-list">
+                <!-- Джерела генеруються динамічно -->
+            </div>
+            <button class="status-add-btn" onclick="addNewSource()">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                Додати джерело
             </button>
         </div>
         
@@ -3793,6 +3812,9 @@ function openSettingsPanel(){
     }
     renderStatusList();
     
+    // Рендеримо джерела
+    renderSourceList();
+    
     // Рендеримо режим розподілу
     renderAssignmentMode();
     
@@ -3927,6 +3949,138 @@ async function saveFunnels(funnels){
         console.error('Error saving funnels:', err);
         showError(err.message);
     }
+}
+
+// ===== SOURCES MANAGEMENT =====
+
+function renderSourceList(){
+    const container = document.getElementById('source-list');
+    if(!container) return;
+    
+    const sources = getOrgSources();
+    const entries = Object.entries(sources).sort((a, b) => a[1].localeCompare(b[1]));
+    
+    container.innerHTML = entries.map(([code, name]) => `
+        <div class="source-item" data-source-code="${code}">
+            <span class="source-code">${escapeHtml(code)}</span>
+            <div class="source-name">
+                <input type="text" value="${escapeHtml(name)}" 
+                    onchange="updateSourceName('${code}', this.value)" 
+                    onblur="saveSources()">
+            </div>
+            <div class="source-actions">
+                <button class="status-action-btn delete" onclick="deleteSource('${code}')" title="Видалити">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+                </button>
+            </div>
+        </div>
+    `).join('');
+}
+
+async function addNewSource(){
+    const code = await promptModal('Код джерела (латиницею, без пробілів):', '', {
+        title: 'Нове джерело',
+        placeholder: 'наприклад: instagram_ads'
+    });
+    
+    if(!code) return;
+    
+    // Валідація коду
+    const cleanCode = code.toLowerCase().replace(/[^a-z0-9_]/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, '');
+    if(!cleanCode || cleanCode.length < 2){
+        showError('Код має містити мінімум 2 латинські символи');
+        return;
+    }
+    
+    const sources = getOrgSources();
+    if(sources[cleanCode]){
+        showError('Джерело з таким кодом вже існує');
+        return;
+    }
+    
+    const name = await promptModal('Назва джерела:', '', {
+        title: 'Назва для ' + cleanCode,
+        placeholder: 'наприклад: Instagram реклама'
+    });
+    
+    if(!name) return;
+    
+    sources[cleanCode] = name.trim();
+    await saveSourcesToFirebase(sources);
+    
+    renderSourceList();
+    updateSourceDropdowns();
+    showToast('Джерело "' + name + '" додано');
+}
+
+function updateSourceName(code, newName){
+    const sources = getOrgSources();
+    if(sources[code]){
+        sources[code] = newName.trim() || code;
+    }
+}
+
+async function deleteSource(code){
+    const sources = getOrgSources();
+    const name = sources[code] || code;
+    
+    const confirmed = await confirmModal(`Видалити джерело "${escapeHtml(name)}"?`, {
+        title: 'Видалення джерела',
+        text: 'Ліди з цим джерелом залишаться, але відображатиметься код замість назви.',
+        okText: 'Видалити',
+        danger: true
+    });
+    
+    if(!confirmed) return;
+    
+    delete sources[code];
+    await saveSourcesToFirebase(sources);
+    
+    renderSourceList();
+    updateSourceDropdowns();
+    showToast('Джерело видалено');
+}
+
+async function saveSources(){
+    const sources = getOrgSources();
+    await saveSourcesToFirebase(sources);
+}
+
+async function saveSourcesToFirebase(sources){
+    if(!currentOrg) return;
+    
+    try {
+        await db.collection('organizations').doc(currentOrg.id).update({
+            'settings.sources': sources
+        });
+        
+        if(!currentOrg.settings) currentOrg.settings = {};
+        currentOrg.settings.sources = sources;
+        
+    } catch(err){
+        console.error('Error saving sources:', err);
+        showError('Помилка збереження: ' + err.message);
+    }
+}
+
+function updateSourceDropdowns(){
+    // Оновлюємо select в формі редагування ліда
+    const sourceSelect = document.getElementById('f-source');
+    if(sourceSelect){
+        const currentValue = sourceSelect.value;
+        const sources = getOrgSources();
+        
+        sourceSelect.innerHTML = '<option value="">—</option>' + 
+            Object.entries(sources)
+                .sort((a, b) => a[1].localeCompare(b[1]))
+                .map(([code, name]) => `<option value="${code}">${escapeHtml(name)}</option>`)
+                .join('');
+        
+        sourceSelect.value = currentValue;
+    }
+    
+    // Оновлюємо фільтр джерел
+    renderSourceFilter();
 }
 
 // Оновлюємо getOrgStatuses для роботи з вибраною воронкою
@@ -4326,14 +4480,25 @@ function renderSourceDropdown() {
     const list = document.getElementById('source-dropdown-list');
     if(!list) return;
     
-    // Збираємо унікальні джерела з лідів
-    const sources = [...new Set(leads.map(l => l.source).filter(Boolean))];
+    // Отримуємо джерела з налаштувань організації
+    const orgSources = getOrgSources();
     
-    list.innerHTML = sources.map(source => `
+    // Також збираємо джерела з лідів (якщо є ліди з джерелами яких немає в налаштуваннях)
+    const leadSources = [...new Set(leads.map(l => l.source).filter(Boolean))];
+    
+    // Об'єднуємо: спочатку з налаштувань, потім унікальні з лідів
+    const allSourceCodes = [...new Set([...Object.keys(orgSources), ...leadSources])];
+    
+    list.innerHTML = allSourceCodes.map(source => `
         <div class="funnel-dropdown-item ${currentSourceFilter === source ? 'active' : ''}" onclick="selectSource('${source}')">
-            ${SRC[source] || source}
+            ${escapeHtml(orgSources[source] || source)}
         </div>
     `).join('');
+}
+
+// Alias для updateSourceDropdowns
+function renderSourceFilter() {
+    renderSourceDropdown();
 }
 
 function selectSource(source) {
@@ -5620,7 +5785,45 @@ function getStatusIds(funnelId){
 }
 
 const ST = ST_DEFAULT; // Legacy compatibility
-const SRC={bot:'Бот',mk_clinic:'МК Клініки',mk_prod:'МК Виробництво',ads:'Реклама',ref:'Рекомендація',consult_clinic:'Консультація'};
+
+// Default sources (will be overridden by org settings)
+const DEFAULT_SOURCES = {
+    bot: 'Бот',
+    mk_clinic: 'МК Клініки',
+    mk_prod: 'МК Виробництво',
+    ads: 'Реклама',
+    ref: 'Рекомендація',
+    clinic_ua: 'Клініки UA',
+    clinic_eu: 'Клініки EU',
+    furniture_ua: 'Меблі UA',
+    furniture_eu: 'Меблі EU',
+    prod_ua: 'Виробництво UA',
+    prod_metal_ua: 'Виробництво метал UA',
+    prod_food_ua: 'Виробництво харчове UA',
+    prod_eu: 'Виробництво EU',
+    prod_eu_ru: 'Виробництво EU (RU)'
+};
+
+// Get sources from org settings or use defaults
+function getOrgSources() {
+    if (currentOrg?.settings?.sources && Object.keys(currentOrg.settings.sources).length > 0) {
+        return currentOrg.settings.sources;
+    }
+    return DEFAULT_SOURCES;
+}
+
+// Legacy SRC variable - now dynamically gets sources
+const SRC = new Proxy({}, {
+    get: function(target, prop) {
+        const sources = getOrgSources();
+        return sources[prop] || prop;
+    },
+    has: function(target, prop) {
+        const sources = getOrgSources();
+        return prop in sources;
+    }
+});
+
 const CUR={UAH:'₴',USD:'$',EUR:'€'};
 let leads=[];
 let editing=null;
@@ -7867,6 +8070,7 @@ function openModal(id){
     populateFunnelDropdown();
     populateAssigneeDropdown();
     populateStatusDropdown();
+    populateSourceDropdown();
     
     resetForm();
     if(id){const l=leads.find(x=>x.id===id);if(l)fillForm(l);}
@@ -7900,6 +8104,18 @@ function populateStatusDropdown(funnelId){
     const statusIds = getStatusIds(funnelId || document.getElementById('f-funnel')?.value);
     select.innerHTML = '<option value="">—</option>' + 
         statusIds.map(id => `<option value="${id}">${getStatusName(id, funnelId)}</option>`).join('');
+}
+
+function populateSourceDropdown(){
+    const select = document.getElementById('f-source');
+    if(!select) return;
+    
+    const sources = getOrgSources();
+    select.innerHTML = '<option value="">—</option>' + 
+        Object.entries(sources)
+            .sort((a, b) => a[1].localeCompare(b[1]))
+            .map(([code, name]) => `<option value="${code}">${escapeHtml(name)}</option>`)
+            .join('');
 }
 
 function onFunnelChange(){
