@@ -142,6 +142,25 @@
         .source-name{flex:1}
         .source-name input{width:100%;border:none;background:transparent;font-size:14px;font-weight:500;color:#1f2937;outline:none}
         .source-actions{display:flex;gap:4px}
+        
+        /* Telegram Section */
+        .telegram-section{padding:12px;background:#f0f9ff;border-radius:12px;border:1px solid #bae6fd}
+        .telegram-status{margin-bottom:12px}
+        .telegram-status.connected{color:#059669}
+        .telegram-status.disconnected{color:#6b7280}
+        .telegram-status-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+        .telegram-status-icon{width:10px;height:10px;border-radius:50%}
+        .telegram-status-icon.active{background:#22c55e}
+        .telegram-status-icon.inactive{background:#d1d5db}
+        .telegram-connect-btn{width:100%;padding:12px 16px;background:linear-gradient(135deg,#0088cc,#0077b5);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:all 0.2s}
+        .telegram-connect-btn:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,136,204,0.3)}
+        .telegram-connect-btn.connected{background:linear-gradient(135deg,#22c55e,#16a34a)}
+        .telegram-connect-btn.disconnect{background:#ef4444}
+        .telegram-link-box{margin-top:12px;padding:12px;background:#fff;border-radius:8px;border:1px dashed #0088cc}
+        .telegram-link-label{font-size:12px;color:#6b7280;margin-bottom:6px}
+        .telegram-link{display:flex;align-items:center;gap:8px}
+        .telegram-link input{flex:1;padding:8px;border:1px solid #e5e7eb;border-radius:6px;font-size:13px;background:#f9fafb}
+        .telegram-link button{padding:8px 12px;background:#0088cc;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:12px}
         .assignment-modes{display:flex;flex-direction:column;gap:8px}
         .assignment-mode{display:flex;align-items:flex-start;gap:12px;padding:14px;background:#f9fafb;border-radius:10px;cursor:pointer;border:2px solid transparent;transition:all .2s}
         .assignment-mode:hover{background:#f3f4f6}
@@ -2341,6 +2360,23 @@
                 <div class="rr-queue-list" id="rr-queue-list"></div>
             </div>
         </div>
+        
+        <!-- Telegram Notifications Section -->
+        <div class="settings-section">
+            <div class="settings-section-title">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13"/><path d="M22 2L15 22L11 13L2 9L22 2Z"/></svg>
+                Telegram сповіщення
+            </div>
+            <div class="telegram-section" id="telegram-section">
+                <div class="telegram-status" id="telegram-status">
+                    <!-- Status will be rendered here -->
+                </div>
+                <button class="telegram-connect-btn" id="telegram-connect-btn" onclick="connectTelegram()">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13"/><path d="M22 2L15 22L11 13L2 9L22 2Z"/></svg>
+                    Підключити Telegram
+                </button>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -3818,6 +3854,9 @@ function openSettingsPanel(){
     // Рендеримо режим розподілу
     renderAssignmentMode();
     
+    // Рендеримо статус Telegram
+    renderTelegramStatus();
+    
     renderColorPicker();
     
     document.getElementById('settings-overlay').classList.add('active');
@@ -4249,6 +4288,158 @@ async function toggleRoundRobinMember(memberId){
         
     } catch(err){
         console.error('Error updating queue:', err);
+    }
+}
+
+// ===== TELEGRAM NOTIFICATIONS =====
+const TELEGRAM_BOT_USERNAME = 'talko_crm_bot';
+
+async function renderTelegramStatus(){
+    const statusEl = document.getElementById('telegram-status');
+    const btnEl = document.getElementById('telegram-connect-btn');
+    if(!statusEl || !btnEl) return;
+    
+    // Отримуємо статус поточного користувача
+    const userId = currentUser?.uid;
+    if(!userId) {
+        statusEl.innerHTML = '<div class="telegram-status-row"><span class="telegram-status-icon inactive"></span> Увійдіть в систему</div>';
+        return;
+    }
+    
+    try {
+        // Перевіряємо чи підключений Telegram
+        const userDoc = await db.collection('users').doc(userId).get();
+        const userData = userDoc.exists ? userDoc.data() : {};
+        
+        const isConnected = userData.telegramChatId && userData.telegramNotifications;
+        
+        if(isConnected){
+            statusEl.innerHTML = `
+                <div class="telegram-status-row">
+                    <span class="telegram-status-icon active"></span>
+                    <span style="color:#059669;font-weight:500">Підключено</span>
+                </div>
+                <div style="font-size:12px;color:#6b7280">
+                    ${userData.telegramFirstName ? 'Telegram: ' + escapeHtml(userData.telegramFirstName) : ''}
+                </div>
+            `;
+            statusEl.className = 'telegram-status connected';
+            
+            btnEl.innerHTML = `
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                Відключити сповіщення
+            `;
+            btnEl.className = 'telegram-connect-btn disconnect';
+            btnEl.onclick = disconnectTelegram;
+        } else {
+            statusEl.innerHTML = `
+                <div class="telegram-status-row">
+                    <span class="telegram-status-icon inactive"></span>
+                    <span style="color:#6b7280">Не підключено</span>
+                </div>
+                <div style="font-size:12px;color:#9ca3af">
+                    Отримуйте сповіщення про нових лідів
+                </div>
+            `;
+            statusEl.className = 'telegram-status disconnected';
+            
+            btnEl.innerHTML = `
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13"/><path d="M22 2L15 22L11 13L2 9L22 2Z"/></svg>
+                Підключити Telegram
+            `;
+            btnEl.className = 'telegram-connect-btn';
+            btnEl.onclick = connectTelegram;
+        }
+    } catch(err){
+        console.error('Error loading telegram status:', err);
+        statusEl.innerHTML = '<div style="color:#ef4444">Помилка завантаження</div>';
+    }
+}
+
+function connectTelegram(){
+    const userId = currentUser?.uid;
+    if(!userId){
+        showError('Спочатку увійдіть в систему');
+        return;
+    }
+    
+    // Генеруємо посилання на бота з user ID
+    const botLink = `https://t.me/${TELEGRAM_BOT_USERNAME}?start=${userId}`;
+    
+    // Показуємо модальне вікно з посиланням
+    const statusEl = document.getElementById('telegram-status');
+    const sectionEl = document.getElementById('telegram-section');
+    
+    // Додаємо блок з посиланням
+    let linkBox = document.getElementById('telegram-link-box');
+    if(!linkBox){
+        linkBox = document.createElement('div');
+        linkBox.id = 'telegram-link-box';
+        linkBox.className = 'telegram-link-box';
+        sectionEl.appendChild(linkBox);
+    }
+    
+    linkBox.innerHTML = `
+        <div class="telegram-link-label">1. Натисніть кнопку або скопіюйте посилання:</div>
+        <div class="telegram-link">
+            <input type="text" value="${botLink}" readonly onclick="this.select()">
+            <button onclick="copyTelegramLink('${botLink}')">Копіювати</button>
+        </div>
+        <div style="margin-top:12px">
+            <a href="${botLink}" target="_blank" style="display:inline-flex;align-items:center;gap:8px;padding:10px 16px;background:#0088cc;color:#fff;border-radius:8px;text-decoration:none;font-weight:500">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13"/><path d="M22 2L15 22L11 13L2 9L22 2Z"/></svg>
+                Відкрити бота
+            </a>
+        </div>
+        <div class="telegram-link-label" style="margin-top:12px">2. Натисніть "Start" або "/start" в боті</div>
+        <div class="telegram-link-label">3. Готово! Оновіть цю сторінку для перевірки</div>
+        <button onclick="renderTelegramStatus(); document.getElementById('telegram-link-box')?.remove()" style="margin-top:12px;padding:8px 16px;background:#f3f4f6;border:none;border-radius:6px;cursor:pointer;font-size:13px">
+            ✓ Я підключив бота — перевірити статус
+        </button>
+    `;
+}
+
+function copyTelegramLink(link){
+    navigator.clipboard.writeText(link).then(() => {
+        showToast('Посилання скопійовано!');
+    }).catch(() => {
+        // Fallback
+        const input = document.querySelector('#telegram-link-box input');
+        if(input){
+            input.select();
+            document.execCommand('copy');
+            showToast('Посилання скопійовано!');
+        }
+    });
+}
+
+async function disconnectTelegram(){
+    const userId = currentUser?.uid;
+    if(!userId) return;
+    
+    const confirmed = await confirmModal('Відключити Telegram сповіщення?', {
+        title: 'Відключення Telegram',
+        text: 'Ви більше не будете отримувати сповіщення про нових лідів.',
+        okText: 'Відключити',
+        danger: true
+    });
+    
+    if(!confirmed) return;
+    
+    try {
+        await db.collection('users').doc(userId).update({
+            telegramNotifications: false
+        });
+        
+        showToast('Telegram сповіщення відключено');
+        renderTelegramStatus();
+        
+        // Видаляємо link box якщо є
+        document.getElementById('telegram-link-box')?.remove();
+        
+    } catch(err){
+        console.error('Error disconnecting telegram:', err);
+        showError('Помилка: ' + err.message);
     }
 }
 
@@ -9022,12 +9213,19 @@ async function changeLeadStatus(leadId, newStatus) {
     lead.stageDate = new Date().toISOString();
     
     // Логіка для різних статусів - ЗАВДАННЯ ТА ДАТИ
+    // ВАЖЛИВО: Не перезаписуємо nextDate якщо вона вже встановлена на майбутнє
+    const existingDate = lead.nextDate;
+    const hasFutureDate = existingDate && existingDate >= today();
+    
     switch(newStatus) {
         case 'new':
         case 'contacted':
-            lead.nextDate = today();
-            lead.nextTime = '10:00';
-            lead.nextAction = 'Подзвонити';
+            // Тільки якщо немає майбутньої дати
+            if(!hasFutureDate) {
+                lead.nextDate = today();
+                lead.nextTime = lead.nextTime || '10:00';
+            }
+            lead.nextAction = lead.nextAction || 'Подзвонити';
             break;
             
         case 'scheduled':
