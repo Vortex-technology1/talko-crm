@@ -1808,11 +1808,22 @@
                             </select>
                         </div>
                     </div>
+                    
+                    <!-- Консультації -->
+                    <div class="form-group" style="margin-bottom:16px">
+                        <label class="form-label" style="display:flex;align-items:center;justify-content:space-between">
+                            <span>
+                                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:4px"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                                Консультації
+                            </span>
+                            <button type="button" class="btn btn-s" onclick="addConsultation()" style="padding:4px 8px;font-size:11px">+ Додати</button>
+                        </label>
+                        <div id="consultations-list" style="display:flex;flex-direction:column;gap:8px;margin-top:8px"></div>
+                        <!-- Старе поле для сумісності -->
+                        <input type="hidden" id="f-consult">
+                    </div>
+                    
                     <div class="form-row">
-                        <div class="form-group">
-                            <label class="form-label">Дата консультації</label>
-                            <input type="datetime-local" class="form-input" id="f-consult">
-                        </div>
                         <div class="form-group">
                             <label class="form-label">Повторних</label>
                             <select class="form-select" id="f-repeat"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option></select>
@@ -2007,11 +2018,15 @@
             <div class="quick-buttons">
                 <button class="quick-btn completed" onclick="confirmConsultation()" style="flex:1;justify-content:center">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
-                    Консультація підтверджена
+                    Підтверджено
+                </button>
+                <button class="quick-btn no-answer" onclick="consultationNotConfirmed()" style="flex:1;justify-content:center">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+                    Не підтвердив
                 </button>
             </div>
             <div style="margin-top:12px;padding:12px;background:#f0fdf4;border-radius:8px;font-size:13px;color:#166534">
-                Клієнт підтвердив що прийде на консультацію
+                Чи підтвердив клієнт що прийде на консультацію?
             </div>
         </div>
         
@@ -2104,6 +2119,45 @@
                     </button>
                 </div>
             </div>
+        </div>
+        
+        <!-- Status change section - always visible after outcome -->
+        <div class="quick-section" id="quick-status-section" style="display:none">
+            <div class="quick-section-title">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                Змінити статус
+            </div>
+            <div class="quick-buttons" id="quick-status-buttons" style="flex-wrap:wrap;gap:8px">
+                <button class="quick-btn" onclick="setQuickStatus('new')" data-status="new" style="flex:0 0 auto">
+                    <span style="width:8px;height:8px;border-radius:50%;background:#3b82f6"></span>
+                    Новий
+                </button>
+                <button class="quick-btn" onclick="setQuickStatus('consult')" data-status="consult" style="flex:0 0 auto">
+                    <span style="width:8px;height:8px;border-radius:50%;background:#8b5cf6"></span>
+                    Консультація
+                </button>
+                <button class="quick-btn" onclick="setQuickStatus('report_sent')" data-status="report_sent" style="flex:0 0 auto">
+                    <span style="width:8px;height:8px;border-radius:50%;background:#f59e0b"></span>
+                    Звіт
+                </button>
+                <button class="quick-btn" onclick="setQuickStatus('repeat')" data-status="repeat" style="flex:0 0 auto">
+                    <span style="width:8px;height:8px;border-radius:50%;background:#ec4899"></span>
+                    Повторна
+                </button>
+                <button class="quick-btn" onclick="setQuickStatus('deposit')" data-status="deposit" style="flex:0 0 auto">
+                    <span style="width:8px;height:8px;border-radius:50%;background:#10b981"></span>
+                    Завдаток
+                </button>
+                <button class="quick-btn" onclick="setQuickStatus('paid')" data-status="paid" style="flex:0 0 auto">
+                    <span style="width:8px;height:8px;border-radius:50%;background:#22c55e"></span>
+                    Оплачено
+                </button>
+                <button class="quick-btn" onclick="setQuickStatus('failed')" data-status="failed" style="flex:0 0 auto">
+                    <span style="width:8px;height:8px;border-radius:50%;background:#ef4444"></span>
+                    Відмова
+                </button>
+            </div>
+            <div style="margin-top:8px;font-size:12px;color:#6b7280" id="quick-status-current"></div>
         </div>
         
         <!-- Action type - shown after time -->
@@ -5179,12 +5233,15 @@ function initFirestoreListener(){
                 });
                 console.log('onSnapshot: Received', snapshot.size, 'total,', leads.length, 'active leads');
                 
-                // Будуємо search index для швидкого пошуку
-                rebuildAllSearchIndexes();
-                
-                render();
-                setSyncStatus('synced', 'Синхронізовано');
-                updateOrgLeadsCount(leads.length);
+                // Спочатку швидкий рендер, потім побудова індексу у фоні
+                requestAnimationFrame(() => {
+                    render();
+                    setSyncStatus('synced', 'Синхронізовано');
+                    updateOrgLeadsCount(leads.length);
+                    
+                    // Будуємо search index після рендеру (не блокує UI)
+                    setTimeout(() => rebuildAllSearchIndexes(), 100);
+                });
             }, err => {
                 console.error('Firestore error:', err);
                 setSyncStatus('error', 'Помилка синхронізації');
@@ -6124,10 +6181,17 @@ let leads=[];
 let editing=null;
 let currentFilter='all';
 let taskFilter='all';
+let showAllTasksMode = false; // Режим показу всіх завдань без ліміту
 
 function setTaskFilter(f){
     taskFilter = f;
+    showAllTasksMode = false; // Скидаємо при зміні фільтра
     renderTaskFilters(); // Перемалювати вкладки з активним станом
+    renderTasks();
+}
+
+function showAllTasks() {
+    showAllTasksMode = true;
     renderTasks();
 }
 
@@ -6373,7 +6437,18 @@ function getTasks(){
         // ========== ПРИЗНАЧЕНА КОНСУЛЬТАЦІЯ ==========
         if(l.status==='scheduled'||l.status==='repeat'){
             let cd = null, consultTime = null;
-            if(l.consult){
+            
+            // Шукаємо наступну активну консультацію з масиву
+            const nextConsult = (l.consultations || []).find(c => 
+                (c.status === 'scheduled' || c.status === 'confirmed') && c.date
+            );
+            
+            if(nextConsult) {
+                const consultStr = String(nextConsult.date);
+                cd = consultStr.includes('T') ? consultStr.split('T')[0] : consultStr;
+                consultTime = consultStr.includes('T') ? consultStr.split('T')[1]?.slice(0,5) : null;
+            } else if(l.consult) {
+                // Fallback на старе поле
                 const consultStr = String(l.consult);
                 cd = consultStr.includes('T') ? consultStr.split('T')[0] : consultStr;
                 consultTime = consultStr.includes('T') ? consultStr.split('T')[1]?.slice(0,5) : null;
@@ -6710,6 +6785,10 @@ function renderTasks(){
     document.getElementById('task-count').textContent=tasks.length;
     const c=document.getElementById('tasks-list');
     
+    // Обмежуємо початковий рендер для швидкості (показуємо перші 50)
+    const INITIAL_LIMIT = showAllTasksMode ? 9999 : 50;
+    const hasMore = !showAllTasksMode && tasks.length > 50;
+    
     // Онбординг якщо немає лідів взагалі
     if(!leads.length){
         c.innerHTML=`<div class="onboarding">
@@ -6793,33 +6872,33 @@ function renderTasks(){
     });
     
     let html = '<div class="tasks-list">';
+    let rendered = 0;
     
-    if(overdue.length) {
-        html += `<div class="section-header"><span class="dot red"></span>Прострочено · ${overdue.length}</div>`;
-        overdue.forEach(t => html += renderTaskRow(t, 'overdue'));
-    }
+    // Функція для рендеру групи з урахуванням ліміту
+    const renderGroup = (group, label, dotClass, status) => {
+        if(!group.length || rendered >= INITIAL_LIMIT) return '';
+        let groupHtml = `<div class="section-header"><span class="dot ${dotClass}"></span>${label} · ${group.length}</div>`;
+        const toRender = group.slice(0, INITIAL_LIMIT - rendered);
+        toRender.forEach(t => groupHtml += renderTaskRow(t, status));
+        rendered += toRender.length;
+        return groupHtml;
+    };
     
-    if(nowTasks.length) {
-        html += `<div class="section-header"><span class="dot blue"></span>Зараз · ${nowTasks.length}</div>`;
-        nowTasks.forEach(t => html += renderTaskRow(t, 'now'));
-    }
-    
-    if(todayTasks.length) {
-        html += `<div class="section-header"><span class="dot blue"></span>Сьогодні · ${todayTasks.length}</div>`;
-        todayTasks.forEach(t => html += renderTaskRow(t, 'today'));
-    }
-    
-    if(tomorrowTasks.length) {
-        html += `<div class="section-header"><span class="dot gray"></span>Завтра · ${tomorrowTasks.length}</div>`;
-        tomorrowTasks.forEach(t => html += renderTaskRow(t, 'tomorrow'));
-    }
-    
-    if(later.length) {
-        html += `<div class="section-header"><span class="dot gray"></span>Пізніше · ${later.length}</div>`;
-        later.forEach(t => html += renderTaskRow(t, 'later'));
-    }
+    html += renderGroup(overdue, 'Прострочено', 'red', 'overdue');
+    html += renderGroup(nowTasks, 'Зараз', 'blue', 'now');
+    html += renderGroup(todayTasks, 'Сьогодні', 'blue', 'today');
+    html += renderGroup(tomorrowTasks, 'Завтра', 'gray', 'tomorrow');
+    html += renderGroup(later, 'Пізніше', 'gray', 'later');
     
     html += '</div>';
+    
+    // Якщо є ще завдання, показуємо кнопку
+    if(hasMore) {
+        html += `<div style="text-align:center;padding:16px">
+            <button class="btn btn-s" onclick="showAllTasks()">Показати всі (${tasks.length})</button>
+        </div>`;
+    }
+    
     c.innerHTML = html;
 }
 
@@ -6930,7 +7009,8 @@ async function taskAction(id,a){
             addLog(lead,'status','Заморожено на '+months+' міс.');
             break;
         case'confirm':
-            lead.confirmedToday = false;
+            lead.confirmedToday = true;
+            lead.confirmedDate = today(); // ФІКС: дата підтвердження
             // Якщо консультація сьогодні чи завтра - підтвердили і чекаємо
             if(lead.consult){
                 const cd = lead.consult.split('T')[0];
@@ -8473,7 +8553,11 @@ function fillForm(l){
     document.getElementById('f-primary-channel').value=l.primaryChannel||'phone';
     document.getElementById('f-biz').value=l.biz||'';
     document.getElementById('f-source').value=l.source||'';
-    document.getElementById('f-consult').value=l.consult||'';
+    
+    // Консультації - рендеримо список
+    renderConsultationsList(l.consultations || (l.consult ? [{date: l.consult, status: 'scheduled'}] : []));
+    document.getElementById('f-consult').value=l.consult||''; // для сумісності
+    
     document.getElementById('f-repeat').value=l.repeatCount||'0';
     document.getElementById('f-calls').value=l.calls||'0';
     document.getElementById('f-sms').value=l.sms||'0';
@@ -8495,6 +8579,106 @@ function fillForm(l){
     document.getElementById('fin-paid-date').value=l.finPaidDate||'';
     onStatusChange();
     renderCommLog(l);
+}
+
+// ===== КОНСУЛЬТАЦІЇ =====
+let currentConsultations = [];
+
+function renderConsultationsList(consultations) {
+    currentConsultations = consultations || [];
+    const container = document.getElementById('consultations-list');
+    if(!container) return;
+    
+    if(currentConsultations.length === 0) {
+        container.innerHTML = '<div style="color:#9ca3af;font-size:13px;padding:8px 0">Немає запланованих консультацій</div>';
+        return;
+    }
+    
+    container.innerHTML = currentConsultations.map((c, i) => {
+        const statusColors = {
+            'scheduled': { bg: '#dbeafe', color: '#1d4ed8', label: 'Заплановано' },
+            'confirmed': { bg: '#d1fae5', color: '#059669', label: 'Підтверджено' },
+            'completed': { bg: '#f0fdf4', color: '#166534', label: 'Проведено' },
+            'cancelled': { bg: '#fee2e2', color: '#dc2626', label: 'Скасовано' },
+            'noshow': { bg: '#fef3c7', color: '#d97706', label: 'Не прийшов' }
+        };
+        const st = statusColors[c.status] || statusColors.scheduled;
+        const dateStr = c.date ? new Date(c.date).toLocaleString('uk-UA', {day:'numeric', month:'short', hour:'2-digit', minute:'2-digit'}) : '—';
+        
+        return `
+            <div style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:#f9fafb;border-radius:8px;border:1px solid #e5e7eb">
+                <div style="flex:1">
+                    <div style="font-weight:500;font-size:14px">${dateStr}</div>
+                    <div style="font-size:12px;color:${st.color};background:${st.bg};display:inline-block;padding:2px 8px;border-radius:4px;margin-top:4px">${st.label}</div>
+                </div>
+                <select onchange="updateConsultationStatus(${i}, this.value)" style="font-size:12px;padding:4px 8px;border-radius:4px;border:1px solid #d1d5db">
+                    <option value="scheduled" ${c.status==='scheduled'?'selected':''}>Заплановано</option>
+                    <option value="confirmed" ${c.status==='confirmed'?'selected':''}>Підтверджено</option>
+                    <option value="completed" ${c.status==='completed'?'selected':''}>Проведено</option>
+                    <option value="noshow" ${c.status==='noshow'?'selected':''}>Не прийшов</option>
+                    <option value="cancelled" ${c.status==='cancelled'?'selected':''}>Скасовано</option>
+                </select>
+                <button type="button" onclick="removeConsultation(${i})" style="background:none;border:none;color:#ef4444;cursor:pointer;padding:4px">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+            </div>
+        `;
+    }).join('');
+}
+
+function addConsultation() {
+    const dateInput = prompt('Дата і час консультації (формат: 2025-02-10 14:00)');
+    if(!dateInput) return;
+    
+    // Парсимо дату
+    let dateStr;
+    try {
+        const parts = dateInput.trim().split(' ');
+        const datePart = parts[0];
+        const timePart = parts[1] || '10:00';
+        dateStr = datePart + 'T' + timePart;
+        new Date(dateStr); // Перевірка валідності
+    } catch(e) {
+        showWarning('Невірний формат дати');
+        return;
+    }
+    
+    currentConsultations.push({
+        date: dateStr,
+        status: 'scheduled',
+        createdAt: new Date().toISOString()
+    });
+    
+    // Оновлюємо старе поле для сумісності (перша активна консультація)
+    updateLegacyConsultField();
+    
+    renderConsultationsList(currentConsultations);
+}
+
+function updateConsultationStatus(index, status) {
+    if(currentConsultations[index]) {
+        currentConsultations[index].status = status;
+        updateLegacyConsultField();
+        renderConsultationsList(currentConsultations);
+    }
+}
+
+function removeConsultation(index) {
+    currentConsultations.splice(index, 1);
+    updateLegacyConsultField();
+    renderConsultationsList(currentConsultations);
+}
+
+function updateLegacyConsultField() {
+    // Знаходимо наступну активну консультацію для сумісності
+    const activeConsult = currentConsultations.find(c => 
+        c.status === 'scheduled' || c.status === 'confirmed'
+    );
+    document.getElementById('f-consult').value = activeConsult?.date || '';
+}
+
+function getConsultationsFromForm() {
+    return currentConsultations;
 }
 async function saveLeadForm(){
     const phone=document.getElementById('f-phone').value;
@@ -8521,6 +8705,7 @@ async function saveLeadForm(){
         biz:document.getElementById('f-biz').value,
         source:document.getElementById('f-source').value,
         consult:document.getElementById('f-consult').value,
+        consultations: getConsultationsFromForm(),
         repeatCount:+document.getElementById('f-repeat').value||0,
         calls:+document.getElementById('f-calls').value||0,
         sms:+document.getElementById('f-sms').value||0,
@@ -9502,7 +9687,8 @@ let quickState = {
     outcome: null,
     time: null,
     action: null,
-    note: ''
+    note: '',
+    newStatus: null
 };
 
 // ===== CONTACT LINKS =====
@@ -9648,7 +9834,7 @@ function openQuickPanel(id) {
     if(!l) return;
     
     quickLeadId = id;
-    quickState = { outcome: null, time: null, action: null, note: '' };
+    quickState = { outcome: null, time: null, action: null, note: '', newStatus: null };
     
     // Fill lead info
     document.getElementById('quick-lead-name').textContent = l.tg || l.phone || '—';
@@ -9726,6 +9912,11 @@ function toggleNotesExpand() {
 function closeQuickPanel() {
     document.getElementById('quick-panel').classList.remove('active');
     document.querySelector('.quick-panel-overlay').classList.remove('active');
+    
+    // Скидаємо секцію статусу
+    const statusSection = document.getElementById('quick-status-section');
+    if(statusSection) statusSection.style.display = 'none';
+    
     quickLeadId = null;
 }
 
@@ -9735,6 +9926,7 @@ function confirmConsultation() {
     
     const lead = leads[idx]; // Працюємо з оригіналом!
     lead.confirmedToday = true;
+    lead.confirmedDate = today(); // ФІКС: встановлюємо дату підтвердження
     lead.calls = (lead.calls || 0) + 1;
     
     // Встановлюємо наступне завдання на день консультації
@@ -9748,11 +9940,41 @@ function confirmConsultation() {
     addLog(lead, 'call', 'Консультація підтверджена');
     
     // Зберігаємо напряму в Firebase
-    const cleanData = cleanForFirestore(lead); // Оптимізовано
+    const cleanData = cleanForFirestore(lead);
 
     db.collection('organizations').doc(currentOrg.id).collection('leads').doc(lead.id).set(cleanData, { merge: true })
         .catch(err => showError('Помилка збереження: ' + err.message));
     
+    closeQuickPanel();
+    render();
+}
+
+// Функція коли клієнт НЕ підтвердив консультацію
+function consultationNotConfirmed() {
+    if(!quickPanelLeadId) return;
+    
+    const lead = leads.find(l => l.id === quickPanelLeadId);
+    if(!lead) return;
+    
+    // Збільшуємо лічильник неявок
+    lead.noshow = (lead.noshow || 0) + 1;
+    
+    // Переносимо консультацію на наступний день
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    lead.nextDate = tomorrow.toISOString().split('T')[0];
+    lead.nextTime = '10:00';
+    lead.nextAction = 'Передзвонити (не підтвердив)';
+    
+    addLog(lead, 'noshow', 'Не підтвердив консультацію');
+    
+    // Зберігаємо напряму в Firebase
+    const cleanData = cleanForFirestore(lead);
+
+    db.collection('organizations').doc(currentOrg.id).collection('leads').doc(lead.id).set(cleanData, { merge: true })
+        .catch(err => showError('Помилка збереження: ' + err.message));
+    
+    showToast('Записано неявку');
     closeQuickPanel();
     render();
 }
@@ -9764,8 +9986,22 @@ function setQuickOutcome(outcome) {
     document.querySelectorAll('#quick-outcome-buttons .quick-btn').forEach(b => b.classList.remove('selected'));
     event.target.closest('.quick-btn').classList.add('selected');
     
-    // Always show comment section
+    // Always show comment section and status section
     document.getElementById('quick-comment-section').style.display = 'block';
+    document.getElementById('quick-status-section').style.display = 'block';
+    
+    // Show current status
+    if(quickPanelLeadId) {
+        const lead = leads.find(l => l.id === quickPanelLeadId);
+        if(lead) {
+            const statusEl = document.getElementById('quick-status-current');
+            statusEl.textContent = 'Поточний: ' + getStatusName(lead.status, lead.funnelId);
+            // Highlight current status button
+            document.querySelectorAll('#quick-status-buttons .quick-btn').forEach(b => {
+                b.classList.toggle('selected', b.dataset.status === lead.status);
+            });
+        }
+    }
     
     // Show next section based on outcome
     if(outcome === 'answered') {
@@ -9791,6 +10027,20 @@ function setQuickOutcome(outcome) {
     setTimeout(() => {
         document.getElementById('quick-comment-section').scrollIntoView({ behavior: 'smooth', block: 'center' });
     }, 100);
+}
+
+// Вибір статусу в Quick Panel
+function setQuickStatus(status) {
+    quickState.newStatus = status;
+    
+    // Highlight selected
+    document.querySelectorAll('#quick-status-buttons .quick-btn').forEach(b => {
+        b.classList.toggle('selected', b.dataset.status === status);
+    });
+    
+    // Update current status text
+    const statusEl = document.getElementById('quick-status-current');
+    statusEl.innerHTML = 'Буде змінено на: <strong>' + getStatusName(status) + '</strong>';
 }
 
 function setQuickTime(time) {
@@ -9978,6 +10228,19 @@ function confirmQuickAction() {
         const dateStr = new Date().toLocaleDateString('uk-UA');
         const existingNotes = String(lead.notes || '');
         lead.notes = (existingNotes + '\n[' + dateStr + '] ' + combinedNote).trim();
+    }
+    
+    // Змінюємо статус якщо вибрано новий
+    if(quickState.newStatus && quickState.newStatus !== lead.status) {
+        const oldStatus = lead.status;
+        lead.status = quickState.newStatus;
+        lead.stageDate = new Date().toISOString();
+        addLog(lead, 'status', getStatusName(oldStatus) + ' → ' + getStatusName(quickState.newStatus));
+        
+        // Якщо статус "failed" - встановлюємо дату реактивації
+        if(quickState.newStatus === 'failed') {
+            lead.reactDate = addDays(today(), 30);
+        }
     }
     
     // Зберігаємо напряму в Firebase
