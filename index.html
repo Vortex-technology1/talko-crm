@@ -2652,6 +2652,7 @@ function confirmInputModal() {
 
 // ===== CONFIRM MODAL (замість confirm) =====
 let confirmModalCallback = null;
+let confirmModalKeyHandler = null; // Зберігаємо посилання на handler для очистки
 
 /**
  * Красива модалка замість confirm()
@@ -2692,24 +2693,34 @@ function confirmModal(message, options = {}) {
         // Focus на OK кнопці
         setTimeout(() => okBtn.focus(), 100);
         
+        // Прибираємо попередній handler якщо був
+        if(confirmModalKeyHandler) {
+            document.removeEventListener('keydown', confirmModalKeyHandler);
+        }
+        
         // Escape для закриття
-        const handleKeydown = (e) => {
+        confirmModalKeyHandler = (e) => {
             if(e.key === 'Escape') {
                 closeConfirmModal(false);
-                document.removeEventListener('keydown', handleKeydown);
             }
             if(e.key === 'Enter') {
                 closeConfirmModal(true);
-                document.removeEventListener('keydown', handleKeydown);
             }
         };
-        document.addEventListener('keydown', handleKeydown);
+        document.addEventListener('keydown', confirmModalKeyHandler);
     });
 }
 
 function closeConfirmModal(result) {
     document.getElementById('confirm-modal').classList.remove('active');
     document.getElementById('confirm-modal-overlay').classList.remove('active');
+    
+    // Прибираємо event listener
+    if(confirmModalKeyHandler) {
+        document.removeEventListener('keydown', confirmModalKeyHandler);
+        confirmModalKeyHandler = null;
+    }
+    
     if(confirmModalCallback) {
         confirmModalCallback(result);
         confirmModalCallback = null;
@@ -3375,7 +3386,7 @@ function renderOrgSelector(){
     }
     
     list.innerHTML = orgsToShow.map(org => `
-        <button class="org-dropdown-item ${currentOrg?.id === org.id ? 'active' : ''}" onclick="selectOrganization('${org.id}');toggleOrgDropdown()">
+        <button class="org-dropdown-item ${currentOrg?.id === org.id ? 'active' : ''}" data-org-id="${escapeHtml(org.id)}">
             <div style="display:flex;flex-direction:column;align-items:flex-start;flex:1;min-width:0">
                 <div style="display:flex;align-items:center;gap:8px;width:100%">
                     <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
@@ -3386,6 +3397,14 @@ function renderOrgSelector(){
             </div>
         </button>
     `).join('');
+    
+    // Event delegation для безпеки
+    list.querySelectorAll('[data-org-id]').forEach(btn => {
+        btn.onclick = () => {
+            selectOrganization(btn.dataset.orgId);
+            toggleOrgDropdown();
+        };
+    });
 }
 
 function showNoOrgMessage(){
@@ -4535,8 +4554,83 @@ function throttle(func, limit) {
     };
 }
 
+// Debounce utility
+function debounce(func, wait) {
+    let timeout;
+    return function(...args) {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => func.apply(this, args), wait);
+    };
+}
+
+// Оптимізована функція очистки для Firestore (без подвійної серіалізації)
+function cleanForFirestore(obj) {
+    if (obj === null || obj === undefined) return null;
+    if (typeof obj !== 'object') return obj;
+    if (Array.isArray(obj)) {
+        return obj.map(item => cleanForFirestore(item));
+    }
+    
+    const clean = {};
+    for (const key of Object.keys(obj)) {
+        // Пропускаємо внутрішні кеш-поля
+        if (key.startsWith('_')) continue;
+        
+        const value = obj[key];
+        if (value === undefined) {
+            clean[key] = null;
+        } else if (value === null) {
+            clean[key] = null;
+        } else if (Array.isArray(value)) {
+            clean[key] = value.map(item => cleanForFirestore(item));
+        } else if (typeof value === 'object' && value !== null) {
+            // Перевіряємо чи це Date
+            if (value instanceof Date) {
+                clean[key] = value.toISOString();
+            } else {
+                clean[key] = cleanForFirestore(value);
+            }
+        } else {
+            clean[key] = value;
+        }
+    }
+    return clean;
+}
+
+// Debounced версія render для уникнення частих перемальовувань
+let renderDebounceTimer = null;
+function debouncedRender() {
+    clearTimeout(renderDebounceTimer);
+    renderDebounceTimer = setTimeout(() => {
+        render();
+    }, 50);
+}
+
 // ===== SEARCH =====
 let searchDebounceTimer = null;
+
+// Побудова search index для швидкого пошуку
+function buildSearchIndex(lead) {
+    const fields = [
+        lead.tg,
+        lead.phone,
+        lead.biz,
+        lead.email,
+        lead.notes,
+        lead.nextAction
+    ].filter(Boolean).join(' ').toLowerCase();
+    
+    // Нормалізований телефон для пошуку по цифрах
+    const phoneDigits = (lead.phone || '').replace(/\D/g, '');
+    
+    lead._searchIndex = fields;
+    lead._phoneDigits = phoneDigits;
+}
+
+// Побудова індексу для всіх лідів
+function rebuildAllSearchIndexes() {
+    leads.forEach(buildSearchIndex);
+}
 
 function handleSearch(query) {
     currentSearchQuery = query.toLowerCase().trim();
@@ -4571,26 +4665,21 @@ function clearSearch() {
 function matchesSearch(lead, query) {
     if(!query) return true;
     
+    // Використовуємо побудований індекс якщо є
+    if(lead._searchIndex === undefined) {
+        buildSearchIndex(lead);
+    }
+    
     // Нормалізуємо телефон (видаляємо все крім цифр)
     const normalizedQuery = query.replace(/\D/g, '');
-    const phoneDigits = (lead.phone || '').replace(/\D/g, '');
     
     // Якщо запит схожий на номер телефону (тільки цифри)
     if(normalizedQuery.length >= 3 && /^\d+$/.test(query.replace(/[\s\-\+]/g, ''))) {
-        if(phoneDigits.includes(normalizedQuery)) return true;
+        if(lead._phoneDigits && lead._phoneDigits.includes(normalizedQuery)) return true;
     }
     
-    // Звичайний текстовий пошук
-    const searchFields = [
-        lead.tg,
-        lead.phone,
-        lead.biz,
-        lead.email,
-        lead.notes,
-        lead.nextAction
-    ].filter(Boolean).map(f => f.toLowerCase());
-    
-    return searchFields.some(field => field.includes(query));
+    // Швидкий пошук по індексу
+    return lead._searchIndex.includes(query);
 }
 
 // Оновлюємо filterLeads для підтримки воронок та відповідальних
@@ -5089,6 +5178,10 @@ function initFirestoreListener(){
                     }
                 });
                 console.log('onSnapshot: Received', snapshot.size, 'total,', leads.length, 'active leads');
+                
+                // Будуємо search index для швидкого пошуку
+                rebuildAllSearchIndexes();
+                
                 render();
                 setSyncStatus('synced', 'Синхронізовано');
                 updateOrgLeadsCount(leads.length);
@@ -5215,11 +5308,11 @@ async function saveLeadToFirebase(lead, showStatus = false) {
         if(showStatus) setSyncStatus('syncing', 'Збереження...');
         
         // Clean undefined values (Firebase doesn't accept them)
-        const cleanData = JSON.parse(JSON.stringify(lead, (key, value) => 
-            value === undefined ? null : value
+        const cleanData = cleanForFirestore(lead); // Оптимізовано 
+    
         ));
         
-        await db.collection('organizations').doc(currentOrg.id).collection('leads').doc(lead.id).set(cleanData);
+        await db.collection('organizations').doc(currentOrg.id).collection('leads').doc(lead.id).set(cleanData, { merge: true });
         
         if(showStatus) setSyncStatus('synced', 'Синхронізовано');
         return true;
@@ -5242,13 +5335,11 @@ async function saveLead(leadData){
         // Валідація та санітизація
         const sanitized = sanitizeLead(leadData);
         
-        // Clean undefined values (Firebase doesn't accept them)
-        const cleanData = JSON.parse(JSON.stringify(sanitized, (key, value) => 
-            value === undefined ? null : value
-        ));
+        // Clean undefined values та внутрішні поля (Firebase doesn't accept them)
+        const cleanData = cleanForFirestore(sanitized);
         
         const docRef = db.collection('organizations').doc(currentOrg.id).collection('leads').doc(cleanData.id);
-        await docRef.set(cleanData);
+        await docRef.set(cleanData, { merge: true });
         setSyncStatus('synced', 'Синхронізовано');
         return true;
     } catch(err){
@@ -5420,10 +5511,10 @@ async function migrateAndCleanData(options = {}) {
             
             if (!dryRun) {
                 try {
-                    const cleanData = JSON.parse(JSON.stringify(lead, (key, value) => 
-                        value === undefined ? null : value
+                    const cleanData = cleanForFirestore(lead); // Оптимізовано 
+                
                     ));
-                    await db.collection('organizations').doc(currentOrg.id).collection('leads').doc(lead.id).set(cleanData);
+                    await db.collection('organizations').doc(currentOrg.id).collection('leads').doc(lead.id).set(cleanData, { merge: true });
                     results.fixed++;
                 } catch (err) {
                     results.errors++;
@@ -5675,10 +5766,8 @@ async function undo() {
                 const idx = leads.findIndex(l => l.id === item.data.id);
                 if (idx >= 0) {
                     Object.assign(leads[idx], item.data);
-                    const cleanData = JSON.parse(JSON.stringify(leads[idx], (key, value) => 
-                        value === undefined ? null : value
-                    ));
-                    await db.collection('organizations').doc(currentOrg.id).collection('leads').doc(item.data.id).set(cleanData);
+                    const cleanData = cleanForFirestore(leads[idx]);
+                    await db.collection('organizations').doc(currentOrg.id).collection('leads').doc(item.data.id).set(cleanData, { merge: true });
                 }
                 showToast('Скасовано');
                 render();
@@ -5687,10 +5776,8 @@ async function undo() {
             case 'delete_lead':
                 // Відновлюємо видаленого ліда
                 leads.push(item.data);
-                const cleanDataDel = JSON.parse(JSON.stringify(item.data, (key, value) => 
-                    value === undefined ? null : value
-                ));
-                await db.collection('organizations').doc(currentOrg.id).collection('leads').doc(item.data.id).set(cleanDataDel);
+                const cleanDataDel = cleanForFirestore(item.data);
+                await db.collection('organizations').doc(currentOrg.id).collection('leads').doc(item.data.id).set(cleanDataDel, { merge: true });
                 redoStack.push({ action: 'delete_lead', data: item.data });
                 showToast('Лід відновлено');
                 render();
@@ -5704,10 +5791,8 @@ async function undo() {
                         data: { id: lead.id, oldStatus: lead.status, newStatus: item.data.oldStatus }
                     });
                     lead.status = item.data.oldStatus;
-                    const cleanDataStatus = JSON.parse(JSON.stringify(lead, (key, value) => 
-                        value === undefined ? null : value
-                    ));
-                    await db.collection('organizations').doc(currentOrg.id).collection('leads').doc(lead.id).set(cleanDataStatus);
+                    const cleanDataStatus = cleanForFirestore(lead);
+                    await db.collection('organizations').doc(currentOrg.id).collection('leads').doc(lead.id).set(cleanDataStatus, { merge: true });
                     showToast('Статус повернено');
                     render();
                 }
@@ -5737,10 +5822,8 @@ async function redo() {
                 const idx = leads.findIndex(l => l.id === item.data.id);
                 if (idx >= 0) {
                     Object.assign(leads[idx], item.data);
-                    const cleanData = JSON.parse(JSON.stringify(leads[idx], (key, value) => 
-                        value === undefined ? null : value
-                    ));
-                    await db.collection('organizations').doc(currentOrg.id).collection('leads').doc(item.data.id).set(cleanData);
+                    const cleanData = cleanForFirestore(leads[idx]);
+                    await db.collection('organizations').doc(currentOrg.id).collection('leads').doc(item.data.id).set(cleanData, { merge: true });
                 }
                 showToast('Повторено');
                 render();
@@ -5776,24 +5859,49 @@ const AUTO_STATUS_RULES = [
 ];
 
 async function applyAutoStatusRules() {
-    let applied = 0;
+    if(!currentOrg?.id) return 0;
     
+    let applied = 0;
+    const leadsToUpdate = [];
+    
+    // Збираємо всі зміни без await
     for (let i = 0; i < leads.length; i++) {
-        const lead = leads[i]; // Працюємо з оригіналом!
+        const lead = leads[i];
         for (const rule of AUTO_STATUS_RULES) {
             if (rule.condition(lead)) {
-                // Застосовуємо зміни до оригіналу
                 const changes = rule.action(lead);
                 Object.assign(lead, changes);
                 addLog(lead, 'auto', rule.message);
-                
-                // Зберігаємо напряму в Firebase
-                const cleanData = JSON.parse(JSON.stringify(lead, (key, value) => 
-                    value === undefined ? null : value
-                ));
-                await db.collection('organizations').doc(currentOrg.id).collection('leads').doc(lead.id).set(cleanData);
+                leadsToUpdate.push(lead);
                 applied++;
             }
+        }
+    }
+    
+    // Batch write - до 500 операцій за раз
+    if(leadsToUpdate.length > 0) {
+        try {
+            // Розбиваємо на batch по 500
+            const batchSize = 500;
+            for(let i = 0; i < leadsToUpdate.length; i += batchSize) {
+                const batch = db.batch();
+                const chunk = leadsToUpdate.slice(i, i + batchSize);
+                
+                chunk.forEach(lead => {
+                    const cleanData = cleanForFirestore(lead); // Оптимізовано 
+                
+                    ));
+                    const docRef = db.collection('organizations').doc(currentOrg.id).collection('leads').doc(lead.id);
+                    batch.set(docRef, cleanData, { merge: true });
+                });
+                
+                await batch.commit();
+            }
+            
+            console.log(`Auto-status rules: batch saved ${applied} leads`);
+        } catch(err) {
+            console.error('Batch write error:', err);
+            showWarning('Помилка збереження auto-rules: ' + err.message);
         }
     }
     
@@ -7009,10 +7117,10 @@ async function taskAction(id,a){
     }
     
     // Зберігаємо напряму в Firebase
-    const cleanData = JSON.parse(JSON.stringify(lead, (key, value) => 
-        value === undefined ? null : value
+    const cleanData = cleanForFirestore(lead); // Оптимізовано 
+
     ));
-    db.collection('organizations').doc(currentOrg.id).collection('leads').doc(lead.id).set(cleanData)
+    db.collection('organizations').doc(currentOrg.id).collection('leads').doc(lead.id).set(cleanData, { merge: true })
         .catch(err => showError('Помилка збереження: ' + err.message));
     
     render();
@@ -7043,10 +7151,10 @@ async function quickComplete(id) {
     addLog(lead, 'call', 'Виконано: ' + (lead.nextAction || 'дзвінок'));
     
     // Зберігаємо напряму в Firebase
-    const cleanData = JSON.parse(JSON.stringify(lead, (key, value) => 
-        value === undefined ? null : value
+    const cleanData = cleanForFirestore(lead); // Оптимізовано 
+
     ));
-    db.collection('organizations').doc(currentOrg.id).collection('leads').doc(lead.id).set(cleanData)
+    db.collection('organizations').doc(currentOrg.id).collection('leads').doc(lead.id).set(cleanData, { merge: true })
         .catch(err => showError('Помилка збереження: ' + err.message));
     
     render();
@@ -7068,10 +7176,10 @@ async function quickReschedule(id) {
     addLog(lead, 'status', 'Перенесено на ' + nextDate + ' ' + nextTime);
     
     // Зберігаємо напряму в Firebase
-    const cleanData = JSON.parse(JSON.stringify(lead, (key, value) => 
-        value === undefined ? null : value
+    const cleanData = cleanForFirestore(lead); // Оптимізовано 
+
     ));
-    db.collection('organizations').doc(currentOrg.id).collection('leads').doc(lead.id).set(cleanData)
+    db.collection('organizations').doc(currentOrg.id).collection('leads').doc(lead.id).set(cleanData, { merge: true })
         .catch(err => showError('Помилка збереження: ' + err.message));
     
     render();
@@ -8480,8 +8588,7 @@ async function saveLeadForm(){
     if(saveBtn) { saveBtn.disabled = true; saveBtn.textContent = 'Збереження...'; }
     
     try {
-        // Оновлюємо локальний масив
-        const idx = leads.findIndex(l => l.id === data.id);
+        // Оновлюємо локальний масив (використовуємо вже знайдений idx)
         if (idx >= 0) {
             leads[idx] = data;
         } else {
@@ -8493,7 +8600,7 @@ async function saveLeadForm(){
         
         closeModal();
         render();
-        showToast(idx >= 0 ? 'Збережено' : 'Ліда додано');
+        showToast(isNew ? 'Ліда додано' : 'Збережено');
     } catch(err) {
         console.error('Save error:', err);
         showError('Помилка збереження: ' + err.message);
@@ -8519,11 +8626,14 @@ function onStatusChange(){
 }
 
 // ===== LEAD SCORING =====
+// Кеш скорингу в Map - не забруднює обʼєкти лідів і не потрапляє в Firestore
+const scoreCache = new Map();
+
 function calcScore(l){
-    // Кешуємо результат на основі ключових полів
-    const cacheKey = `${l.status}_${l.source}_${l.noshow}_${l.calls}_${l.finDep}_${l.stageDate}_${l.report?.length||0}`;
-    if(l._scoreCache === cacheKey && l._cachedScore !== undefined) {
-        return l._cachedScore;
+    // Кешуємо результат на основі ID + ключових полів
+    const cacheKey = `${l.id}_${l.status}_${l.source}_${l.noshow}_${l.calls}_${l.finDep}_${l.stageDate}_${l.report?.length||0}`;
+    if(scoreCache.has(cacheKey)) {
+        return scoreCache.get(cacheKey);
     }
     
     let score=50; // базовий
@@ -8580,8 +8690,14 @@ function calcScore(l){
     
     // Обмежуємо 0-100 та кешуємо
     const result = Math.max(0,Math.min(100,score));
-    l._scoreCache = cacheKey;
-    l._cachedScore = result;
+    scoreCache.set(cacheKey, result);
+    
+    // Очищуємо кеш якщо занадто великий (>5000 записів)
+    if(scoreCache.size > 5000) {
+        const keysToDelete = Array.from(scoreCache.keys()).slice(0, 1000);
+        keysToDelete.forEach(k => scoreCache.delete(k));
+    }
+    
     return result;
 }
 
@@ -8612,10 +8728,8 @@ function addComm(){
     if(type==='sms'){l.sms=(l.sms||0)+1;document.getElementById('f-sms').value=l.sms;}
     
     // Зберігаємо напряму в Firebase
-    const cleanData = JSON.parse(JSON.stringify(l, (key, value) => 
-        value === undefined ? null : value
-    ));
-    db.collection('organizations').doc(currentOrg.id).collection('leads').doc(l.id).set(cleanData)
+    const cleanData = cleanForFirestore(l);
+    db.collection('organizations').doc(currentOrg.id).collection('leads').doc(l.id).set(cleanData, { merge: true })
         .catch(err => showError('Помилка збереження: ' + err.message));
     
     renderCommLog(l);
@@ -9354,11 +9468,11 @@ async function changeLeadStatus(leadId, newStatus) {
     
     // Зберігаємо в Firebase напряму
     try {
-        const cleanData = JSON.parse(JSON.stringify(lead, (key, value) => 
-            value === undefined ? null : value
+        const cleanData = cleanForFirestore(lead); // Оптимізовано 
+    
         ));
         
-        await db.collection('organizations').doc(currentOrg.id).collection('leads').doc(lead.id).set(cleanData);
+        await db.collection('organizations').doc(currentOrg.id).collection('leads').doc(lead.id).set(cleanData, { merge: true });
         showToast(`${getStatusName(oldStatus)} → ${getStatusName(newStatus)}`);
     } catch(err) {
         lead.status = oldStatus; // Відкатуємо при помилці
@@ -9642,10 +9756,10 @@ function confirmConsultation() {
     addLog(lead, 'call', 'Консультація підтверджена');
     
     // Зберігаємо напряму в Firebase
-    const cleanData = JSON.parse(JSON.stringify(lead, (key, value) => 
-        value === undefined ? null : value
+    const cleanData = cleanForFirestore(lead); // Оптимізовано 
+
     ));
-    db.collection('organizations').doc(currentOrg.id).collection('leads').doc(lead.id).set(cleanData)
+    db.collection('organizations').doc(currentOrg.id).collection('leads').doc(lead.id).set(cleanData, { merge: true })
         .catch(err => showError('Помилка збереження: ' + err.message));
     
     closeQuickPanel();
@@ -9827,10 +9941,10 @@ async function setQuickFinal(finalAction) {
     
     // Зберігаємо напряму в Firebase
     try {
-        const cleanData = JSON.parse(JSON.stringify(lead, (key, value) => 
-            value === undefined ? null : value
+        const cleanData = cleanForFirestore(lead); // Оптимізовано 
+    
         ));
-        await db.collection('organizations').doc(currentOrg.id).collection('leads').doc(lead.id).set(cleanData);
+        await db.collection('organizations').doc(currentOrg.id).collection('leads').doc(lead.id).set(cleanData, { merge: true });
     } catch(err) {
         showError('Помилка збереження: ' + err.message);
     }
@@ -9877,10 +9991,10 @@ function confirmQuickAction() {
     }
     
     // Зберігаємо напряму в Firebase
-    const cleanData = JSON.parse(JSON.stringify(lead, (key, value) => 
-        value === undefined ? null : value
+    const cleanData = cleanForFirestore(lead); // Оптимізовано 
+
     ));
-    db.collection('organizations').doc(currentOrg.id).collection('leads').doc(lead.id).set(cleanData)
+    db.collection('organizations').doc(currentOrg.id).collection('leads').doc(lead.id).set(cleanData, { merge: true })
         .catch(err => showError('Помилка збереження: ' + err.message));
     
     closeQuickPanel();
