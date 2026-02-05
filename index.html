@@ -5308,9 +5308,7 @@ async function saveLeadToFirebase(lead, showStatus = false) {
         if(showStatus) setSyncStatus('syncing', 'Збереження...');
         
         // Clean undefined values (Firebase doesn't accept them)
-        const cleanData = cleanForFirestore(lead); // Оптимізовано 
-    
-        ));
+        const cleanData = cleanForFirestore(lead);
         
         await db.collection('organizations').doc(currentOrg.id).collection('leads').doc(lead.id).set(cleanData, { merge: true });
         
@@ -5511,9 +5509,8 @@ async function migrateAndCleanData(options = {}) {
             
             if (!dryRun) {
                 try {
-                    const cleanData = cleanForFirestore(lead); // Оптимізовано 
+                    const cleanData = cleanForFirestore(lead); // Оптимізовано
                 
-                    ));
                     await db.collection('organizations').doc(currentOrg.id).collection('leads').doc(lead.id).set(cleanData, { merge: true });
                     results.fixed++;
                 } catch (err) {
@@ -5888,9 +5885,8 @@ async function applyAutoStatusRules() {
                 const chunk = leadsToUpdate.slice(i, i + batchSize);
                 
                 chunk.forEach(lead => {
-                    const cleanData = cleanForFirestore(lead); // Оптимізовано 
+                    const cleanData = cleanForFirestore(lead); // Оптимізовано
                 
-                    ));
                     const docRef = db.collection('organizations').doc(currentOrg.id).collection('leads').doc(lead.id);
                     batch.set(docRef, cleanData, { merge: true });
                 });
@@ -7117,9 +7113,8 @@ async function taskAction(id,a){
     }
     
     // Зберігаємо напряму в Firebase
-    const cleanData = cleanForFirestore(lead); // Оптимізовано 
+    const cleanData = cleanForFirestore(lead); // Оптимізовано
 
-    ));
     db.collection('organizations').doc(currentOrg.id).collection('leads').doc(lead.id).set(cleanData, { merge: true })
         .catch(err => showError('Помилка збереження: ' + err.message));
     
@@ -7151,9 +7146,8 @@ async function quickComplete(id) {
     addLog(lead, 'call', 'Виконано: ' + (lead.nextAction || 'дзвінок'));
     
     // Зберігаємо напряму в Firebase
-    const cleanData = cleanForFirestore(lead); // Оптимізовано 
+    const cleanData = cleanForFirestore(lead); // Оптимізовано
 
-    ));
     db.collection('organizations').doc(currentOrg.id).collection('leads').doc(lead.id).set(cleanData, { merge: true })
         .catch(err => showError('Помилка збереження: ' + err.message));
     
@@ -7176,9 +7170,8 @@ async function quickReschedule(id) {
     addLog(lead, 'status', 'Перенесено на ' + nextDate + ' ' + nextTime);
     
     // Зберігаємо напряму в Firebase
-    const cleanData = cleanForFirestore(lead); // Оптимізовано 
+    const cleanData = cleanForFirestore(lead); // Оптимізовано
 
-    ));
     db.collection('organizations').doc(currentOrg.id).collection('leads').doc(lead.id).set(cleanData, { merge: true })
         .catch(err => showError('Помилка збереження: ' + err.message));
     
@@ -9468,9 +9461,8 @@ async function changeLeadStatus(leadId, newStatus) {
     
     // Зберігаємо в Firebase напряму
     try {
-        const cleanData = cleanForFirestore(lead); // Оптимізовано 
+        const cleanData = cleanForFirestore(lead); // Оптимізовано
     
-        ));
         
         await db.collection('organizations').doc(currentOrg.id).collection('leads').doc(lead.id).set(cleanData, { merge: true });
         showToast(`${getStatusName(oldStatus)} → ${getStatusName(newStatus)}`);
@@ -9756,9 +9748,8 @@ function confirmConsultation() {
     addLog(lead, 'call', 'Консультація підтверджена');
     
     // Зберігаємо напряму в Firebase
-    const cleanData = cleanForFirestore(lead); // Оптимізовано 
+    const cleanData = cleanForFirestore(lead); // Оптимізовано
 
-    ));
     db.collection('organizations').doc(currentOrg.id).collection('leads').doc(lead.id).set(cleanData, { merge: true })
         .catch(err => showError('Помилка збереження: ' + err.message));
     
@@ -9941,9 +9932,8 @@ async function setQuickFinal(finalAction) {
     
     // Зберігаємо напряму в Firebase
     try {
-        const cleanData = cleanForFirestore(lead); // Оптимізовано 
+        const cleanData = cleanForFirestore(lead); // Оптимізовано
     
-        ));
         await db.collection('organizations').doc(currentOrg.id).collection('leads').doc(lead.id).set(cleanData, { merge: true });
     } catch(err) {
         showError('Помилка збереження: ' + err.message);
@@ -9991,9 +9981,8 @@ function confirmQuickAction() {
     }
     
     // Зберігаємо напряму в Firebase
-    const cleanData = cleanForFirestore(lead); // Оптимізовано 
+    const cleanData = cleanForFirestore(lead); // Оптимізовано
 
-    ));
     db.collection('organizations').doc(currentOrg.id).collection('leads').doc(lead.id).set(cleanData, { merge: true })
         .catch(err => showError('Помилка збереження: ' + err.message));
     
