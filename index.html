@@ -5605,18 +5605,6 @@ function openLeadFromDuplicates(leadId) {
     
     // Відкриваємо картку ліда
     openModal(leadId);
-    
-    // При закритті картки - показуємо модалку дублікатів назад
-    const leadModal = document.getElementById('modal');
-    if(leadModal) {
-        const originalClose = leadModal.onclick;
-        leadModal.onclick = function(e) {
-            if(e.target === leadModal) {
-                closeModal();
-                if(dupModal) dupModal.style.display = 'flex';
-            }
-        };
-    }
 }
 
 function selectDuplicateGroup(groupIndex) {
@@ -10605,9 +10593,9 @@ function confirmConsultation() {
 
 // Функція коли клієнт НЕ підтвердив консультацію
 function consultationNotConfirmed() {
-    if(!quickPanelLeadId) return;
+    if(!quickLeadId) return;
     
-    const lead = leads.find(l => l.id === quickPanelLeadId);
+    const lead = leads.find(l => l.id === quickLeadId);
     if(!lead) return;
     
     // Збільшуємо лічильник неявок
@@ -10646,8 +10634,8 @@ function setQuickOutcome(outcome) {
     document.getElementById('quick-status-section').style.display = 'block';
     
     // Show current status
-    if(quickPanelLeadId) {
-        const lead = leads.find(l => l.id === quickPanelLeadId);
+    if(quickLeadId) {
+        const lead = leads.find(l => l.id === quickLeadId);
         if(lead) {
             const statusEl = document.getElementById('quick-status-current');
             statusEl.textContent = 'Поточний: ' + getStatusName(lead.status, lead.funnelId);
