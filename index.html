@@ -5599,8 +5599,24 @@ function closeDuplicatesModal() {
 
 // Відкрити картку ліда з модалки дублікатів
 function openLeadFromDuplicates(leadId) {
-    // Не закриваємо модалку - просто відкриваємо картку поверх
+    // Тимчасово ховаємо модалку дублікатів
+    const dupModal = document.getElementById('duplicates-modal');
+    if(dupModal) dupModal.style.display = 'none';
+    
+    // Відкриваємо картку ліда
     openModal(leadId);
+    
+    // При закритті картки - показуємо модалку дублікатів назад
+    const leadModal = document.getElementById('modal');
+    if(leadModal) {
+        const originalClose = leadModal.onclick;
+        leadModal.onclick = function(e) {
+            if(e.target === leadModal) {
+                closeModal();
+                if(dupModal) dupModal.style.display = 'flex';
+            }
+        };
+    }
 }
 
 function selectDuplicateGroup(groupIndex) {
@@ -5779,21 +5795,34 @@ function initFirestoreListener(){
         
         // Таймаут для fallback якщо onSnapshot не спрацює
         let dataReceived = false;
+        const cachedCount = leads.length; // Запам'ятовуємо скільки було в кеші
+        
         const fallbackTimeout = setTimeout(async () => {
             if(!dataReceived) {
                 console.log('onSnapshot timeout, trying .get() fallback...');
                 try {
                     const snapshot = await db.collection('organizations').doc(orgId).collection('leads').get();
                     if(!dataReceived) { // Перевіряємо ще раз
-                        leads = [];
+                        const fallbackLeads = [];
                         snapshot.forEach(doc => {
                             const data = doc.data();
                             if (!data.deleted) {
-                                leads.push({ id: doc.id, ...data });
+                                fallbackLeads.push({ id: doc.id, ...data });
                             }
                         });
-                        console.log('Fallback .get(): Loaded', leads.length, 'leads');
-                        cacheLeadsLocally(orgId, leads);
+                        console.log('Fallback .get(): Loaded', fallbackLeads.length, 'leads');
+                        
+                        // FIX: Якщо fallback повернув 0, але в кеші були дані - залишаємо кеш
+                        if(fallbackLeads.length === 0 && cachedCount > 0) {
+                            console.log('Fallback returned 0 but cache had', cachedCount, '- keeping cache');
+                            setSyncStatus('error', 'Проблема з підключенням');
+                            return;
+                        }
+                        
+                        leads = fallbackLeads;
+                        if(leads.length > 0) {
+                            cacheLeadsLocally(orgId, leads);
+                        }
                         render();
                         setSyncStatus('synced', 'Синхронізовано (offline)');
                         updateOrgLeadsCount(leads.length);
@@ -9121,7 +9150,14 @@ function onFunnelChange(){
     }
 }
 
-function closeModal(){document.getElementById('modal').classList.remove('active');editing=null;}
+function closeModal(){
+    document.getElementById('modal').classList.remove('active');
+    editing=null;
+    
+    // Якщо була відкрита модалка дублікатів - показуємо її назад
+    const dupModal = document.getElementById('duplicates-modal');
+    if(dupModal) dupModal.style.display = 'flex';
+}
 function switchTab(t){
     document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
     document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));
