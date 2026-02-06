@@ -5557,9 +5557,12 @@ function showDuplicatesModal(duplicates) {
                         </div>
                         <div style="padding:8px">
                             ${group.leads.map(lead => `
-                                <div style="display:flex;align-items:center;gap:12px;padding:8px 12px;border-radius:8px;margin:4px 0;background:#fff;border:1px solid #f3f4f6">
+                                <div onclick="openLeadFromDuplicates('${lead.id}')" style="display:flex;align-items:center;gap:12px;padding:8px 12px;border-radius:8px;margin:4px 0;background:#fff;border:1px solid #f3f4f6;cursor:pointer;transition:all .15s" onmouseover="this.style.background='#f0fdf4';this.style.borderColor='#22c55e'" onmouseout="this.style.background='#fff';this.style.borderColor='#f3f4f6'">
                                     <div style="flex:1">
-                                        <div style="font-weight:500">${escapeHtml(lead.tg || lead.phone || 'Без контакту')}</div>
+                                        <div style="font-weight:500;display:flex;align-items:center;gap:6px">
+                                            ${escapeHtml(lead.tg || lead.phone || 'Без контакту')}
+                                            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#9ca3af" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                                        </div>
                                         ${lead.biz ? `<div style="font-size:12px;color:#6b7280">${escapeHtml(lead.biz)}</div>` : ''}
                                     </div>
                                     <div style="text-align:right;font-size:12px;color:#9ca3af">
@@ -5592,6 +5595,12 @@ function closeDuplicatesModal() {
     const modal = document.getElementById('duplicates-modal');
     if(modal) modal.remove();
     window._duplicateGroups = null;
+}
+
+// Відкрити картку ліда з модалки дублікатів
+function openLeadFromDuplicates(leadId) {
+    // Не закриваємо модалку - просто відкриваємо картку поверх
+    openModal(leadId);
 }
 
 function selectDuplicateGroup(groupIndex) {
