@@ -5279,9 +5279,40 @@ function initFirestoreListener(){
             return;
         }
         
+        // Таймаут для fallback якщо onSnapshot не спрацює
+        let dataReceived = false;
+        const fallbackTimeout = setTimeout(async () => {
+            if(!dataReceived) {
+                console.log('onSnapshot timeout, trying .get() fallback...');
+                try {
+                    const snapshot = await db.collection('organizations').doc(orgId).collection('leads').get();
+                    if(!dataReceived) { // Перевіряємо ще раз
+                        leads = [];
+                        snapshot.forEach(doc => {
+                            const data = doc.data();
+                            if (!data.deleted) {
+                                leads.push({ id: doc.id, ...data });
+                            }
+                        });
+                        console.log('Fallback .get(): Loaded', leads.length, 'leads');
+                        cacheLeadsLocally(orgId, leads);
+                        render();
+                        setSyncStatus('synced', 'Синхронізовано (offline)');
+                        updateOrgLeadsCount(leads.length);
+                    }
+                } catch(err) {
+                    console.error('Fallback .get() error:', err);
+                    setSyncStatus('error', 'Помилка завантаження');
+                }
+            }
+        }, 5000); // 5 секунд таймаут
+        
         // Простий запит - всі ліди, сортування на клієнті
         unsubscribe = db.collection('organizations').doc(orgId).collection('leads')
             .onSnapshot(snapshot => {
+                dataReceived = true;
+                clearTimeout(fallbackTimeout);
+                
                 // FIX: Подвійна перевірка що організація все ще та сама
                 if(currentOrg?.id !== orgId) {
                     console.log('onSnapshot: org changed, ignoring update');
@@ -5312,6 +5343,7 @@ function initFirestoreListener(){
                 });
             }, err => {
                 console.error('Firestore error:', err);
+                clearTimeout(fallbackTimeout);
                 setSyncStatus('error', 'Помилка синхронізації');
             });
     }, 50); // 50ms затримка
