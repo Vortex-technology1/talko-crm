@@ -1525,6 +1525,10 @@
             <div class="bulk-bar" id="bulk-bar">
                 <span class="bulk-count"><span id="bulk-count">0</span> вибрано</span>
                 <div class="bulk-actions">
+                    <button class="bulk-btn" onclick="bulkMerge()" id="bulk-merge-btn" style="display:none">
+                        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
+                        Об'єднати
+                    </button>
                     <button class="bulk-btn" onclick="bulkAssign()">
                         <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                         Призначити
@@ -4955,9 +4959,15 @@ function toggleLeadSelection(leadId) {
 function updateBulkBar() {
     const bar = document.getElementById('bulk-bar');
     const count = document.getElementById('bulk-count');
+    const mergeBtn = document.getElementById('bulk-merge-btn');
     if(!bar || !count) return;
     
     count.textContent = selectedLeadIds.size;
+    
+    // Показуємо кнопку "Об'єднати" тільки якщо вибрано 2+ лідів
+    if(mergeBtn) {
+        mergeBtn.style.display = selectedLeadIds.size >= 2 ? 'inline-flex' : 'none';
+    }
     
     if(selectedLeadIds.size > 0) {
         bar.classList.add('active');
@@ -5132,6 +5142,221 @@ async function bulkDelete() {
     } finally {
         hideLoading();
     }
+}
+
+// ===== ОБ'ЄДНАННЯ ЛІДІВ =====
+async function bulkMerge() {
+    if(selectedLeadIds.size < 2) {
+        showWarning('Виберіть мінімум 2 ліди для об\'єднання');
+        return;
+    }
+    
+    if(!currentOrg?.id) {
+        showWarning('Організацію не вибрано');
+        return;
+    }
+    
+    // Збираємо вибрані ліди
+    const selectedLeads = [];
+    for(const leadId of selectedLeadIds) {
+        const lead = leads.find(l => l.id === leadId);
+        if(lead) selectedLeads.push(lead);
+    }
+    
+    if(selectedLeads.length < 2) return;
+    
+    // Сортуємо за датою створення (найстаріший = основний)
+    selectedLeads.sort((a, b) => {
+        const dateA = a.created ? new Date(a.created) : new Date(0);
+        const dateB = b.created ? new Date(b.created) : new Date(0);
+        return dateA - dateB;
+    });
+    
+    // Показуємо діалог вибору основного ліда
+    const primaryLead = await showMergeDialog(selectedLeads);
+    if(!primaryLead) return;
+    
+    const othersToMerge = selectedLeads.filter(l => l.id !== primaryLead.id);
+    
+    showLoading('Об\'єднання лідів...');
+    
+    try {
+        // Об'єднуємо дані в основний лід
+        const mergedLead = mergeTwoLeads(primaryLead, othersToMerge);
+        
+        // Зберігаємо об'єднаний лід
+        await saveLeadToFirebase(mergedLead);
+        
+        // Видаляємо інші ліди (м'яке видалення)
+        for(const otherLead of othersToMerge) {
+            otherLead.deleted = true;
+            otherLead.deletedAt = new Date().toISOString();
+            otherLead.mergedInto = primaryLead.id;
+            await saveLeadToFirebase(otherLead);
+        }
+        
+        showToast(`Об\'єднано ${selectedLeads.length} лідів в один`);
+        clearBulkSelection();
+        render();
+        
+    } catch(err) {
+        console.error('Merge error:', err);
+        showError('Помилка об\'єднання: ' + err.message);
+    } finally {
+        hideLoading();
+    }
+}
+
+// Діалог вибору основного ліда
+async function showMergeDialog(leadsToMerge) {
+    return new Promise((resolve) => {
+        const modal = document.createElement('div');
+        modal.className = 'modal active';
+        modal.id = 'merge-modal';
+        modal.innerHTML = `
+            <div class="modal-content" style="max-width:500px">
+                <div class="modal-header">
+                    <h3>Об'єднання лідів</h3>
+                    <button class="modal-close" onclick="closeMergeDialog(null)">&times;</button>
+                </div>
+                <div class="modal-body" style="padding:16px">
+                    <p style="margin-bottom:16px;color:#6b7280">Виберіть основний лід, в який буде об'єднано решту:</p>
+                    <div style="display:flex;flex-direction:column;gap:8px;max-height:300px;overflow-y:auto">
+                        ${leadsToMerge.map((lead, idx) => `
+                            <label class="merge-option" style="display:flex;align-items:center;gap:12px;padding:12px;border:2px solid ${idx === 0 ? '#22c55e' : '#e5e7eb'};border-radius:8px;cursor:pointer;transition:all .2s">
+                                <input type="radio" name="primary-lead" value="${lead.id}" ${idx === 0 ? 'checked' : ''} style="width:18px;height:18px">
+                                <div style="flex:1">
+                                    <div style="font-weight:600">${escapeHtml(lead.tg || lead.phone || 'Без контакту')}</div>
+                                    ${lead.biz ? `<div style="font-size:13px;color:#6b7280">${escapeHtml(lead.biz)}</div>` : ''}
+                                    <div style="font-size:12px;color:#9ca3af;margin-top:4px">
+                                        ${getStatusName(lead.status || 'new')} • 
+                                        ${lead.calls || 0} дзв. • 
+                                        ${lead.log?.length || 0} записів
+                                        ${lead.finDep ? ` • Завдаток: ${lead.finDep}` : ''}
+                                    </div>
+                                </div>
+                                ${idx === 0 ? '<span style="font-size:11px;padding:2px 6px;background:#dcfce7;color:#16a34a;border-radius:4px">Найстаріший</span>' : ''}
+                            </label>
+                        `).join('')}
+                    </div>
+                    <div style="background:#fef3c7;padding:12px;border-radius:8px;margin-top:16px">
+                        <div style="font-weight:600;color:#92400e;margin-bottom:4px">⚠️ Що буде об'єднано:</div>
+                        <ul style="margin:0;padding-left:20px;font-size:13px;color:#78350f">
+                            <li>Історія комунікацій (всі записи)</li>
+                            <li>Лічильники (дзвінки, SMS, no-show — сумуються)</li>
+                            <li>Фінанси (завдаток, сума — з основного або найбільша)</li>
+                            <li>Примітки (об'єднуються)</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="modal-footer" style="padding:16px;border-top:1px solid #e5e7eb;display:flex;gap:8px;justify-content:flex-end">
+                    <button class="btn btn-s" onclick="closeMergeDialog(null)">Скасувати</button>
+                    <button class="btn btn-p" onclick="confirmMerge()">Об'єднати</button>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        
+        // Підсвітка вибраного
+        modal.querySelectorAll('input[name="primary-lead"]').forEach(input => {
+            input.addEventListener('change', () => {
+                modal.querySelectorAll('.merge-option').forEach(opt => {
+                    opt.style.borderColor = '#e5e7eb';
+                });
+                input.closest('.merge-option').style.borderColor = '#22c55e';
+            });
+        });
+        
+        window._mergeResolve = resolve;
+        window._mergeLeads = leadsToMerge;
+    });
+}
+
+function closeMergeDialog(result) {
+    const modal = document.getElementById('merge-modal');
+    if(modal) modal.remove();
+    if(window._mergeResolve) {
+        window._mergeResolve(result);
+        window._mergeResolve = null;
+        window._mergeLeads = null;
+    }
+}
+
+function confirmMerge() {
+    const selected = document.querySelector('input[name="primary-lead"]:checked');
+    if(!selected || !window._mergeLeads) {
+        closeMergeDialog(null);
+        return;
+    }
+    const primaryLead = window._mergeLeads.find(l => l.id === selected.value);
+    closeMergeDialog(primaryLead);
+}
+
+// Об'єднання даних лідів
+function mergeTwoLeads(primary, others) {
+    const merged = { ...primary };
+    
+    // Об'єднуємо історію комунікацій
+    let allLogs = [...(primary.log || [])];
+    for(const other of others) {
+        if(other.log && other.log.length > 0) {
+            allLogs = allLogs.concat(other.log.map(log => ({
+                ...log,
+                text: log.text + ' [об\'єднано з ' + (other.tg || other.phone || other.id) + ']'
+            })));
+        }
+    }
+    // Сортуємо за датою
+    allLogs.sort((a, b) => new Date(a.date) - new Date(b.date));
+    merged.log = allLogs;
+    
+    // Сумуємо лічильники
+    merged.calls = (primary.calls || 0);
+    merged.sms = (primary.sms || 0);
+    merged.noshow = (primary.noshow || 0);
+    for(const other of others) {
+        merged.calls += (other.calls || 0);
+        merged.sms += (other.sms || 0);
+        merged.noshow += (other.noshow || 0);
+    }
+    
+    // Фінанси — беремо найбільші
+    for(const other of others) {
+        if((other.finDep || 0) > (merged.finDep || 0)) {
+            merged.finDep = other.finDep;
+            merged.finDepCur = other.finDepCur;
+        }
+        if((other.finTotal || 0) > (merged.finTotal || 0)) {
+            merged.finTotal = other.finTotal;
+            merged.finTotalCur = other.finTotalCur;
+        }
+    }
+    
+    // Об'єднуємо примітки
+    let notes = primary.notes || '';
+    for(const other of others) {
+        if(other.notes) {
+            notes += '\n---\n[Об\'єднано з ' + (other.tg || other.phone || other.id) + ']\n' + other.notes;
+        }
+    }
+    merged.notes = notes.trim();
+    
+    // Зберігаємо альтернативні контакти
+    const altContacts = [];
+    for(const other of others) {
+        if(other.phone && other.phone !== primary.phone) altContacts.push(other.phone);
+        if(other.tg && other.tg !== primary.tg) altContacts.push('@' + other.tg.replace('@', ''));
+        if(other.email && other.email !== primary.email) altContacts.push(other.email);
+    }
+    if(altContacts.length > 0) {
+        merged.altContacts = altContacts.join(', ');
+    }
+    
+    // Додаємо запис в лог
+    addLog(merged, 'status', `Об'єднано ${others.length + 1} лідів`);
+    
+    return merged;
 }
 
 // ===== AUTO-ASSIGNMENT =====
