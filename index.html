@@ -54,6 +54,7 @@
         .auth-close{position:absolute;top:20px;right:20px;background:none;border:none;color:#64748b;cursor:pointer;font-size:24px}
         .auth-close:hover{color:#fff}
         .spinner{width:40px;height:40px;border:3px solid var(--gl);border-top-color:var(--p);border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 16px}
+        .spinner-small{width:16px;height:16px;border:2px solid #e5e7eb;border-top-color:var(--p);border-radius:50%;animation:spin 0.8s linear infinite;display:inline-block}
         @keyframes spin{to{transform:rotate(360deg)}}
         
         /* User menu */
@@ -4697,6 +4698,12 @@ function handleSearch(query) {
     
     updateClearFiltersButton();
     
+    // Якщо пошук активний і є ще незавантажені ліди - завантажуємо все
+    if(currentSearchQuery.length >= 2 && paginationState.hasMore) {
+        loadAllLeads();
+        return; // loadAllLeads сам зробить render()
+    }
+    
     // Debounced render (300ms delay)
     clearTimeout(searchDebounceTimer);
     searchDebounceTimer = setTimeout(() => {
@@ -5179,6 +5186,135 @@ async function incrementRoundRobinIndex(){
 // FIX: Додаємо debounce для запобігання швидких перемикань
 let pendingListenerTimeout = null;
 
+// ===== ПАГІНАЦІЯ =====
+const PAGE_SIZE = 50; // Кількість лідів на сторінку
+let paginationState = {
+    lastDoc: null,      // Останній документ для курсору
+    hasMore: true,      // Чи є ще дані
+    isLoading: false,   // Чи зараз завантажується
+    totalLoaded: 0      // Скільки вже завантажено
+};
+
+// Завантажити наступну порцію лідів
+async function loadMoreLeads() {
+    if(!paginationState.hasMore || paginationState.isLoading || !currentOrg?.id) {
+        return;
+    }
+    
+    paginationState.isLoading = true;
+    const loadMoreBtn = document.getElementById('load-more-btn');
+    if(loadMoreBtn) {
+        loadMoreBtn.disabled = true;
+        loadMoreBtn.innerHTML = '<span class="spinner-small"></span> Завантаження...';
+    }
+    
+    try {
+        let query = db.collection('organizations').doc(currentOrg.id).collection('leads')
+            .orderBy('created', 'desc'); // Той самий порядок що і в initFirestoreListener
+        
+        if(paginationState.lastDoc) {
+            query = query.startAfter(paginationState.lastDoc);
+        }
+        
+        const snapshot = await query.limit(PAGE_SIZE).get();
+        
+        snapshot.forEach(doc => {
+            const data = doc.data();
+            if(!data.deleted) {
+                // Перевіряємо чи немає дубліката
+                if(!leads.find(l => l.id === doc.id)) {
+                    leads.push({ id: doc.id, ...data });
+                }
+            }
+        });
+        
+        if(snapshot.docs.length > 0) {
+            paginationState.lastDoc = snapshot.docs[snapshot.docs.length - 1];
+        }
+        paginationState.hasMore = snapshot.docs.length >= PAGE_SIZE;
+        paginationState.totalLoaded = leads.length;
+        
+        console.log('loadMoreLeads: +', snapshot.docs.length, 'leads, total:', leads.length);
+        
+        // Оновлюємо кеш
+        cacheLeadsLocally(currentOrg.id, leads);
+        
+        // Перерендер
+        render();
+        
+    } catch(err) {
+        console.error('loadMoreLeads error:', err);
+        showWarning('Помилка завантаження: ' + err.message);
+    } finally {
+        paginationState.isLoading = false;
+        // Кнопка може змінитись після render(), шукаємо заново
+        const btn = document.getElementById('load-more-btn');
+        if(btn) {
+            btn.disabled = false;
+            btn.innerHTML = `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg> Завантажити ще`;
+        }
+    }
+}
+
+// Завантажити ВСІ ліди (для пошуку/експорту)
+async function loadAllLeads() {
+    if(paginationState.isLoading || !currentOrg?.id) return;
+    
+    // Якщо вже все завантажено
+    if(!paginationState.hasMore) {
+        showToast('Всі ліди вже завантажені');
+        return;
+    }
+    
+    showLoading('Завантаження всіх лідів...');
+    paginationState.isLoading = true;
+    
+    try {
+        let iterations = 0;
+        const maxIterations = 100; // Захист від нескінченного циклу
+        
+        while(paginationState.hasMore && iterations < maxIterations) {
+            iterations++;
+            
+            let query = db.collection('organizations').doc(currentOrg.id).collection('leads')
+                .orderBy('created', 'desc');
+            
+            if(paginationState.lastDoc) {
+                query = query.startAfter(paginationState.lastDoc);
+            }
+            
+            const snapshot = await query.limit(PAGE_SIZE).get();
+            
+            snapshot.forEach(doc => {
+                const data = doc.data();
+                if(!data.deleted && !leads.find(l => l.id === doc.id)) {
+                    leads.push({ id: doc.id, ...data });
+                }
+            });
+            
+            if(snapshot.docs.length > 0) {
+                paginationState.lastDoc = snapshot.docs[snapshot.docs.length - 1];
+            }
+            paginationState.hasMore = snapshot.docs.length >= PAGE_SIZE;
+        }
+        
+        paginationState.totalLoaded = leads.length;
+        console.log('loadAllLeads: total', leads.length, 'leads in', iterations, 'iterations');
+        
+        cacheLeadsLocally(currentOrg.id, leads);
+        rebuildAllSearchIndexes();
+        render();
+        showToast(`Завантажено всі ${leads.length} лідів`);
+        
+    } catch(err) {
+        console.error('loadAllLeads error:', err);
+        showWarning('Помилка завантаження: ' + err.message);
+    } finally {
+        paginationState.isLoading = false;
+        hideLoading();
+    }
+}
+
 // Кеш лідів в localStorage для швидкого старту
 function cacheLeadsLocally(orgId, leadsData) {
     try {
@@ -5249,6 +5385,12 @@ function initFirestoreListener(){
     // FIX: Зберігаємо ID організації локально
     const orgId = currentOrg.id;
     
+    // Скидаємо стан пагінації
+    paginationState.hasMore = true;
+    paginationState.lastDoc = null;
+    paginationState.isLoading = false;
+    paginationState.totalLoaded = 0;
+    
     // FIX: Невелика затримка для запобігання race condition при швидкому перемиканні
     pendingListenerTimeout = setTimeout(() => {
         // Перевіряємо чи організація не змінилась
@@ -5257,22 +5399,56 @@ function initFirestoreListener(){
             return;
         }
         
+        // ПАГІНАЦІЯ: Вантажимо порціями по PAGE_SIZE
+        // Простий запит без compound index - фільтруємо deleted на клієнті
         unsubscribe = db.collection('organizations').doc(orgId).collection('leads')
+            .orderBy('created', 'desc') // Найновіші спочатку
+            .limit(PAGE_SIZE)
             .onSnapshot(snapshot => {
                 // FIX: Подвійна перевірка що організація все ще та сама
                 if(currentOrg?.id !== orgId) {
                     console.log('onSnapshot: org changed, ignoring update');
                     return;
                 }
-                leads = [];
-                snapshot.forEach(doc => {
-                    const data = doc.data();
-                    // Фільтруємо видалених лідів
-                    if (!data.deleted) {
-                        leads.push({ id: doc.id, ...data });
-                    }
-                });
-                console.log('onSnapshot: Received', snapshot.size, 'total,', leads.length, 'active leads');
+                
+                // ФІКС: Не перезатираємо leads якщо вже завантажено більше однієї сторінки
+                // onSnapshot оновлює тільки ПЕРШУ сторінку
+                const isFirstPage = paginationState.totalLoaded <= PAGE_SIZE;
+                
+                if(isFirstPage) {
+                    leads = [];
+                    snapshot.forEach(doc => {
+                        const data = doc.data();
+                        if (!data.deleted) {
+                            leads.push({ id: doc.id, ...data });
+                        }
+                    });
+                } else {
+                    // Оновлюємо тільки існуючі документи з першої сторінки
+                    snapshot.forEach(doc => {
+                        const data = doc.data();
+                        const existingIdx = leads.findIndex(l => l.id === doc.id);
+                        if(existingIdx >= 0) {
+                            if(data.deleted) {
+                                leads.splice(existingIdx, 1); // Видаляємо якщо deleted
+                            } else {
+                                leads[existingIdx] = { id: doc.id, ...data }; // Оновлюємо
+                            }
+                        } else if(!data.deleted) {
+                            // Новий лід - додаємо на початок
+                            leads.unshift({ id: doc.id, ...data });
+                        }
+                    });
+                }
+                
+                // Зберігаємо останній документ для пагінації (тільки якщо перша сторінка)
+                if(isFirstPage && snapshot.docs.length > 0) {
+                    paginationState.lastDoc = snapshot.docs[snapshot.docs.length - 1];
+                    paginationState.hasMore = snapshot.docs.length >= PAGE_SIZE;
+                }
+                paginationState.totalLoaded = leads.length;
+                
+                console.log('onSnapshot: Loaded', leads.length, 'leads', isFirstPage ? '(page 1)' : '(update)', paginationState.hasMore ? '- has more' : '- all loaded');
                 
                 // Кешуємо для швидкого старту наступного разу
                 cacheLeadsLocally(orgId, leads);
@@ -5281,7 +5457,7 @@ function initFirestoreListener(){
                 requestAnimationFrame(() => {
                     render();
                     setSyncStatus('synced', 'Синхронізовано');
-                    updateOrgLeadsCount(leads.length);
+                    updateOrgLeadsCount(leads.length + (paginationState.hasMore ? '+' : ''));
                     
                     // Будуємо search index після рендеру (не блокує UI)
                     setTimeout(() => rebuildAllSearchIndexes(), 100);
@@ -6936,10 +7112,23 @@ function renderTasks(){
     
     html += '</div>';
     
-    // Якщо є ще завдання, показуємо кнопку
+    // Якщо є ще завдання для показу (локально)
     if(hasMore) {
         html += `<div style="text-align:center;padding:16px">
-            <button class="btn btn-s" onclick="showAllTasks()">Показати всі (${tasks.length})</button>
+            <button class="btn btn-s" onclick="showAllTasks()">Показати всі завантажені (${tasks.length})</button>
+        </div>`;
+    }
+    
+    // Якщо є ще дані в Firestore - показуємо кнопку завантажити
+    if(paginationState.hasMore) {
+        html += `<div style="text-align:center;padding:16px;border-top:1px solid #e5e7eb;margin-top:8px">
+            <button class="btn btn-p" id="load-more-btn" onclick="loadMoreLeads()" style="gap:8px">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                Завантажити ще
+            </button>
+            <div style="font-size:12px;color:#6b7280;margin-top:8px">
+                Завантажено ${leads.length} лідів
+            </div>
         </div>`;
     }
     
@@ -7339,7 +7528,8 @@ function filterLeads(arr){
 function renderKanban(){
     const cols = getStatusIds();
     const filtered = filterLeads(leads);
-    document.getElementById('kanban').innerHTML = cols.map(s => {
+    
+    let html = cols.map(s => {
         const items = filtered.filter(l => l.status === s);
         const color = getStatusColor(s);
         // Екрануємо ID для безпечного використання в HTML
@@ -7351,6 +7541,18 @@ function renderKanban(){
             </div>
         </div>`;
     }).join('');
+    
+    // Додаємо інфо про пагінацію
+    if(paginationState.hasMore) {
+        html += `<div style="position:fixed;bottom:80px;left:50%;transform:translateX(-50%);z-index:100">
+            <button class="btn btn-p" onclick="loadMoreLeads()" style="box-shadow:0 4px 12px rgba(0,0,0,0.15);gap:8px">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                Ще ліди (${leads.length} завантажено)
+            </button>
+        </div>`;
+    }
+    
+    document.getElementById('kanban').innerHTML = html;
 }
 
 function getTags(l){
@@ -7799,7 +8001,12 @@ function setReportPeriod(p, btn){
     renderReports(p);
 }
 
-function renderReports(periodType = 'week'){
+async function renderReports(periodType = 'week'){
+    // Для точних звітів потрібні ВСІ ліди
+    if(paginationState.hasMore) {
+        await loadAllLeads();
+    }
+    
     const fromDate = document.getElementById('date-from').value;
     const toDate = document.getElementById('date-to').value;
     
@@ -8962,7 +9169,12 @@ function addLog(l,type,text){if(!l.log)l.log=[];l.log.push({type,text,date:new D
 function qAction(a){if(!editing)return;closeModal();taskAction(editing,a==='call'?'call_later':a==='sms'?'followup':a==='schedule'?'schedule':'fail');}
 
 // ===== IMPORT/EXPORT =====
-function exportXLS(){
+async function exportXLS(){
+    // Спочатку завантажуємо всі ліди якщо є ще сторінки
+    if(paginationState.hasMore) {
+        await loadAllLeads();
+    }
+    
     if(!leads.length){showToast('Немає даних для експорту');return;}
     const data=leads.map(l=>({Телеграм:l.tg,Телефон:l.phone,Бізнес:l.biz,Джерело:SRC[l.source]||l.source,Статус:ST[l.status]||l.status,Консультація:l.consult,Дзвінки:l.calls,SMS:l.sms,'Наступна дія':l.nextDate,Завдаток:l.finDep,'Повна сума':l.finTotal,Примітки:l.notes}));
     const ws=XLSX.utils.json_to_sheet(data);
