@@ -5399,6 +5399,7 @@ function detectDuplicates(leadsArray) {
     const phoneMap = new Map(); // phone -> [leads]
     const tgMap = new Map();    // telegram -> [leads]
     const emailMap = new Map(); // email -> [leads]
+    const nameMap = new Map();  // name/biz -> [leads]
     const duplicateGroups = [];
     const processedIds = new Set();
     
@@ -5414,7 +5415,20 @@ function detectDuplicates(leadsArray) {
         return tg.toLowerCase().replace('@', '').trim();
     };
     
-    // Групуємо по телефону
+    // Нормалізація імені/назви для порівняння
+    const normalizeName = (name) => {
+        if(!name) return null;
+        // Видаляємо зайві пробіли, переводимо в lowercase
+        const normalized = name.toLowerCase().trim().replace(/\s+/g, ' ');
+        // Ігноруємо занадто короткі імена (менше 4 символів)
+        if(normalized.length < 4) return null;
+        // Ігноруємо загальні слова
+        const ignore = ['новий', 'новий лід', 'new', 'test', 'тест', 'невідомий', 'unknown'];
+        if(ignore.includes(normalized)) return null;
+        return normalized;
+    };
+    
+    // Групуємо по телефону, telegram, email, імені
     leadsArray.forEach(lead => {
         const phone = normalizePhone(lead.phone);
         if(phone && phone.length >= 7) {
@@ -5432,6 +5446,13 @@ function detectDuplicates(leadsArray) {
         if(email && email.includes('@')) {
             if(!emailMap.has(email)) emailMap.set(email, []);
             emailMap.get(email).push(lead);
+        }
+        
+        // Пошук по імені або назві бізнесу
+        const name = normalizeName(lead.name) || normalizeName(lead.biz);
+        if(name) {
+            if(!nameMap.has(name)) nameMap.set(name, []);
+            nameMap.get(name).push(lead);
         }
     });
     
@@ -5478,6 +5499,10 @@ function detectDuplicates(leadsArray) {
         if(leads.length > 1) addGroup(leads, 'email', email);
     });
     
+    nameMap.forEach((leads, name) => {
+        if(leads.length > 1) addGroup(leads, 'name', name);
+    });
+    
     // Сортуємо групи за кількістю лідів (більші групи спочатку)
     duplicateGroups.sort((a, b) => b.leads.length - a.leads.length);
     
@@ -5515,8 +5540,15 @@ function showDuplicatesModal(duplicates) {
                                 <span style="font-weight:600">Група ${idx + 1}</span>
                                 <span style="color:#6b7280;margin-left:8px">${group.leads.length} ліди</span>
                                 <span style="background:#fef3c7;color:#92400e;padding:2px 8px;border-radius:4px;font-size:11px;margin-left:8px;display:inline-flex;align-items:center;gap:4px">
-                                    ${group.matchTypes.map(t => t === 'phone' ? '<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>' : t === 'telegram' ? '<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>' : '<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>').join(' ')}
+                                    ${group.matchTypes.map(t => {
+                                        if(t === 'phone') return '<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>';
+                                        if(t === 'telegram') return '<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>';
+                                        if(t === 'email') return '<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>';
+                                        if(t === 'name') return '<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>';
+                                        return '';
+                                    }).join(' ')}
                                     ${group.matchValue || ''}
+                                </span>
                                 </span>
                             </div>
                             <button class="btn btn-s" onclick="selectDuplicateGroup(${idx})" style="padding:4px 12px;font-size:12px">
