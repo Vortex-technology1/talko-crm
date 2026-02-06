@@ -4698,12 +4698,6 @@ function handleSearch(query) {
     
     updateClearFiltersButton();
     
-    // Якщо пошук активний і є ще незавантажені ліди - завантажуємо все
-    if(currentSearchQuery.length >= 2 && paginationState.hasMore) {
-        loadAllLeads();
-        return; // loadAllLeads сам зробить render()
-    }
-    
     // Debounced render (300ms delay)
     clearTimeout(searchDebounceTimer);
     searchDebounceTimer = setTimeout(() => {
@@ -5209,8 +5203,7 @@ async function loadMoreLeads() {
     }
     
     try {
-        let query = db.collection('organizations').doc(currentOrg.id).collection('leads')
-            .orderBy('created', 'desc'); // Той самий порядок що і в initFirestoreListener
+        let query = db.collection('organizations').doc(currentOrg.id).collection('leads');
         
         if(paginationState.lastDoc) {
             query = query.startAfter(paginationState.lastDoc);
@@ -5276,8 +5269,7 @@ async function loadAllLeads() {
         while(paginationState.hasMore && iterations < maxIterations) {
             iterations++;
             
-            let query = db.collection('organizations').doc(currentOrg.id).collection('leads')
-                .orderBy('created', 'desc');
+            let query = db.collection('organizations').doc(currentOrg.id).collection('leads');
             
             if(paginationState.lastDoc) {
                 query = query.startAfter(paginationState.lastDoc);
@@ -5385,12 +5377,6 @@ function initFirestoreListener(){
     // FIX: Зберігаємо ID організації локально
     const orgId = currentOrg.id;
     
-    // Скидаємо стан пагінації
-    paginationState.hasMore = true;
-    paginationState.lastDoc = null;
-    paginationState.isLoading = false;
-    paginationState.totalLoaded = 0;
-    
     // FIX: Невелика затримка для запобігання race condition при швидкому перемиканні
     pendingListenerTimeout = setTimeout(() => {
         // Перевіряємо чи організація не змінилась
@@ -5399,11 +5385,8 @@ function initFirestoreListener(){
             return;
         }
         
-        // ПАГІНАЦІЯ: Вантажимо порціями по PAGE_SIZE
-        // Простий запит без compound index - фільтруємо deleted на клієнті
+        // Простий запит - всі ліди, сортування на клієнті
         unsubscribe = db.collection('organizations').doc(orgId).collection('leads')
-            .orderBy('created', 'desc') // Найновіші спочатку
-            .limit(PAGE_SIZE)
             .onSnapshot(snapshot => {
                 // FIX: Подвійна перевірка що організація все ще та сама
                 if(currentOrg?.id !== orgId) {
@@ -5411,44 +5394,15 @@ function initFirestoreListener(){
                     return;
                 }
                 
-                // ФІКС: Не перезатираємо leads якщо вже завантажено більше однієї сторінки
-                // onSnapshot оновлює тільки ПЕРШУ сторінку
-                const isFirstPage = paginationState.totalLoaded <= PAGE_SIZE;
+                leads = [];
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    if (!data.deleted) {
+                        leads.push({ id: doc.id, ...data });
+                    }
+                });
                 
-                if(isFirstPage) {
-                    leads = [];
-                    snapshot.forEach(doc => {
-                        const data = doc.data();
-                        if (!data.deleted) {
-                            leads.push({ id: doc.id, ...data });
-                        }
-                    });
-                } else {
-                    // Оновлюємо тільки існуючі документи з першої сторінки
-                    snapshot.forEach(doc => {
-                        const data = doc.data();
-                        const existingIdx = leads.findIndex(l => l.id === doc.id);
-                        if(existingIdx >= 0) {
-                            if(data.deleted) {
-                                leads.splice(existingIdx, 1); // Видаляємо якщо deleted
-                            } else {
-                                leads[existingIdx] = { id: doc.id, ...data }; // Оновлюємо
-                            }
-                        } else if(!data.deleted) {
-                            // Новий лід - додаємо на початок
-                            leads.unshift({ id: doc.id, ...data });
-                        }
-                    });
-                }
-                
-                // Зберігаємо останній документ для пагінації (тільки якщо перша сторінка)
-                if(isFirstPage && snapshot.docs.length > 0) {
-                    paginationState.lastDoc = snapshot.docs[snapshot.docs.length - 1];
-                    paginationState.hasMore = snapshot.docs.length >= PAGE_SIZE;
-                }
-                paginationState.totalLoaded = leads.length;
-                
-                console.log('onSnapshot: Loaded', leads.length, 'leads', isFirstPage ? '(page 1)' : '(update)', paginationState.hasMore ? '- has more' : '- all loaded');
+                console.log('onSnapshot: Loaded', leads.length, 'leads');
                 
                 // Кешуємо для швидкого старту наступного разу
                 cacheLeadsLocally(orgId, leads);
@@ -5457,7 +5411,7 @@ function initFirestoreListener(){
                 requestAnimationFrame(() => {
                     render();
                     setSyncStatus('synced', 'Синхронізовано');
-                    updateOrgLeadsCount(leads.length + (paginationState.hasMore ? '+' : ''));
+                    updateOrgLeadsCount(leads.length);
                     
                     // Будуємо search index після рендеру (не блокує UI)
                     setTimeout(() => rebuildAllSearchIndexes(), 100);
@@ -7115,20 +7069,7 @@ function renderTasks(){
     // Якщо є ще завдання для показу (локально)
     if(hasMore) {
         html += `<div style="text-align:center;padding:16px">
-            <button class="btn btn-s" onclick="showAllTasks()">Показати всі завантажені (${tasks.length})</button>
-        </div>`;
-    }
-    
-    // Якщо є ще дані в Firestore - показуємо кнопку завантажити
-    if(paginationState.hasMore) {
-        html += `<div style="text-align:center;padding:16px;border-top:1px solid #e5e7eb;margin-top:8px">
-            <button class="btn btn-p" id="load-more-btn" onclick="loadMoreLeads()" style="gap:8px">
-                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
-                Завантажити ще
-            </button>
-            <div style="font-size:12px;color:#6b7280;margin-top:8px">
-                Завантажено ${leads.length} лідів
-            </div>
+            <button class="btn btn-s" onclick="showAllTasks()">Показати всі (${tasks.length})</button>
         </div>`;
     }
     
@@ -7529,7 +7470,7 @@ function renderKanban(){
     const cols = getStatusIds();
     const filtered = filterLeads(leads);
     
-    let html = cols.map(s => {
+    document.getElementById('kanban').innerHTML = cols.map(s => {
         const items = filtered.filter(l => l.status === s);
         const color = getStatusColor(s);
         // Екрануємо ID для безпечного використання в HTML
@@ -7541,18 +7482,6 @@ function renderKanban(){
             </div>
         </div>`;
     }).join('');
-    
-    // Додаємо інфо про пагінацію
-    if(paginationState.hasMore) {
-        html += `<div style="position:fixed;bottom:80px;left:50%;transform:translateX(-50%);z-index:100">
-            <button class="btn btn-p" onclick="loadMoreLeads()" style="box-shadow:0 4px 12px rgba(0,0,0,0.15);gap:8px">
-                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
-                Ще ліди (${leads.length} завантажено)
-            </button>
-        </div>`;
-    }
-    
-    document.getElementById('kanban').innerHTML = html;
 }
 
 function getTags(l){
@@ -8001,12 +7930,7 @@ function setReportPeriod(p, btn){
     renderReports(p);
 }
 
-async function renderReports(periodType = 'week'){
-    // Для точних звітів потрібні ВСІ ліди
-    if(paginationState.hasMore) {
-        await loadAllLeads();
-    }
-    
+function renderReports(periodType = 'week'){
     const fromDate = document.getElementById('date-from').value;
     const toDate = document.getElementById('date-to').value;
     
@@ -9169,12 +9093,7 @@ function addLog(l,type,text){if(!l.log)l.log=[];l.log.push({type,text,date:new D
 function qAction(a){if(!editing)return;closeModal();taskAction(editing,a==='call'?'call_later':a==='sms'?'followup':a==='schedule'?'schedule':'fail');}
 
 // ===== IMPORT/EXPORT =====
-async function exportXLS(){
-    // Спочатку завантажуємо всі ліди якщо є ще сторінки
-    if(paginationState.hasMore) {
-        await loadAllLeads();
-    }
-    
+function exportXLS(){
     if(!leads.length){showToast('Немає даних для експорту');return;}
     const data=leads.map(l=>({Телеграм:l.tg,Телефон:l.phone,Бізнес:l.biz,Джерело:SRC[l.source]||l.source,Статус:ST[l.status]||l.status,Консультація:l.consult,Дзвінки:l.calls,SMS:l.sms,'Наступна дія':l.nextDate,Завдаток:l.finDep,'Повна сума':l.finTotal,Примітки:l.notes}));
     const ws=XLSX.utils.json_to_sheet(data);
