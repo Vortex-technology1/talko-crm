@@ -5535,7 +5535,6 @@ function initFirestoreListener(){
         // Простий запит - всі ліди, сортування на клієнті
         unsubscribe = db.collection('organizations').doc(orgId).collection('leads')
             .onSnapshot(snapshot => {
-                dataReceived = true;
                 clearTimeout(fallbackTimeout);
                 
                 // FIX: Подвійна перевірка що організація все ще та сама
@@ -5544,18 +5543,30 @@ function initFirestoreListener(){
                     return;
                 }
                 
-                leads = [];
+                const newLeads = [];
                 snapshot.forEach(doc => {
                     const data = doc.data();
                     if (!data.deleted) {
-                        leads.push({ id: doc.id, ...data });
+                        newLeads.push({ id: doc.id, ...data });
                     }
                 });
                 
-                console.log('onSnapshot: Loaded', leads.length, 'leads');
+                console.log('onSnapshot: Loaded', newLeads.length, 'leads');
                 
-                // Кешуємо для швидкого старту наступного разу
-                cacheLeadsLocally(orgId, leads);
+                // FIX: Якщо отримали 0 лідів, але в кеші щось є - можливо це помилка з'єднання
+                // Не перезаписуємо, чекаємо наступний snapshot
+                if(newLeads.length === 0 && leads.length > 0 && !dataReceived) {
+                    console.log('onSnapshot: Got 0 leads but have cached data, waiting for real data...');
+                    return;
+                }
+                
+                dataReceived = true;
+                leads = newLeads;
+                
+                // Кешуємо для швидкого старту наступного разу (тільки якщо є дані)
+                if(leads.length > 0) {
+                    cacheLeadsLocally(orgId, leads);
+                }
                 
                 // Спочатку швидкий рендер, потім побудова індексу у фоні
                 requestAnimationFrame(() => {
