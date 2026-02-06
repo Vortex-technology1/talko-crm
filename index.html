@@ -1398,7 +1398,11 @@
                 <button class="btn btn-p" onclick="openModal()">+ Додати</button>
                 <label class="btn btn-s">Імпорт<input type="file" accept=".xlsx,.xls" onchange="importXLS(event)" hidden></label>
                 <button class="btn btn-s" onclick="exportXLS()">Експорт</button>
-                <button class="btn btn-s" style="background:#fef3c7;color:#92400e" onclick="loadDemo()"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="6" width="20" height="12" rx="2"/><line x1="6" y1="12" x2="10" y2="12"/><line x1="8" y1="10" x2="8" y2="14"/><circle cx="17" cy="12" r="1"/></svg> Демо</button>
+                <button class="btn btn-s" onclick="findDuplicates()" title="Знайти дублікати лідів">
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M4 16V4h12"/></svg>
+                    Дублі
+                </button>
+                <button class="btn btn-s" id="demo-btn" style="background:#fef3c7;color:#92400e;display:none" onclick="loadDemo()"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="6" width="20" height="12" rx="2"/><line x1="6" y1="12" x2="10" y2="12"/><line x1="8" y1="10" x2="8" y2="14"/><circle cx="17" cy="12" r="1"/></svg> Демо</button>
                 <div class="sync-status" id="sync-status"><div class="sync-dot" id="sync-dot"></div><span id="sync-text">Синхронізовано</span></div>
                 <a href="https://chatgpt.com/g/g-695d18d64ffc8191885772ca62dfb66c-talko-crm-support" target="_blank" class="btn btn-s" style="background:linear-gradient(135deg,#10a37f,#1a7f5a);color:#fff;text-decoration:none">
                     <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a7 7 0 0 1 7 7c0 2.38-1.19 4.47-3 5.74V17a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1v-2.26C6.19 13.47 5 11.38 5 9a7 7 0 0 1 7-7z"/><path d="M9 21h6"/><path d="M9 18h6"/></svg>
@@ -3396,6 +3400,10 @@ function generateInviteCode(){
 
 // ===== UI HELPERS =====
 function showAdminPanel(){
+    // Показуємо кнопку Демо тільки для superadmin
+    const demoBtn = document.getElementById('demo-btn');
+    if(demoBtn) demoBtn.style.display = 'inline-flex';
+    
     let panel = document.getElementById('admin-panel');
     if(!panel){
         // Створюємо панель адміна
@@ -3428,6 +3436,9 @@ function showAdminPanel(){
 
 function hideAdminPanel(){
     document.getElementById('admin-panel')?.style.setProperty('display', 'none');
+    // Ховаємо кнопку Демо
+    const demoBtn = document.getElementById('demo-btn');
+    if(demoBtn) demoBtn.style.display = 'none';
 }
 
 function toggleOrgDropdown(){
@@ -5240,7 +5251,9 @@ async function showMergeDialog(leadsToMerge) {
                         `).join('')}
                     </div>
                     <div style="background:#fef3c7;padding:12px;border-radius:8px;margin-top:16px">
-                        <div style="font-weight:600;color:#92400e;margin-bottom:4px">⚠️ Що буде об'єднано:</div>
+                        <div style="font-weight:600;color:#92400e;margin-bottom:4px;display:flex;align-items:center;gap:6px">
+                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#d97706" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                            Що буде об'єднано:</div>
                         <ul style="margin:0;padding-left:20px;font-size:13px;color:#78350f">
                             <li>Історія комунікацій (всі записи)</li>
                             <li>Лічильники (дзвінки, SMS, no-show — сумуються)</li>
@@ -5357,6 +5370,219 @@ function mergeTwoLeads(primary, others) {
     addLog(merged, 'status', `Об'єднано ${others.length + 1} лідів`);
     
     return merged;
+}
+
+// ===== ПОШУК ДУБЛІКАТІВ =====
+function findDuplicates() {
+    if(leads.length === 0) {
+        showToast('Немає лідів для перевірки');
+        return;
+    }
+    
+    showLoading('Пошук дублікатів...');
+    
+    setTimeout(() => {
+        const duplicates = detectDuplicates(leads);
+        hideLoading();
+        
+        if(duplicates.length === 0) {
+            showToast('Дублікатів не знайдено!');
+            return;
+        }
+        
+        showDuplicatesModal(duplicates);
+    }, 100);
+}
+
+// Виявлення дублікатів
+function detectDuplicates(leadsArray) {
+    const phoneMap = new Map(); // phone -> [leads]
+    const tgMap = new Map();    // telegram -> [leads]
+    const emailMap = new Map(); // email -> [leads]
+    const duplicateGroups = [];
+    const processedIds = new Set();
+    
+    // Нормалізація телефону
+    const normalizePhone = (phone) => {
+        if(!phone) return null;
+        return phone.replace(/\D/g, '').slice(-10); // Останні 10 цифр
+    };
+    
+    // Нормалізація telegram
+    const normalizeTg = (tg) => {
+        if(!tg) return null;
+        return tg.toLowerCase().replace('@', '').trim();
+    };
+    
+    // Групуємо по телефону
+    leadsArray.forEach(lead => {
+        const phone = normalizePhone(lead.phone);
+        if(phone && phone.length >= 7) {
+            if(!phoneMap.has(phone)) phoneMap.set(phone, []);
+            phoneMap.get(phone).push(lead);
+        }
+        
+        const tg = normalizeTg(lead.tg);
+        if(tg && tg.length >= 3) {
+            if(!tgMap.has(tg)) tgMap.set(tg, []);
+            tgMap.get(tg).push(lead);
+        }
+        
+        const email = lead.email?.toLowerCase().trim();
+        if(email && email.includes('@')) {
+            if(!emailMap.has(email)) emailMap.set(email, []);
+            emailMap.get(email).push(lead);
+        }
+    });
+    
+    // Знаходимо групи з більше ніж 1 лідом
+    const addGroup = (leads, matchType, matchValue) => {
+        // Перевіряємо чи всі ліди вже оброблені
+        const newLeads = leads.filter(l => !processedIds.has(l.id));
+        if(newLeads.length <= 1) return;
+        
+        // Якщо частина вже в групі - об'єднуємо
+        const existingGroup = duplicateGroups.find(g => 
+            g.leads.some(gl => leads.some(l => l.id === gl.id))
+        );
+        
+        if(existingGroup) {
+            leads.forEach(l => {
+                if(!existingGroup.leads.find(gl => gl.id === l.id)) {
+                    existingGroup.leads.push(l);
+                }
+                processedIds.add(l.id);
+            });
+            if(!existingGroup.matchTypes.includes(matchType)) {
+                existingGroup.matchTypes.push(matchType);
+            }
+        } else {
+            duplicateGroups.push({
+                leads: [...leads],
+                matchTypes: [matchType],
+                matchValue: matchValue
+            });
+            leads.forEach(l => processedIds.add(l.id));
+        }
+    };
+    
+    phoneMap.forEach((leads, phone) => {
+        if(leads.length > 1) addGroup(leads, 'phone', phone);
+    });
+    
+    tgMap.forEach((leads, tg) => {
+        if(leads.length > 1) addGroup(leads, 'telegram', '@' + tg);
+    });
+    
+    emailMap.forEach((leads, email) => {
+        if(leads.length > 1) addGroup(leads, 'email', email);
+    });
+    
+    // Сортуємо групи за кількістю лідів (більші групи спочатку)
+    duplicateGroups.sort((a, b) => b.leads.length - a.leads.length);
+    
+    return duplicateGroups;
+}
+
+// Модалка з дублікатами
+function showDuplicatesModal(duplicates) {
+    const totalDuplicates = duplicates.reduce((sum, g) => sum + g.leads.length, 0);
+    
+    const modal = document.createElement('div');
+    modal.className = 'modal active';
+    modal.id = 'duplicates-modal';
+    modal.innerHTML = `
+        <div class="modal-content" style="max-width:700px;max-height:90vh;display:flex;flex-direction:column">
+            <div class="modal-header">
+                <h3>Знайдено дублікати</h3>
+                <button class="modal-close" onclick="closeDuplicatesModal()">&times;</button>
+            </div>
+            <div style="padding:16px;background:#fef3c7;border-bottom:1px solid #fcd34d">
+                <div style="display:flex;align-items:center;gap:12px">
+                    <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="#d97706" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                    <div>
+                        <div style="font-weight:600;color:#92400e">Знайдено ${duplicates.length} груп дублікатів</div>
+                        <div style="font-size:13px;color:#78350f">${totalDuplicates} лідів можуть бути об'єднані</div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-body" style="flex:1;overflow-y:auto;padding:16px">
+                ${duplicates.map((group, idx) => `
+                    <div class="duplicate-group" style="border:1px solid #e5e7eb;border-radius:12px;margin-bottom:16px;overflow:hidden">
+                        <div style="background:#f9fafb;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #e5e7eb">
+                            <div>
+                                <span style="font-weight:600">Група ${idx + 1}</span>
+                                <span style="color:#6b7280;margin-left:8px">${group.leads.length} ліди</span>
+                                <span style="background:#fef3c7;color:#92400e;padding:2px 8px;border-radius:4px;font-size:11px;margin-left:8px;display:inline-flex;align-items:center;gap:4px">
+                                    ${group.matchTypes.map(t => t === 'phone' ? '<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>' : t === 'telegram' ? '<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>' : '<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>').join(' ')}
+                                    ${group.matchValue || ''}
+                                </span>
+                            </div>
+                            <button class="btn btn-s" onclick="selectDuplicateGroup(${idx})" style="padding:4px 12px;font-size:12px">
+                                Вибрати для об'єднання
+                            </button>
+                        </div>
+                        <div style="padding:8px">
+                            ${group.leads.map(lead => `
+                                <div style="display:flex;align-items:center;gap:12px;padding:8px 12px;border-radius:8px;margin:4px 0;background:#fff;border:1px solid #f3f4f6">
+                                    <div style="flex:1">
+                                        <div style="font-weight:500">${escapeHtml(lead.tg || lead.phone || 'Без контакту')}</div>
+                                        ${lead.biz ? `<div style="font-size:12px;color:#6b7280">${escapeHtml(lead.biz)}</div>` : ''}
+                                    </div>
+                                    <div style="text-align:right;font-size:12px;color:#9ca3af">
+                                        <div style="color:${getStatusColor(lead.status || 'new')}">${getStatusName(lead.status || 'new')}</div>
+                                        <div>${lead.calls || 0} дзв. • ${lead.log?.length || 0} записів</div>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+            <div class="modal-footer" style="padding:16px;border-top:1px solid #e5e7eb;display:flex;gap:8px;justify-content:flex-end">
+                <button class="btn btn-s" onclick="closeDuplicatesModal()">Закрити</button>
+                <button class="btn btn-p" onclick="selectAllDuplicates()">Вибрати всі для об'єднання</button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    window._duplicateGroups = duplicates;
+}
+
+function closeDuplicatesModal() {
+    const modal = document.getElementById('duplicates-modal');
+    if(modal) modal.remove();
+    window._duplicateGroups = null;
+}
+
+function selectDuplicateGroup(groupIndex) {
+    if(!window._duplicateGroups || !window._duplicateGroups[groupIndex]) return;
+    
+    const group = window._duplicateGroups[groupIndex];
+    
+    // Очищаємо поточний вибір
+    selectedLeadIds.clear();
+    
+    // Додаємо всіх лідів з групи
+    group.leads.forEach(lead => {
+        selectedLeadIds.add(lead.id);
+    });
+    
+    closeDuplicatesModal();
+    updateBulkBar();
+    renderKanban();
+    
+    showToast(`Вибрано ${group.leads.length} лідів для об'єднання`);
+}
+
+function selectAllDuplicates() {
+    if(!window._duplicateGroups) return;
+    
+    // Вибираємо тільки першу групу (найбільшу)
+    if(window._duplicateGroups.length > 0) {
+        selectDuplicateGroup(0);
+    }
 }
 
 // ===== AUTO-ASSIGNMENT =====
@@ -6361,18 +6587,21 @@ function openDiagnosticsPanel() {
                     <h3 style="font-size:14px;font-weight:600;margin-bottom:12px">Проблеми для виправлення</h3>
                     <div style="background:#f9fafb;border-radius:12px;padding:16px;max-height:200px;overflow:auto;font-size:13px">
                         ${analysis.invalidDates.slice(0, 10).map(i => `
-                            <div style="padding:4px 0;border-bottom:1px solid #e5e7eb">
-                                🗓️ <strong>${i.id.slice(0,8)}...</strong> — ${i.field}: "${i.value}"
+                            <div style="padding:4px 0;border-bottom:1px solid #e5e7eb;display:flex;align-items:center;gap:6px">
+                                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#6b7280" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                                <strong>${i.id.slice(0,8)}...</strong> — ${i.field}: "${i.value}"
                             </div>
                         `).join('')}
                         ${analysis.missingStatus.slice(0, 10).map(i => `
-                            <div style="padding:4px 0;border-bottom:1px solid #e5e7eb">
-                                ⚠️ <strong>${i.name || i.id.slice(0,8)}</strong> — немає статусу
+                            <div style="padding:4px 0;border-bottom:1px solid #e5e7eb;display:flex;align-items:center;gap:6px">
+                                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#d97706" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                                <strong>${i.name || i.id.slice(0,8)}</strong> — немає статусу
                             </div>
                         `).join('')}
                         ${analysis.duplicateContacts.slice(0, 10).map(i => `
-                            <div style="padding:4px 0;border-bottom:1px solid #e5e7eb">
-                                👥 <strong>${i.phone || i.email}</strong> — дублікат
+                            <div style="padding:4px 0;border-bottom:1px solid #e5e7eb;display:flex;align-items:center;gap:6px">
+                                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#6b7280" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                                <strong>${i.phone || i.email}</strong> — дублікат
                             </div>
                         `).join('')}
                         ${(analysis.invalidDates.length + analysis.missingStatus.length + analysis.duplicateContacts.length) > 10 ? 
@@ -7146,7 +7375,7 @@ function renderTasks(){
                 </div>
             </div>
             <button class="onboarding-btn" onclick="openModal()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Додати першого ліда</button>
-            <div style="margin-top:16px"><button class="btn btn-s" onclick="loadDemo()" style="font-size:12px">або завантажити демо-дані</button></div>
+            ${currentRole === 'superadmin' ? '<div style="margin-top:16px"><button class="btn btn-s" onclick="loadDemo()" style="font-size:12px">або завантажити демо-дані</button></div>' : ''}
         </div>`;
         return;
     }
