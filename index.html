@@ -2918,10 +2918,14 @@ auth.onAuthStateChanged(async (user) => {
         
         document.getElementById('app').style.display = 'block';
     } else {
+        // Очищаємо кеш попереднього користувача
+        clearLeadsCache();
+        
         currentUser = null;
         currentOrg = null;
         currentRole = null;
         leads = [];
+        organizations = [];
         document.getElementById('auth-screen').style.display = 'flex';
         document.getElementById('app').style.display = 'none';
         document.getElementById('auth-btn').disabled = false;
@@ -5180,133 +5184,6 @@ async function incrementRoundRobinIndex(){
 // FIX: Додаємо debounce для запобігання швидких перемикань
 let pendingListenerTimeout = null;
 
-// ===== ПАГІНАЦІЯ =====
-const PAGE_SIZE = 50; // Кількість лідів на сторінку
-let paginationState = {
-    lastDoc: null,      // Останній документ для курсору
-    hasMore: true,      // Чи є ще дані
-    isLoading: false,   // Чи зараз завантажується
-    totalLoaded: 0      // Скільки вже завантажено
-};
-
-// Завантажити наступну порцію лідів
-async function loadMoreLeads() {
-    if(!paginationState.hasMore || paginationState.isLoading || !currentOrg?.id) {
-        return;
-    }
-    
-    paginationState.isLoading = true;
-    const loadMoreBtn = document.getElementById('load-more-btn');
-    if(loadMoreBtn) {
-        loadMoreBtn.disabled = true;
-        loadMoreBtn.innerHTML = '<span class="spinner-small"></span> Завантаження...';
-    }
-    
-    try {
-        let query = db.collection('organizations').doc(currentOrg.id).collection('leads');
-        
-        if(paginationState.lastDoc) {
-            query = query.startAfter(paginationState.lastDoc);
-        }
-        
-        const snapshot = await query.limit(PAGE_SIZE).get();
-        
-        snapshot.forEach(doc => {
-            const data = doc.data();
-            if(!data.deleted) {
-                // Перевіряємо чи немає дубліката
-                if(!leads.find(l => l.id === doc.id)) {
-                    leads.push({ id: doc.id, ...data });
-                }
-            }
-        });
-        
-        if(snapshot.docs.length > 0) {
-            paginationState.lastDoc = snapshot.docs[snapshot.docs.length - 1];
-        }
-        paginationState.hasMore = snapshot.docs.length >= PAGE_SIZE;
-        paginationState.totalLoaded = leads.length;
-        
-        console.log('loadMoreLeads: +', snapshot.docs.length, 'leads, total:', leads.length);
-        
-        // Оновлюємо кеш
-        cacheLeadsLocally(currentOrg.id, leads);
-        
-        // Перерендер
-        render();
-        
-    } catch(err) {
-        console.error('loadMoreLeads error:', err);
-        showWarning('Помилка завантаження: ' + err.message);
-    } finally {
-        paginationState.isLoading = false;
-        // Кнопка може змінитись після render(), шукаємо заново
-        const btn = document.getElementById('load-more-btn');
-        if(btn) {
-            btn.disabled = false;
-            btn.innerHTML = `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg> Завантажити ще`;
-        }
-    }
-}
-
-// Завантажити ВСІ ліди (для пошуку/експорту)
-async function loadAllLeads() {
-    if(paginationState.isLoading || !currentOrg?.id) return;
-    
-    // Якщо вже все завантажено
-    if(!paginationState.hasMore) {
-        showToast('Всі ліди вже завантажені');
-        return;
-    }
-    
-    showLoading('Завантаження всіх лідів...');
-    paginationState.isLoading = true;
-    
-    try {
-        let iterations = 0;
-        const maxIterations = 100; // Захист від нескінченного циклу
-        
-        while(paginationState.hasMore && iterations < maxIterations) {
-            iterations++;
-            
-            let query = db.collection('organizations').doc(currentOrg.id).collection('leads');
-            
-            if(paginationState.lastDoc) {
-                query = query.startAfter(paginationState.lastDoc);
-            }
-            
-            const snapshot = await query.limit(PAGE_SIZE).get();
-            
-            snapshot.forEach(doc => {
-                const data = doc.data();
-                if(!data.deleted && !leads.find(l => l.id === doc.id)) {
-                    leads.push({ id: doc.id, ...data });
-                }
-            });
-            
-            if(snapshot.docs.length > 0) {
-                paginationState.lastDoc = snapshot.docs[snapshot.docs.length - 1];
-            }
-            paginationState.hasMore = snapshot.docs.length >= PAGE_SIZE;
-        }
-        
-        paginationState.totalLoaded = leads.length;
-        console.log('loadAllLeads: total', leads.length, 'leads in', iterations, 'iterations');
-        
-        cacheLeadsLocally(currentOrg.id, leads);
-        rebuildAllSearchIndexes();
-        render();
-        showToast(`Завантажено всі ${leads.length} лідів`);
-        
-    } catch(err) {
-        console.error('loadAllLeads error:', err);
-        showWarning('Помилка завантаження: ' + err.message);
-    } finally {
-        paginationState.isLoading = false;
-        hideLoading();
-    }
-}
-
 // Кеш лідів в localStorage для швидкого старту
 function cacheLeadsLocally(orgId, leadsData) {
     try {
@@ -5336,6 +5213,23 @@ function loadLeadsFromCache(orgId) {
         return data.leads;
     } catch(e) {
         return null;
+    }
+}
+
+// Очистка кешу при logout - щоб новий користувач не бачив чужі дані
+function clearLeadsCache() {
+    try {
+        const keysToRemove = [];
+        for(let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            if(key && key.startsWith('talko_leads_')) {
+                keysToRemove.push(key);
+            }
+        }
+        keysToRemove.forEach(key => localStorage.removeItem(key));
+        console.log('Cache cleared:', keysToRemove.length, 'items');
+    } catch(e) {
+        console.warn('Cache clear error:', e);
     }
 }
 
@@ -7367,6 +7261,7 @@ async function taskAction(id,a){
     }
     
     // Зберігаємо напряму в Firebase
+    if(!currentOrg?.id) return;
     const cleanData = cleanForFirestore(lead); // Оптимізовано
 
     db.collection('organizations').doc(currentOrg.id).collection('leads').doc(lead.id).set(cleanData, { merge: true })
@@ -7400,6 +7295,7 @@ async function quickComplete(id) {
     addLog(lead, 'call', 'Виконано: ' + (lead.nextAction || 'дзвінок'));
     
     // Зберігаємо напряму в Firebase
+    if(!currentOrg?.id) return;
     const cleanData = cleanForFirestore(lead); // Оптимізовано
 
     db.collection('organizations').doc(currentOrg.id).collection('leads').doc(lead.id).set(cleanData, { merge: true })
@@ -7424,6 +7320,7 @@ async function quickReschedule(id) {
     addLog(lead, 'status', 'Перенесено на ' + nextDate + ' ' + nextTime);
     
     // Зберігаємо напряму в Firebase
+    if(!currentOrg?.id) return;
     const cleanData = cleanForFirestore(lead); // Оптимізовано
 
     db.collection('organizations').doc(currentOrg.id).collection('leads').doc(lead.id).set(cleanData, { merge: true })
@@ -9081,6 +8978,7 @@ function addComm(){
     if(type==='sms'){l.sms=(l.sms||0)+1;document.getElementById('f-sms').value=l.sms;}
     
     // Зберігаємо напряму в Firebase
+    if(!currentOrg?.id) return;
     const cleanData = cleanForFirestore(l);
     db.collection('organizations').doc(currentOrg.id).collection('leads').doc(l.id).set(cleanData, { merge: true })
         .catch(err => showError('Помилка збереження: ' + err.message));
@@ -10115,6 +10013,7 @@ function confirmConsultation() {
     addLog(lead, 'call', 'Консультація підтверджена');
     
     // Зберігаємо напряму в Firebase
+    if(!currentOrg?.id) { closeQuickPanel(); return; }
     const cleanData = cleanForFirestore(lead);
 
     db.collection('organizations').doc(currentOrg.id).collection('leads').doc(lead.id).set(cleanData, { merge: true })
@@ -10144,6 +10043,7 @@ function consultationNotConfirmed() {
     addLog(lead, 'noshow', 'Не підтвердив консультацію');
     
     // Зберігаємо напряму в Firebase
+    if(!currentOrg?.id) { closeQuickPanel(); return; }
     const cleanData = cleanForFirestore(lead);
 
     db.collection('organizations').doc(currentOrg.id).collection('leads').doc(lead.id).set(cleanData, { merge: true })
@@ -10356,6 +10256,7 @@ async function setQuickFinal(finalAction) {
     }
     
     // Зберігаємо напряму в Firebase
+    if(!currentOrg?.id) { closeQuickPanel(); return; }
     try {
         const cleanData = cleanForFirestore(lead); // Оптимізовано
     
@@ -10419,6 +10320,7 @@ function confirmQuickAction() {
     }
     
     // Зберігаємо напряму в Firebase
+    if(!currentOrg?.id) { closeQuickPanel(); return; }
     const cleanData = cleanForFirestore(lead); // Оптимізовано
 
     db.collection('organizations').doc(currentOrg.id).collection('leads').doc(lead.id).set(cleanData, { merge: true })
