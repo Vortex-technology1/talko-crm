@@ -1940,9 +1940,12 @@
                     <br><br>Виберіть ліда та натисніть потрібну дію!</div>
             </div>
             <div class="ai-input-wrap">
-                <select id="ai-lead-select" class="form-select" style="margin-bottom:8px">
-                    <option value="">— Виберіть ліда —</option>
-                </select>
+                <div style="position:relative;margin-bottom:8px">
+                    <input type="text" id="ai-lead-search" class="form-input" placeholder="Пошук ліда по номеру або імені..." oninput="filterAiLeads(this.value)" onfocus="showAiLeadDropdown()" autocomplete="off">
+                    <div id="ai-lead-dropdown" style="display:none;position:absolute;top:100%;left:0;right:0;max-height:200px;overflow-y:auto;background:#fff;border:1px solid #e5e7eb;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,0.15);z-index:100">
+                    </div>
+                    <input type="hidden" id="ai-lead-select" value="">
+                </div>
                 <div class="ai-quick-btns">
                     <button class="ai-quick-btn" onclick="aiAsk('script')"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg> Скрипт дзвінка</button>
                     <button class="ai-quick-btn" onclick="aiAsk('analysis')"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 21H4.6c-.56 0-.84 0-1.05-.11a1 1 0 0 1-.44-.44C3 20.24 3 19.96 3 19.4V3"/><path d="m7 14 4-4 4 4 6-6"/></svg> Аналіз</button>
@@ -1966,16 +1969,51 @@
     <div class="help-panel" id="help">
         <div class="help-head"><span>Інструкція</span><button class="help-close" onclick="toggleHelp()">&times;</button></div>
         <div class="help-body">
-            <div class="help-item"><span class="status-badge st-new">Новий</span><span>Подзвонити, призначити</span></div>
-            <div class="help-item"><span class="status-badge st-scheduled">Призначена</span><span>Підтвердити за день</span></div>
-            <div class="help-item"><span class="status-badge st-completed">Проведена</span><span>Чекати звіт</span></div>
+            <div style="font-weight:600;margin-bottom:8px;color:#16a34a;display:flex;align-items:center;gap:6px">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                Статуси та дії:
+            </div>
+            <div class="help-item"><span class="status-badge st-new">Новий</span><span>Подзвонити, призначити консультацію</span></div>
+            <div class="help-item"><span class="status-badge st-contact">Контакт</span><span>Був контакт, продовжити роботу</span></div>
+            <div class="help-item"><span class="status-badge st-scheduled">Призначена</span><span>Підтвердити за день до консультації</span></div>
+            <div class="help-item"><span class="status-badge st-completed">Проведена</span><span>Чекати звіт від клієнта</span></div>
             <div class="help-item"><span class="status-badge st-report_sent">Звіт</span><span>Дожимати до оплати</span></div>
-            <div class="help-item"><span class="status-badge st-repeat">Повторна</span><span>Ще консультація</span></div>
-            <div class="help-item"><span class="status-badge st-deposit">Завдаток</span><span>Повна оплата</span></div>
-            <div class="help-item"><span class="status-badge st-paid">Оплачено</span><span>Закрито</span></div>
-            <div class="help-item"><span class="status-badge st-failed">Неуспішна</span><span>+3 міс реактивація</span></div>
-            <div style="margin-top:12px;padding:10px;background:var(--ol);border-radius:6px;font-size:12px">
-                <b>Правила:</b><br>• Новий лід: макс 3 дзвінки<br>• Після звіту: 3 дзв + 3 SMS<br>• Неуспішна → реактивація 3 міс
+            <div class="help-item"><span class="status-badge st-repeat">Повторна</span><span>Призначити ще консультацію</span></div>
+            <div class="help-item"><span class="status-badge st-deposit">Завдаток</span><span>Нагадати про повну оплату</span></div>
+            <div class="help-item"><span class="status-badge st-paid">Оплачено</span><span>Угода закрита</span></div>
+            <div class="help-item"><span class="status-badge st-frozen">Заморожений</span><span>Автореактивація через 3 міс</span></div>
+            <div class="help-item"><span class="status-badge st-failed">Неуспішна</span><span>Реактивація через 3 міс</span></div>
+            
+            <div style="margin-top:16px;padding:12px;background:#f0fdf4;border-radius:8px;font-size:12px">
+                <b style="color:#16a34a;display:flex;align-items:center;gap:6px">
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                    Швидкі дії:
+                </b><br>
+                • Клік на картку → Quick Panel (результат дзвінка)<br>
+                • Зелена кнопка → Призначити консультацію<br>
+                • Три крапки → Повна картка ліда
+            </div>
+            
+            <div style="margin-top:12px;padding:12px;background:#fef3c7;border-radius:8px;font-size:12px">
+                <b style="color:#92400e;display:flex;align-items:center;gap:6px">
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="9" x2="20" y2="9"/><line x1="4" y1="15" x2="20" y2="15"/><line x1="10" y1="3" x2="8" y2="21"/><line x1="16" y1="3" x2="14" y2="21"/></svg>
+                    Правила:
+                </b><br>
+                • Новий лід: макс 3 дзвінки + 3 SMS<br>
+                • Після звіту: дожимати до оплати<br>
+                • No-show: автоперенос + лічильник<br>
+                • Неуспішна → реактивація 3 міс
+            </div>
+            
+            <div style="margin-top:12px;padding:12px;background:#eff6ff;border-radius:8px;font-size:12px">
+                <b style="color:#1d4ed8;display:flex;align-items:center;gap:6px">
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+                    Інструменти:
+                </b><br>
+                • <b>Дублі</b> — пошук та об'єднання дублікатів<br>
+                • <b>Імпорт/Експорт</b> — робота з Excel<br>
+                • <b>AI Підтримка</b> — допомога зі скриптами<br>
+                • <b>Шаблони</b> — готові SMS/скрипти
             </div>
         </div>
     </div>
@@ -4487,7 +4525,7 @@ function connectTelegram(){
         <div class="telegram-link-label" style="margin-top:12px">2. Натисніть "Start" або "/start" в боті</div>
         <div class="telegram-link-label">3. Готово! Оновіть цю сторінку для перевірки</div>
         <button onclick="renderTelegramStatus(); document.getElementById('telegram-link-box')?.remove()" style="margin-top:12px;padding:8px 16px;background:#f3f4f6;border:none;border-radius:6px;cursor:pointer;font-size:13px">
-            ✓ Я підключив бота — перевірити статус
+            Я підключив бота — перевірити статус
         </button>
     `;
 }
@@ -6605,7 +6643,10 @@ function openDiagnosticsPanel() {
         modal.innerHTML = `
             <div class="modal-content" style="max-width:700px;max-height:90vh;overflow:auto">
                 <div class="modal-header">
-                    <h2>🔧 Діагностика системи</h2>
+                    <h2 style="display:flex;align-items:center;gap:8px">
+                        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+                        Діагностика системи
+                    </h2>
                     <button class="close-modal" onclick="closeDiagnosticsPanel()">×</button>
                 </div>
                 <div id="diagnostics-content"></div>
@@ -6675,16 +6716,19 @@ function openDiagnosticsPanel() {
                 
                 <!-- Fix Buttons -->
                 <div style="display:flex;gap:12px;margin-bottom:24px">
-                    <button onclick="runMigrationDryRun()" class="btn" style="flex:1">
-                        🔍 Перевірити (без змін)
+                    <button onclick="runMigrationDryRun()" class="btn" style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                        Перевірити (без змін)
                     </button>
-                    <button onclick="runMigrationFix()" class="btn btn-p" style="flex:1">
-                        🔧 Виправити автоматично
+                    <button onclick="runMigrationFix()" class="btn btn-p" style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+                        Виправити автоматично
                     </button>
                 </div>
             ` : `
-                <div style="text-align:center;padding:24px;color:#22c55e">
-                    ✅ Всі дані в порядку!
+                <div style="text-align:center;padding:24px;color:#22c55e;display:flex;align-items:center;justify-content:center;gap:8px">
+                    <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                    Всі дані в порядку!
                 </div>
             `}
             
@@ -9723,14 +9767,84 @@ const AI_API_URL = 'https://openai-proxy-1090643937646.europe-central2.run.app';
 
 function toggleAI(){
     document.getElementById('ai-panel').classList.toggle('active');
-    updateAILeadSelect();
+    // Очищаємо пошук при відкритті
+    const searchInput = document.getElementById('ai-lead-search');
+    if(searchInput) searchInput.value = '';
+    document.getElementById('ai-lead-select').value = '';
 }
 
 function updateAILeadSelect(){
-    const sel = document.getElementById('ai-lead-select');
-    sel.innerHTML = '<option value="">— Виберіть ліда —</option>' + 
-        leads.map(l => `<option value="${l.id}">${l.tg||l.phone} (${l.biz||'—'})</option>`).join('');
+    // Більше не потрібно - використовуємо пошук
 }
+
+// Показати випадаючий список лідів
+function showAiLeadDropdown() {
+    const dropdown = document.getElementById('ai-lead-dropdown');
+    const searchVal = document.getElementById('ai-lead-search').value.toLowerCase();
+    
+    // Якщо пошук порожній - показуємо підказку
+    if(!searchVal) {
+        dropdown.innerHTML = '<div style="padding:12px;color:#9ca3af;text-align:center;font-size:13px">Введіть номер або ім\'я для пошуку</div>';
+        dropdown.style.display = 'block';
+        return;
+    }
+    
+    filterAiLeads(searchVal);
+}
+
+// Фільтрувати лідів по пошуку
+function filterAiLeads(query) {
+    const dropdown = document.getElementById('ai-lead-dropdown');
+    const q = query.toLowerCase().trim();
+    
+    if(!q || q.length < 2) {
+        dropdown.innerHTML = '<div style="padding:12px;color:#9ca3af;text-align:center;font-size:13px">Введіть мінімум 2 символи</div>';
+        dropdown.style.display = 'block';
+        return;
+    }
+    
+    // Фільтруємо лідів
+    const filtered = leads.filter(l => {
+        const phone = (l.phone || '').toLowerCase();
+        const tg = (l.tg || '').toLowerCase();
+        const biz = (l.biz || '').toLowerCase();
+        const name = (l.name || '').toLowerCase();
+        return phone.includes(q) || tg.includes(q) || biz.includes(q) || name.includes(q);
+    }).slice(0, 10); // Максимум 10 результатів
+    
+    if(filtered.length === 0) {
+        dropdown.innerHTML = '<div style="padding:12px;color:#9ca3af;text-align:center;font-size:13px">Нічого не знайдено</div>';
+        dropdown.style.display = 'block';
+        return;
+    }
+    
+    dropdown.innerHTML = filtered.map(l => `
+        <div onclick="selectAiLead('${l.id}')" style="padding:10px 12px;cursor:pointer;border-bottom:1px solid #f3f4f6;transition:background .15s" onmouseover="this.style.background='#f0fdf4'" onmouseout="this.style.background='#fff'">
+            <div style="font-weight:500">${escapeHtml(l.tg || l.phone || '—')}</div>
+            <div style="font-size:12px;color:#6b7280">${escapeHtml(l.biz || l.name || '—')}</div>
+        </div>
+    `).join('');
+    dropdown.style.display = 'block';
+}
+
+// Вибрати ліда з випадаючого списку
+function selectAiLead(id) {
+    const lead = leads.find(l => l.id === id);
+    if(!lead) return;
+    
+    document.getElementById('ai-lead-select').value = id;
+    document.getElementById('ai-lead-search').value = (lead.tg || lead.phone || '') + (lead.biz ? ' (' + lead.biz + ')' : '');
+    document.getElementById('ai-lead-dropdown').style.display = 'none';
+}
+
+// Закрити dropdown при кліку поза
+document.addEventListener('click', function(e) {
+    const dropdown = document.getElementById('ai-lead-dropdown');
+    const searchInput = document.getElementById('ai-lead-search');
+    if(dropdown && searchInput && !dropdown.contains(e.target) && e.target !== searchInput) {
+        dropdown.style.display = 'none';
+    }
+});
 
 function getSelectedLead(){
     const id = document.getElementById('ai-lead-select').value;
@@ -11254,28 +11368,28 @@ function generateSyncScript(orgId){
 function copyClientInstructions(orgId, orgName, ownerEmail){
     const instructions = `Привіт! Ось інструкція для підключення TALKO CRM:
 
-📋 КРОК 1: Google Sheet
+КРОК 1: Google Sheet
 1. Створи нову таблицю Google Sheets
 2. Назви листи: consult_clinic, consult_production
 3. Колонки: A=Дата, B=Telegram/Нік, C=Телефон
 
-📋 КРОК 2: Встановити скрипт
+КРОК 2: Встановити скрипт
 1. Меню: Розширення → Apps Script
 2. Видали весь код
 3. Встав код зі скрипта який я надішлю
 4. Збережи (Ctrl+S)
 
-📋 КРОК 3: Запустити
+КРОК 3: Запустити
 1. Вибери функцію: syncToFirestore
 2. Натисни "Запустити"
 3. Дозволь всі права (безпечно, це доступ до твоєї таблиці)
 
-📋 КРОК 4: Увійти в CRM
+КРОК 4: Увійти в CRM
 1. Відкрий: https://talko-crm.vercel.app
 2. Натисни "Увійти з Google"
 3. Використай email: \${ownerEmail || '[твій email]'}
 
-✅ Готово! Тепер ліди з таблиці автоматично синхронізуються в CRM.
+Готово! Тепер ліди з таблиці автоматично синхронізуються в CRM.
 
 Організація: \${orgName}
 ID (для скрипта): \${orgId}
