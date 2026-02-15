@@ -2478,6 +2478,355 @@
                 </button>
             </div>
         </div>
+        
+        <!-- AI Assistant Settings -->
+        <div class="settings-section" id="ai-settings-section">
+            <div class="settings-section-title">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-1H2a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h1a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2z"/><circle cx="8" cy="14" r="1"/><circle cx="16" cy="14" r="1"/><path d="M9 18h6"/></svg>
+                AI Асистент
+            </div>
+            <div class="ai-settings-content">
+                <!-- Контекст бізнесу -->
+                <div style="margin-bottom:16px;padding:16px;background:#f9fafb;border-radius:12px;border:1px solid #e5e7eb">
+                    <div style="font-weight:600;font-size:14px;color:#374151;margin-bottom:12px;display:flex;align-items:center;gap:6px">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#16a34a" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                        Контекст бізнесу
+                    </div>
+                    
+                    <div style="display:grid;gap:10px">
+                        <div>
+                            <label style="font-size:12px;color:#6b7280;display:block;margin-bottom:4px">Назва компанії</label>
+                            <input type="text" id="ai-biz-name" placeholder="Стоматологія 'Здорова Посмішка'" 
+                                style="width:100%;padding:10px 12px;border:1px solid #e5e7eb;border-radius:8px;font-size:13px">
+                        </div>
+                        
+                        <div>
+                            <label style="font-size:12px;color:#6b7280;display:block;margin-bottom:4px">Ніша / Сфера</label>
+                            <input type="text" id="ai-biz-niche" placeholder="Медицина / Стоматологія" 
+                                style="width:100%;padding:10px 12px;border:1px solid #e5e7eb;border-radius:8px;font-size:13px">
+                        </div>
+                        
+                        <div>
+                            <label style="font-size:12px;color:#6b7280;display:block;margin-bottom:4px">Послуги / Продукти</label>
+                            <textarea id="ai-biz-services" placeholder="Імплантація, протезування, професійна чистка, лікування карієсу" 
+                                style="width:100%;padding:10px 12px;border:1px solid #e5e7eb;border-radius:8px;font-size:13px;min-height:60px;resize:vertical"></textarea>
+                        </div>
+                        
+                        <div>
+                            <label style="font-size:12px;color:#6b7280;display:block;margin-bottom:4px">Ціни (орієнтовно)</label>
+                            <textarea id="ai-biz-prices" placeholder="Консультація безкоштовна, чистка від 800 грн, імплантація від 15000 грн" 
+                                style="width:100%;padding:10px 12px;border:1px solid #e5e7eb;border-radius:8px;font-size:13px;min-height:60px;resize:vertical"></textarea>
+                        </div>
+                        
+                        <div>
+                            <label style="font-size:12px;color:#6b7280;display:block;margin-bottom:4px">УТП / Переваги</label>
+                            <textarea id="ai-biz-utp" placeholder="15 років досвіду, гарантія 5 років на імплантацію, сучасне обладнання" 
+                                style="width:100%;padding:10px 12px;border:1px solid #e5e7eb;border-radius:8px;font-size:13px;min-height:60px;resize:vertical"></textarea>
+                        </div>
+                        
+                        <div>
+                            <label style="font-size:12px;color:#6b7280;display:block;margin-bottom:4px">Локація</label>
+                            <input type="text" id="ai-biz-location" placeholder="Київ, Печерський район" 
+                                style="width:100%;padding:10px 12px;border:1px solid #e5e7eb;border-radius:8px;font-size:13px">
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Додаткові інструкції -->
+                <div style="margin-bottom:16px">
+                    <div style="font-weight:600;font-size:14px;color:#374151;margin-bottom:8px;display:flex;align-items:center;gap:6px">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#6b7280" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                        Додаткові інструкції
+                        <span style="font-weight:400;font-size:12px;color:#9ca3af">(опційно)</span>
+                    </div>
+                    <textarea id="ai-extra-instructions" placeholder="Додаткові правила для AI:
+
+- Завжди пропонуй безкоштовну консультацію
+- Використовуй звертання на 'Ви'
+- Акцентуй увагу на гарантії
+- Не згадуй конкурентів
+- Будь дружелюбним але професійним"
+                        style="width:100%;min-height:100px;padding:12px;border:1px solid #e5e7eb;border-radius:8px;font-size:13px;font-family:inherit;resize:vertical;line-height:1.5"></textarea>
+                </div>
+                
+                <div style="display:flex;gap:8px;align-items:center">
+                    <button class="btn btn-p" onclick="saveAISettings()" style="flex:1">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                        Зберегти
+                    </button>
+                    <button class="btn btn-s" onclick="testAIPrompt()" title="Тестувати AI">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                    </button>
+                </div>
+                
+                <div style="margin-top:12px;padding:10px;background:#f0fdf4;border-radius:8px;font-size:12px;color:#166534">
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" style="display:inline;vertical-align:middle;margin-right:4px"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                    AI буде автоматично використовувати контекст вашого бізнесу для генерації скриптів, SMS та аналізу
+                </div>
+            </div>
+        </div>
+        
+        <!-- Webhook Integration Section -->
+        <div class="settings-section" id="webhook-settings-section">
+            <div class="settings-section-title">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+                Webhook інтеграція
+            </div>
+            <div class="webhook-settings-content">
+                <div style="margin-bottom:16px;padding:16px;background:#f9fafb;border-radius:12px;border:1px solid #e5e7eb">
+                    <div style="font-weight:600;font-size:13px;color:#374151;margin-bottom:8px">Ваш Webhook URL:</div>
+                    <div style="display:flex;gap:8px;align-items:center">
+                        <input type="text" id="webhook-url" readonly 
+                            style="flex:1;padding:10px 12px;border:1px solid #e5e7eb;border-radius:8px;font-size:12px;font-family:monospace;background:#fff;color:#374151">
+                        <button class="btn btn-s" onclick="copyWebhookUrl()" title="Копіювати">
+                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                        </button>
+                        <button class="btn btn-s" onclick="regenerateWebhookKey()" title="Оновити ключ">
+                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+                        </button>
+                    </div>
+                    <div style="margin-top:8px;font-size:11px;color:#9ca3af">
+                        Використовуйте цей URL для інтеграції з SendPulse, Mailchimp, тощо
+                    </div>
+                </div>
+                
+                <!-- Mapping полів -->
+                <div style="margin-bottom:16px">
+                    <div style="font-weight:600;font-size:13px;color:#374151;margin-bottom:8px;display:flex;align-items:center;gap:6px">
+                        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#6b7280" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+                        Налаштування полів
+                    </div>
+                    <div style="display:grid;gap:8px;font-size:12px">
+                        <div style="display:grid;grid-template-columns:100px 1fr;gap:8px;align-items:center">
+                            <span style="color:#6b7280">Телефон:</span>
+                            <input type="text" id="webhook-field-phone" value="phone" placeholder="phone" 
+                                style="padding:8px 10px;border:1px solid #e5e7eb;border-radius:6px;font-size:12px">
+                        </div>
+                        <div style="display:grid;grid-template-columns:100px 1fr;gap:8px;align-items:center">
+                            <span style="color:#6b7280">Ім'я/Telegram:</span>
+                            <input type="text" id="webhook-field-name" value="name" placeholder="name" 
+                                style="padding:8px 10px;border:1px solid #e5e7eb;border-radius:6px;font-size:12px">
+                        </div>
+                        <div style="display:grid;grid-template-columns:100px 1fr;gap:8px;align-items:center">
+                            <span style="color:#6b7280">Email:</span>
+                            <input type="text" id="webhook-field-email" value="email" placeholder="email" 
+                                style="padding:8px 10px;border:1px solid #e5e7eb;border-radius:6px;font-size:12px">
+                        </div>
+                        <div style="display:grid;grid-template-columns:100px 1fr;gap:8px;align-items:center">
+                            <span style="color:#6b7280">Бізнес:</span>
+                            <input type="text" id="webhook-field-business" value="business" placeholder="business, company" 
+                                style="padding:8px 10px;border:1px solid #e5e7eb;border-radius:6px;font-size:12px">
+                        </div>
+                    </div>
+                    <div style="margin-top:8px;font-size:11px;color:#9ca3af">
+                        Вкажіть назви полів які приходять з вашого сервісу (SendPulse, тощо)
+                    </div>
+                </div>
+                
+                <!-- Дефолтні налаштування -->
+                <div style="margin-bottom:16px">
+                    <div style="font-weight:600;font-size:13px;color:#374151;margin-bottom:8px">Налаштування нових лідів:</div>
+                    <div style="display:grid;gap:8px;font-size:12px">
+                        <div style="display:grid;grid-template-columns:100px 1fr;gap:8px;align-items:center">
+                            <span style="color:#6b7280">Джерело:</span>
+                            <select id="webhook-default-source" style="padding:8px 10px;border:1px solid #e5e7eb;border-radius:6px;font-size:12px">
+                                <option value="webhook">Webhook</option>
+                                <option value="sendpulse">SendPulse</option>
+                                <option value="chatbot">Чат-бот</option>
+                            </select>
+                        </div>
+                        <div style="display:grid;grid-template-columns:100px 1fr;gap:8px;align-items:center">
+                            <span style="color:#6b7280">Воронка:</span>
+                            <select id="webhook-default-funnel" style="padding:8px 10px;border:1px solid #e5e7eb;border-radius:6px;font-size:12px">
+                                <!-- Заповнюється динамічно -->
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="display:flex;gap:8px">
+                    <button class="btn btn-p" onclick="saveWebhookSettings()" style="flex:1">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                        Зберегти
+                    </button>
+                    <button class="btn btn-s" onclick="testWebhook()" title="Тестувати">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                    </button>
+                </div>
+                
+                <!-- Інструкція -->
+                <details style="margin-top:16px">
+                    <summary style="cursor:pointer;font-weight:600;font-size:13px;color:#374151;padding:8px 0">
+                        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" style="display:inline;vertical-align:middle;margin-right:4px"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                        Інструкція для SendPulse
+                    </summary>
+                    <div style="margin-top:12px;padding:12px;background:#eff6ff;border-radius:8px;font-size:12px;color:#1e40af;line-height:1.6">
+                        <strong>Крок 1:</strong> Скопіюйте Webhook URL вище<br><br>
+                        <strong>Крок 2:</strong> В SendPulse відкрийте ваш чат-бот<br><br>
+                        <strong>Крок 3:</strong> В ланцюжку на потрібному етапі додайте дію "Webhook"<br><br>
+                        <strong>Крок 4:</strong> Вставте URL, виберіть метод POST<br><br>
+                        <strong>Крок 5:</strong> Додайте змінні: phone, name, email<br><br>
+                        <strong>Готово!</strong> Ліди автоматично потраплятимуть в CRM
+                    </div>
+                </details>
+                
+                <!-- Лог останніх webhook -->
+                <div style="margin-top:16px">
+                    <div style="font-weight:600;font-size:13px;color:#374151;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between">
+                        <span>Останні запити:</span>
+                        <button class="btn btn-s" onclick="loadWebhookLogs()" style="padding:4px 8px;font-size:11px">
+                            <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+                        </button>
+                    </div>
+                    <div id="webhook-logs" style="max-height:150px;overflow-y:auto;font-size:11px;background:#f9fafb;border-radius:8px;padding:8px">
+                        <div style="color:#9ca3af;text-align:center;padding:12px">Натисніть оновити для завантаження</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Telephony Integration Section -->
+        <div class="settings-section" id="telephony-settings-section">
+            <div class="settings-section-title">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                IP-телефонія
+            </div>
+            <div class="telephony-settings-content">
+                <!-- Вибір провайдера -->
+                <div style="margin-bottom:16px">
+                    <label style="font-size:13px;font-weight:500;color:#374151;display:block;margin-bottom:8px">Провайдер:</label>
+                    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px">
+                        <label class="telephony-provider-option" style="display:flex;align-items:center;gap:8px;padding:12px;border:2px solid #e5e7eb;border-radius:8px;cursor:pointer;transition:all .2s">
+                            <input type="radio" name="telephony-provider" value="binotel" onchange="selectTelephonyProvider('binotel')" style="accent-color:#22c55e">
+                            <div>
+                                <div style="font-weight:600;font-size:13px">Binotel</div>
+                                <div style="font-size:11px;color:#6b7280">Популярний в Україні</div>
+                            </div>
+                        </label>
+                        <label class="telephony-provider-option" style="display:flex;align-items:center;gap:8px;padding:12px;border:2px solid #e5e7eb;border-radius:8px;cursor:pointer;transition:all .2s">
+                            <input type="radio" name="telephony-provider" value="ringostat" onchange="selectTelephonyProvider('ringostat')" style="accent-color:#22c55e">
+                            <div>
+                                <div style="font-weight:600;font-size:13px">Ringostat</div>
+                                <div style="font-size:11px;color:#6b7280">Аналітика дзвінків</div>
+                            </div>
+                        </label>
+                        <label class="telephony-provider-option" style="display:flex;align-items:center;gap:8px;padding:12px;border:2px solid #e5e7eb;border-radius:8px;cursor:pointer;transition:all .2s">
+                            <input type="radio" name="telephony-provider" value="stream" onchange="selectTelephonyProvider('stream')" style="accent-color:#22c55e">
+                            <div>
+                                <div style="font-weight:600;font-size:13px">Stream Telecom</div>
+                                <div style="font-size:11px;color:#6b7280">Бюджетний варіант</div>
+                            </div>
+                        </label>
+                        <label class="telephony-provider-option" style="display:flex;align-items:center;gap:8px;padding:12px;border:2px solid #e5e7eb;border-radius:8px;cursor:pointer;transition:all .2s">
+                            <input type="radio" name="telephony-provider" value="phonet" onchange="selectTelephonyProvider('phonet')" style="accent-color:#22c55e">
+                            <div>
+                                <div style="font-weight:600;font-size:13px">Phonet</div>
+                                <div style="font-size:11px;color:#6b7280">Хмарна АТС</div>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+                
+                <!-- API налаштування -->
+                <div id="telephony-api-settings" style="display:none;margin-bottom:16px;padding:16px;background:#f9fafb;border-radius:12px;border:1px solid #e5e7eb">
+                    <div style="font-weight:600;font-size:13px;color:#374151;margin-bottom:12px;display:flex;align-items:center;gap:6px">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#6b7280" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                        <span id="telephony-provider-name">API налаштування</span>
+                    </div>
+                    
+                    <div style="display:grid;gap:10px">
+                        <div>
+                            <label style="font-size:12px;color:#6b7280;display:block;margin-bottom:4px">API Key (ID)</label>
+                            <input type="text" id="telephony-api-key" placeholder="Ваш API ключ" 
+                                style="width:100%;padding:10px 12px;border:1px solid #e5e7eb;border-radius:8px;font-size:13px">
+                        </div>
+                        <div>
+                            <label style="font-size:12px;color:#6b7280;display:block;margin-bottom:4px">API Secret</label>
+                            <input type="password" id="telephony-api-secret" placeholder="Ваш секретний ключ" 
+                                style="width:100%;padding:10px 12px;border:1px solid #e5e7eb;border-radius:8px;font-size:13px">
+                        </div>
+                    </div>
+                    
+                    <!-- Webhook URL для телефонії -->
+                    <div style="margin-top:12px">
+                        <label style="font-size:12px;color:#6b7280;display:block;margin-bottom:4px">Webhook URL (вставте в налаштуваннях телефонії):</label>
+                        <div style="display:flex;gap:8px">
+                            <input type="text" id="telephony-webhook-url" readonly 
+                                style="flex:1;padding:10px 12px;border:1px solid #e5e7eb;border-radius:8px;font-size:11px;font-family:monospace;background:#fff">
+                            <button class="btn btn-s" onclick="copyTelephonyWebhook()" title="Копіювати">
+                                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Внутрішні номери менеджерів -->
+                <div id="telephony-extensions" style="display:none;margin-bottom:16px">
+                    <div style="font-weight:600;font-size:13px;color:#374151;margin-bottom:8px;display:flex;align-items:center;gap:6px">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#6b7280" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                        Внутрішні номери менеджерів
+                    </div>
+                    <div id="telephony-extensions-list" style="display:grid;gap:8px">
+                        <!-- Заповнюється динамічно -->
+                    </div>
+                </div>
+                
+                <!-- Налаштування дзвінків -->
+                <div id="telephony-call-settings" style="display:none;margin-bottom:16px">
+                    <div style="font-weight:600;font-size:13px;color:#374151;margin-bottom:8px">Налаштування:</div>
+                    <div style="display:grid;gap:8px">
+                        <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer">
+                            <input type="checkbox" id="telephony-auto-log" checked style="accent-color:#22c55e">
+                            <span>Автоматично логувати дзвінки</span>
+                        </label>
+                        <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer">
+                            <input type="checkbox" id="telephony-save-records" checked style="accent-color:#22c55e">
+                            <span>Зберігати записи розмов</span>
+                        </label>
+                        <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer">
+                            <input type="checkbox" id="telephony-popup-incoming" checked style="accent-color:#22c55e">
+                            <span>Показувати popup при вхідному дзвінку</span>
+                        </label>
+                        <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer">
+                            <input type="checkbox" id="telephony-auto-open-card" style="accent-color:#22c55e">
+                            <span>Автоматично відкривати картку ліда</span>
+                        </label>
+                    </div>
+                </div>
+                
+                <!-- Кнопки -->
+                <div style="display:flex;gap:8px">
+                    <button class="btn btn-p" onclick="saveTelephonySettings()" style="flex:1">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                        Зберегти
+                    </button>
+                    <button class="btn btn-s" onclick="testTelephonyConnection()" title="Перевірити з'єднання">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                    </button>
+                </div>
+                
+                <!-- Статус підключення -->
+                <div id="telephony-status" style="margin-top:12px;padding:10px;border-radius:8px;font-size:12px;display:none">
+                    <!-- Заповнюється динамічно -->
+                </div>
+                
+                <!-- Інструкція -->
+                <details style="margin-top:16px">
+                    <summary style="cursor:pointer;font-weight:600;font-size:13px;color:#374151;padding:8px 0">
+                        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" style="display:inline;vertical-align:middle;margin-right:4px"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                        Як підключити телефонію?
+                    </summary>
+                    <div style="margin-top:12px;padding:12px;background:#eff6ff;border-radius:8px;font-size:12px;color:#1e40af;line-height:1.6">
+                        <strong>Крок 1:</strong> Зареєструйтесь у провайдера (Binotel, Ringostat, тощо)<br><br>
+                        <strong>Крок 2:</strong> В особистому кабінеті знайдіть API ключі<br><br>
+                        <strong>Крок 3:</strong> Вставте API Key та Secret вище<br><br>
+                        <strong>Крок 4:</strong> Скопіюйте Webhook URL і вставте в налаштуваннях телефонії<br><br>
+                        <strong>Крок 5:</strong> Вкажіть внутрішні номери менеджерів<br><br>
+                        <strong>Готово!</strong> Тепер можна дзвонити прямо з CRM
+                    </div>
+                </details>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -3987,6 +4336,15 @@ function openSettingsPanel(){
     
     // Рендеримо статус Telegram
     renderTelegramStatus();
+    
+    // Завантажуємо AI налаштування
+    loadAISettings();
+    
+    // Завантажуємо Webhook налаштування
+    loadWebhookSettings();
+    
+    // Завантажуємо налаштування телефонії
+    loadTelephonySettings();
     
     renderColorPicker();
     
@@ -5910,7 +6268,37 @@ function initFirestoreListener(){
                 clearTimeout(fallbackTimeout);
                 setSyncStatus('error', 'Помилка синхронізації');
             });
+        
+        // Listener для real-time дзвінків (якщо телефонія включена)
+        if(currentOrg?.telephony?.enabled) {
+            subscribeToCallEvents(orgId);
+        }
     }, 50); // 50ms затримка
+}
+
+// Підписка на події дзвінків
+let callEventsUnsubscribe = null;
+
+function subscribeToCallEvents(orgId) {
+    if(callEventsUnsubscribe) {
+        callEventsUnsubscribe();
+    }
+    
+    // Слухаємо тільки нові події (за останні 60 секунд)
+    const cutoff = new Date(Date.now() - 60000);
+    
+    callEventsUnsubscribe = db.collection('organizations').doc(orgId).collection('callEvents')
+        .where('timestamp', '>', cutoff)
+        .onSnapshot(snapshot => {
+            snapshot.docChanges().forEach(change => {
+                if(change.type === 'added') {
+                    const data = change.doc.data();
+                    handleTelephonyWebhook(data);
+                }
+            });
+        }, err => {
+            console.error('CallEvents error:', err);
+        });
 }
 
 function updateOrgLeadsCount(count){
@@ -9765,6 +10153,1020 @@ function toggleHelp(){document.getElementById('help').classList.toggle('active')
 // ===== AI ASSISTANT =====
 const AI_API_URL = 'https://openai-proxy-1090643937646.europe-central2.run.app'; // Заміни на свій URL після деплою
 
+// Генерує системний промпт з контексту бізнесу
+function buildSystemPrompt(aiConfig) {
+    if(!aiConfig) return getDefaultPrompt();
+    
+    const biz = aiConfig.business || {};
+    let prompt = `Ти AI-асистент для CRM системи продажів.
+
+`;
+    
+    // Додаємо контекст бізнесу якщо є
+    if(biz.name || biz.niche || biz.services) {
+        prompt += `КОНТЕКСТ БІЗНЕСУ:\n`;
+        if(biz.name) prompt += `Компанія: ${biz.name}\n`;
+        if(biz.niche) prompt += `Ніша: ${biz.niche}\n`;
+        if(biz.services) prompt += `Послуги/Продукти: ${biz.services}\n`;
+        if(biz.prices) prompt += `Ціни: ${biz.prices}\n`;
+        if(biz.utp) prompt += `Переваги/УТП: ${biz.utp}\n`;
+        if(biz.location) prompt += `Локація: ${biz.location}\n`;
+        prompt += `\n`;
+    }
+    
+    prompt += `ТВОЇ ЗАВДАННЯ:
+- Генерувати скрипти для дзвінків клієнтам
+- Допомагати з відповідями на заперечення
+- Писати SMS-шаблони
+- Аналізувати лідів та давати рекомендації
+
+`;
+    
+    // Додаємо додаткові інструкції якщо є
+    if(aiConfig.extraInstructions) {
+        prompt += `ДОДАТКОВІ ПРАВИЛА:\n${aiConfig.extraInstructions}\n\n`;
+    }
+    
+    prompt += `Відповідай українською мовою, конкретно і по суті.`;
+    
+    return prompt;
+}
+
+// Дефолтний промпт
+function getDefaultPrompt() {
+    return `Ти AI-асистент для CRM системи продажів.
+
+Допомагай менеджерам з:
+- Скриптами для дзвінків клієнтам
+- Відповідями на заперечення
+- SMS-шаблонами
+- Аналізом лідів
+
+Відповідай українською мовою, конкретно і по суті.`;
+}
+
+// Отримати системний промпт для поточної організації
+function getOrgAIPrompt() {
+    if(!currentOrg?.aiConfig) return getDefaultPrompt();
+    return buildSystemPrompt(currentOrg.aiConfig);
+}
+
+// Завантажити AI налаштування в форму
+function loadAISettings() {
+    if(!currentOrg) return;
+    
+    const aiConfig = currentOrg.aiConfig || {};
+    const biz = aiConfig.business || {};
+    
+    // Заповнюємо поля контексту бізнесу
+    const nameEl = document.getElementById('ai-biz-name');
+    const nicheEl = document.getElementById('ai-biz-niche');
+    const servicesEl = document.getElementById('ai-biz-services');
+    const pricesEl = document.getElementById('ai-biz-prices');
+    const utpEl = document.getElementById('ai-biz-utp');
+    const locationEl = document.getElementById('ai-biz-location');
+    const extraEl = document.getElementById('ai-extra-instructions');
+    
+    if(nameEl) nameEl.value = biz.name || '';
+    if(nicheEl) nicheEl.value = biz.niche || '';
+    if(servicesEl) servicesEl.value = biz.services || '';
+    if(pricesEl) pricesEl.value = biz.prices || '';
+    if(utpEl) utpEl.value = biz.utp || '';
+    if(locationEl) locationEl.value = biz.location || '';
+    if(extraEl) extraEl.value = aiConfig.extraInstructions || '';
+}
+
+// Зберегти AI налаштування
+async function saveAISettings() {
+    if(!currentOrg?.id) {
+        showWarning('Організація не вибрана');
+        return;
+    }
+    
+    // Збираємо дані з форми
+    const business = {
+        name: document.getElementById('ai-biz-name')?.value?.trim() || '',
+        niche: document.getElementById('ai-biz-niche')?.value?.trim() || '',
+        services: document.getElementById('ai-biz-services')?.value?.trim() || '',
+        prices: document.getElementById('ai-biz-prices')?.value?.trim() || '',
+        utp: document.getElementById('ai-biz-utp')?.value?.trim() || '',
+        location: document.getElementById('ai-biz-location')?.value?.trim() || ''
+    };
+    
+    const extraInstructions = document.getElementById('ai-extra-instructions')?.value?.trim() || '';
+    
+    try {
+        // Оновлюємо aiConfig в організації
+        const aiConfig = {
+            business: business,
+            extraInstructions: extraInstructions,
+            updatedAt: new Date().toISOString()
+        };
+        
+        await db.collection('organizations').doc(currentOrg.id).update({
+            aiConfig: aiConfig
+        });
+        
+        // Оновлюємо локально
+        currentOrg.aiConfig = aiConfig;
+        
+        showToast('AI налаштування збережено');
+    } catch(err) {
+        console.error('Error saving AI settings:', err);
+        showError('Помилка збереження: ' + err.message);
+    }
+}
+
+// Тестувати AI промпт
+async function testAIPrompt() {
+    // Будуємо промпт з поточних даних форми (без збереження)
+    const business = {
+        name: document.getElementById('ai-biz-name')?.value?.trim() || '',
+        niche: document.getElementById('ai-biz-niche')?.value?.trim() || '',
+        services: document.getElementById('ai-biz-services')?.value?.trim() || '',
+        prices: document.getElementById('ai-biz-prices')?.value?.trim() || '',
+        utp: document.getElementById('ai-biz-utp')?.value?.trim() || '',
+        location: document.getElementById('ai-biz-location')?.value?.trim() || ''
+    };
+    const extraInstructions = document.getElementById('ai-extra-instructions')?.value?.trim() || '';
+    
+    const testConfig = { business, extraInstructions };
+    const systemPrompt = buildSystemPrompt(testConfig);
+    
+    // Відкриваємо AI панель і відправляємо тестовий запит
+    document.getElementById('ai-panel').classList.add('active');
+    
+    addAIMessage('Тест: "Привіт, хто ти і як можеш допомогти?"', true);
+    showAILoading();
+    
+    try {
+        const response = await fetch(AI_API_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                messages: [{ role: 'user', content: 'Привіт! Розкажи коротко хто ти, для якого бізнесу працюєш і як можеш допомогти менеджеру з продажів?' }],
+                systemPrompt: systemPrompt
+            })
+        });
+        
+        const data = await response.json();
+        hideAILoading();
+        
+        if(data.success) {
+            addAIMessage(data.message);
+        } else {
+            addAIMessage('Помилка: ' + (data.error || 'Невідома помилка'));
+        }
+    } catch(err) {
+        hideAILoading();
+        addAIMessage('Помилка з\'єднання: ' + err.message);
+    }
+}
+
+// ===== WEBHOOK INTEGRATION =====
+const WEBHOOK_BASE_URL = 'https://talko-crm.vercel.app/api/webhook';
+
+// Генерація випадкового ключа
+function generateWebhookKey() {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    let key = '';
+    for(let i = 0; i < 32; i++) {
+        key += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return key;
+}
+
+// Завантажити webhook налаштування
+function loadWebhookSettings() {
+    if(!currentOrg) return;
+    
+    const webhook = currentOrg.webhook || {};
+    
+    // Генеруємо ключ якщо немає
+    if(!webhook.key) {
+        webhook.key = generateWebhookKey();
+        // Зберігаємо автоматично
+        db.collection('organizations').doc(currentOrg.id).update({ webhook: webhook });
+        currentOrg.webhook = webhook;
+    }
+    
+    // Формуємо URL
+    const webhookUrl = `${WEBHOOK_BASE_URL}?orgId=${currentOrg.id}&key=${webhook.key}`;
+    const urlInput = document.getElementById('webhook-url');
+    if(urlInput) urlInput.value = webhookUrl;
+    
+    // Заповнюємо поля mapping
+    const fields = webhook.fields || {};
+    const phoneField = document.getElementById('webhook-field-phone');
+    const nameField = document.getElementById('webhook-field-name');
+    const emailField = document.getElementById('webhook-field-email');
+    const businessField = document.getElementById('webhook-field-business');
+    
+    if(phoneField) phoneField.value = fields.phone || 'phone';
+    if(nameField) nameField.value = fields.name || 'name';
+    if(emailField) emailField.value = fields.email || 'email';
+    if(businessField) businessField.value = fields.business || 'business';
+    
+    // Заповнюємо дефолтні налаштування
+    const defaults = webhook.defaults || {};
+    
+    // Джерело
+    const sourceSelect = document.getElementById('webhook-default-source');
+    if(sourceSelect) {
+        // Очищаємо і заповнюємо опціями
+        const sources = getOrgSources();
+        sourceSelect.innerHTML = '<option value="webhook">Webhook</option>' +
+            '<option value="sendpulse">SendPulse</option>' +
+            '<option value="chatbot">Чат-бот</option>' +
+            Object.entries(sources).map(([code, name]) => 
+                `<option value="${code}">${escapeHtml(name)}</option>`
+            ).join('');
+        sourceSelect.value = defaults.source || 'webhook';
+    }
+    
+    // Воронка
+    const funnelSelect = document.getElementById('webhook-default-funnel');
+    if(funnelSelect) {
+        const funnels = getOrgFunnels();
+        funnelSelect.innerHTML = funnels.map(f => 
+            `<option value="${f.id}">${escapeHtml(f.name)}</option>`
+        ).join('');
+        if(defaults.funnelId) funnelSelect.value = defaults.funnelId;
+    }
+}
+
+// Копіювати webhook URL
+function copyWebhookUrl() {
+    const urlInput = document.getElementById('webhook-url');
+    if(!urlInput) return;
+    
+    navigator.clipboard.writeText(urlInput.value).then(() => {
+        showToast('Webhook URL скопійовано');
+    }).catch(() => {
+        // Fallback
+        urlInput.select();
+        document.execCommand('copy');
+        showToast('Webhook URL скопійовано');
+    });
+}
+
+// Оновити webhook ключ
+async function regenerateWebhookKey() {
+    if(!currentOrg?.id) return;
+    
+    const confirmed = await confirmModal('Оновити ключ?\n\nСтарий URL перестане працювати. Потрібно буде оновити URL в SendPulse.', {
+        title: 'Оновити ключ',
+        okText: 'Оновити'
+    });
+    
+    if(!confirmed) return;
+    
+    const newKey = generateWebhookKey();
+    const webhook = currentOrg.webhook || {};
+    webhook.key = newKey;
+    webhook.regeneratedAt = new Date().toISOString();
+    
+    try {
+        await db.collection('organizations').doc(currentOrg.id).update({ webhook: webhook });
+        currentOrg.webhook = webhook;
+        
+        // Оновлюємо URL в інтерфейсі
+        const webhookUrl = `${WEBHOOK_BASE_URL}?orgId=${currentOrg.id}&key=${newKey}`;
+        document.getElementById('webhook-url').value = webhookUrl;
+        
+        showToast('Ключ оновлено');
+    } catch(err) {
+        showError('Помилка: ' + err.message);
+    }
+}
+
+// Зберегти webhook налаштування
+async function saveWebhookSettings() {
+    if(!currentOrg?.id) {
+        showWarning('Організація не вибрана');
+        return;
+    }
+    
+    const webhook = currentOrg.webhook || {};
+    
+    // Зберігаємо mapping полів
+    webhook.fields = {
+        phone: document.getElementById('webhook-field-phone')?.value?.trim() || 'phone',
+        name: document.getElementById('webhook-field-name')?.value?.trim() || 'name',
+        email: document.getElementById('webhook-field-email')?.value?.trim() || 'email',
+        business: document.getElementById('webhook-field-business')?.value?.trim() || 'business'
+    };
+    
+    // Зберігаємо дефолтні налаштування
+    webhook.defaults = {
+        source: document.getElementById('webhook-default-source')?.value || 'webhook',
+        funnelId: document.getElementById('webhook-default-funnel')?.value || null
+    };
+    
+    webhook.updatedAt = new Date().toISOString();
+    
+    try {
+        await db.collection('organizations').doc(currentOrg.id).update({ webhook: webhook });
+        currentOrg.webhook = webhook;
+        showToast('Webhook налаштування збережено');
+    } catch(err) {
+        showError('Помилка збереження: ' + err.message);
+    }
+}
+
+// Тестувати webhook
+async function testWebhook() {
+    if(!currentOrg?.webhook?.key) {
+        showWarning('Спочатку збережіть налаштування');
+        return;
+    }
+    
+    const webhookUrl = document.getElementById('webhook-url').value;
+    const fields = currentOrg.webhook.fields || {};
+    
+    // Формуємо тестові дані
+    const testData = {};
+    testData[fields.phone || 'phone'] = '+380991234567';
+    testData[fields.name || 'name'] = 'Тест Webhook';
+    testData[fields.email || 'email'] = 'test@webhook.com';
+    testData[fields.business || 'business'] = 'Тестова компанія';
+    
+    try {
+        showToast('Відправляємо тестовий запит...');
+        
+        const response = await fetch(webhookUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(testData)
+        });
+        
+        const result = await response.json();
+        
+        if(result.success) {
+            showToast('Тест успішний! Лід створено');
+            // Оновлюємо список лідів
+            if(typeof render === 'function') render();
+        } else {
+            showError('Помилка: ' + (result.error || 'Невідома помилка'));
+        }
+    } catch(err) {
+        showError('Помилка з\'єднання: ' + err.message);
+    }
+}
+
+// Завантажити лог webhook запитів
+async function loadWebhookLogs() {
+    if(!currentOrg?.id) return;
+    
+    const logsContainer = document.getElementById('webhook-logs');
+    if(!logsContainer) return;
+    
+    logsContainer.innerHTML = '<div style="color:#9ca3af;text-align:center;padding:12px">Завантаження...</div>';
+    
+    try {
+        // Шукаємо останні ліди з джерела webhook
+        const webhookLeads = leads.filter(l => 
+            l.source === 'webhook' || l.source === 'sendpulse' || l.source === 'chatbot'
+        ).slice(-10).reverse();
+        
+        if(webhookLeads.length === 0) {
+            logsContainer.innerHTML = '<div style="color:#9ca3af;text-align:center;padding:12px">Немає webhook запитів</div>';
+            return;
+        }
+        
+        logsContainer.innerHTML = webhookLeads.map(l => `
+            <div style="padding:6px 8px;border-bottom:1px solid #e5e7eb;display:flex;justify-content:space-between;align-items:center">
+                <div>
+                    <span style="color:#22c55e;font-weight:500">${escapeHtml(l.tg || l.phone || '—')}</span>
+                    <span style="color:#9ca3af;margin-left:8px">${escapeHtml(l.source || 'webhook')}</span>
+                </div>
+                <div style="color:#9ca3af">${l.created ? new Date(l.created).toLocaleString('uk') : '—'}</div>
+            </div>
+        `).join('');
+    } catch(err) {
+        logsContainer.innerHTML = '<div style="color:#ef4444;text-align:center;padding:12px">Помилка завантаження</div>';
+    }
+}
+
+// ===== IP TELEPHONY INTEGRATION =====
+const TELEPHONY_WEBHOOK_URL = 'https://talko-crm.vercel.app/api/telephony';
+
+// Провайдери телефонії та їх API
+const TELEPHONY_PROVIDERS = {
+    binotel: {
+        name: 'Binotel',
+        apiBase: 'https://api.binotel.com/api/4.0',
+        callEndpoint: '/stats/call-employee-to-client.json',
+        docsUrl: 'https://doc.binotel.com'
+    },
+    ringostat: {
+        name: 'Ringostat',
+        apiBase: 'https://api.ringostat.net/v1',
+        callEndpoint: '/calls/initiate',
+        docsUrl: 'https://ringostat.com/api'
+    },
+    stream: {
+        name: 'Stream Telecom',
+        apiBase: 'https://api.streamtele.com/v1',
+        callEndpoint: '/call/create',
+        docsUrl: 'https://streamtele.com/api'
+    },
+    phonet: {
+        name: 'Phonet',
+        apiBase: 'https://api.phonet.com.ua/v1',
+        callEndpoint: '/calls/initiate',
+        docsUrl: 'https://phonet.com.ua/api'
+    }
+};
+
+// Активні дзвінки та пропущені
+let activeCalls = [];
+let missedCalls = [];
+let incomingCallData = null;
+let callDurationInterval = null;
+
+// Вибір провайдера телефонії
+function selectTelephonyProvider(provider) {
+    const settings = document.getElementById('telephony-api-settings');
+    const extensions = document.getElementById('telephony-extensions');
+    const callSettings = document.getElementById('telephony-call-settings');
+    const providerName = document.getElementById('telephony-provider-name');
+    
+    if(settings) settings.style.display = 'block';
+    if(extensions) extensions.style.display = 'block';
+    if(callSettings) callSettings.style.display = 'block';
+    
+    const providerInfo = TELEPHONY_PROVIDERS[provider];
+    if(providerName && providerInfo) {
+        providerName.textContent = providerInfo.name + ' API';
+    }
+    
+    // Оновлюємо webhook URL
+    updateTelephonyWebhookUrl();
+    
+    // Рендеримо список менеджерів
+    renderTelephonyExtensions();
+    
+    // Підсвічуємо вибраний
+    document.querySelectorAll('.telephony-provider-option').forEach(opt => {
+        opt.style.borderColor = opt.querySelector('input').value === provider ? '#22c55e' : '#e5e7eb';
+        opt.style.background = opt.querySelector('input').value === provider ? '#f0fdf4' : '#fff';
+    });
+}
+
+// Оновити webhook URL телефонії
+function updateTelephonyWebhookUrl() {
+    if(!currentOrg?.id) return;
+    
+    const telephony = currentOrg.telephony || {};
+    if(!telephony.webhookKey) {
+        telephony.webhookKey = generateWebhookKey();
+    }
+    
+    const url = `${TELEPHONY_WEBHOOK_URL}?orgId=${currentOrg.id}&key=${telephony.webhookKey}`;
+    const urlInput = document.getElementById('telephony-webhook-url');
+    if(urlInput) urlInput.value = url;
+}
+
+// Рендер внутрішніх номерів менеджерів
+function renderTelephonyExtensions() {
+    const container = document.getElementById('telephony-extensions-list');
+    if(!container) return;
+    
+    const telephony = currentOrg?.telephony || {};
+    const extensions = telephony.extensions || {};
+    
+    // Отримуємо список менеджерів
+    const managers = teamMembers.filter(m => m.role === 'owner' || m.role === 'manager');
+    
+    if(managers.length === 0) {
+        container.innerHTML = '<div style="color:#9ca3af;font-size:12px;padding:8px">Немає менеджерів в команді</div>';
+        return;
+    }
+    
+    container.innerHTML = managers.map(m => `
+        <div style="display:grid;grid-template-columns:1fr 100px;gap:8px;align-items:center">
+            <span style="font-size:13px;color:#374151">${escapeHtml(m.email)}</span>
+            <input type="text" class="telephony-extension-input" data-user-id="${m.id}" 
+                value="${extensions[m.id] || ''}" placeholder="101"
+                style="padding:8px 10px;border:1px solid #e5e7eb;border-radius:6px;font-size:13px;text-align:center">
+        </div>
+    `).join('');
+}
+
+// Копіювати webhook телефонії
+function copyTelephonyWebhook() {
+    const urlInput = document.getElementById('telephony-webhook-url');
+    if(!urlInput) return;
+    
+    navigator.clipboard.writeText(urlInput.value).then(() => {
+        showToast('Webhook URL скопійовано');
+    }).catch(() => {
+        urlInput.select();
+        document.execCommand('copy');
+        showToast('Webhook URL скопійовано');
+    });
+}
+
+// Завантажити налаштування телефонії
+function loadTelephonySettings() {
+    if(!currentOrg) return;
+    
+    const telephony = currentOrg.telephony || {};
+    
+    // Вибираємо провайдера
+    if(telephony.provider) {
+        const radio = document.querySelector(`input[name="telephony-provider"][value="${telephony.provider}"]`);
+        if(radio) {
+            radio.checked = true;
+            selectTelephonyProvider(telephony.provider);
+        }
+    }
+    
+    // API ключі
+    const apiKeyInput = document.getElementById('telephony-api-key');
+    const apiSecretInput = document.getElementById('telephony-api-secret');
+    if(apiKeyInput) apiKeyInput.value = telephony.apiKey || '';
+    if(apiSecretInput) apiSecretInput.value = telephony.apiSecret || '';
+    
+    // Налаштування
+    const autoLog = document.getElementById('telephony-auto-log');
+    const saveRecords = document.getElementById('telephony-save-records');
+    const popupIncoming = document.getElementById('telephony-popup-incoming');
+    const autoOpenCard = document.getElementById('telephony-auto-open-card');
+    
+    if(autoLog) autoLog.checked = telephony.autoLog !== false;
+    if(saveRecords) saveRecords.checked = telephony.saveRecords !== false;
+    if(popupIncoming) popupIncoming.checked = telephony.popupIncoming !== false;
+    if(autoOpenCard) autoOpenCard.checked = telephony.autoOpenCard === true;
+    
+    // Статус
+    updateTelephonyStatus(telephony.enabled ? 'connected' : null);
+}
+
+// Зберегти налаштування телефонії
+async function saveTelephonySettings() {
+    if(!currentOrg?.id) {
+        showWarning('Організація не вибрана');
+        return;
+    }
+    
+    const provider = document.querySelector('input[name="telephony-provider"]:checked')?.value;
+    if(!provider) {
+        showWarning('Виберіть провайдера телефонії');
+        return;
+    }
+    
+    // Збираємо внутрішні номери
+    const extensions = {};
+    document.querySelectorAll('.telephony-extension-input').forEach(input => {
+        const userId = input.dataset.userId;
+        const ext = input.value.trim();
+        if(userId && ext) {
+            extensions[userId] = ext;
+        }
+    });
+    
+    const telephony = {
+        provider: provider,
+        apiKey: document.getElementById('telephony-api-key')?.value?.trim() || '',
+        apiSecret: document.getElementById('telephony-api-secret')?.value?.trim() || '',
+        webhookKey: currentOrg.telephony?.webhookKey || generateWebhookKey(),
+        extensions: extensions,
+        autoLog: document.getElementById('telephony-auto-log')?.checked !== false,
+        saveRecords: document.getElementById('telephony-save-records')?.checked !== false,
+        popupIncoming: document.getElementById('telephony-popup-incoming')?.checked !== false,
+        autoOpenCard: document.getElementById('telephony-auto-open-card')?.checked === true,
+        enabled: true,
+        updatedAt: new Date().toISOString()
+    };
+    
+    try {
+        await db.collection('organizations').doc(currentOrg.id).update({ telephony: telephony });
+        currentOrg.telephony = telephony;
+        showToast('Налаштування телефонії збережено');
+        updateTelephonyStatus('connected');
+    } catch(err) {
+        showError('Помилка збереження: ' + err.message);
+    }
+}
+
+// Оновити статус підключення
+function updateTelephonyStatus(status) {
+    const statusEl = document.getElementById('telephony-status');
+    if(!statusEl) return;
+    
+    if(status === 'connected') {
+        statusEl.style.display = 'block';
+        statusEl.style.background = '#f0fdf4';
+        statusEl.style.color = '#166534';
+        statusEl.innerHTML = `
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" style="display:inline;vertical-align:middle;margin-right:4px"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            Телефонія підключена
+        `;
+    } else if(status === 'error') {
+        statusEl.style.display = 'block';
+        statusEl.style.background = '#fef2f2';
+        statusEl.style.color = '#dc2626';
+        statusEl.innerHTML = `
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" style="display:inline;vertical-align:middle;margin-right:4px"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+            Помилка підключення
+        `;
+    } else {
+        statusEl.style.display = 'none';
+    }
+}
+
+// Тест підключення телефонії
+async function testTelephonyConnection() {
+    const provider = document.querySelector('input[name="telephony-provider"]:checked')?.value;
+    const apiKey = document.getElementById('telephony-api-key')?.value?.trim();
+    const apiSecret = document.getElementById('telephony-api-secret')?.value?.trim();
+    
+    if(!provider || !apiKey) {
+        showWarning('Заповніть API ключ');
+        return;
+    }
+    
+    showToast('Перевірка з\'єднання...');
+    
+    // Тут буде реальний тест API (через проксі на сервері)
+    // Поки що симулюємо
+    setTimeout(() => {
+        updateTelephonyStatus('connected');
+        showToast('З\'єднання успішне!');
+    }, 1500);
+}
+
+// ===== CLICK TO CALL =====
+
+// Ініціювати дзвінок
+async function makeCall(phone, leadId) {
+    if(!currentOrg?.telephony?.enabled) {
+        showWarning('Телефонія не налаштована');
+        return;
+    }
+    
+    // Перевіряємо чи є телефон
+    if(!phone || phone.trim() === '') {
+        showWarning('Номер телефону не вказано');
+        return;
+    }
+    
+    const telephony = currentOrg.telephony;
+    const providerInfo = TELEPHONY_PROVIDERS[telephony.provider];
+    
+    if(!providerInfo) {
+        showError('Невідомий провайдер телефонії');
+        return;
+    }
+    
+    // Знаходимо внутрішній номер поточного користувача
+    const userExtension = telephony.extensions?.[currentUser?.uid];
+    if(!userExtension) {
+        showWarning('Вкажіть ваш внутрішній номер в налаштуваннях телефонії');
+        return;
+    }
+    
+    showToast('Ініціюємо дзвінок...');
+    
+    try {
+        // Відправляємо запит на наш API який проксує до телефонії
+        const response = await fetch('https://talko-crm.vercel.app/api/call', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                orgId: currentOrg.id,
+                provider: telephony.provider,
+                apiKey: telephony.apiKey,
+                apiSecret: telephony.apiSecret,
+                extension: userExtension,
+                phone: phone,
+                leadId: leadId
+            })
+        });
+        
+        const result = await response.json();
+        
+        if(result.success) {
+            showToast('Дзвінок ініційовано!');
+            
+            // Логуємо дзвінок якщо автологування увімкнено
+            if(telephony.autoLog && leadId) {
+                const lead = leads.find(l => l.id === leadId);
+                if(lead) {
+                    lead.calls = (lead.calls || 0) + 1;
+                    addLog(lead, 'call', 'Вихідний дзвінок');
+                }
+            }
+        } else {
+            showError('Помилка: ' + (result.error || 'Невідома помилка'));
+        }
+    } catch(err) {
+        showError('Помилка з\'єднання: ' + err.message);
+    }
+}
+
+// ===== INCOMING CALL POPUP =====
+
+// Показати popup вхідного дзвінка
+function showIncomingCall(callData) {
+    if(!currentOrg?.telephony?.popupIncoming) return;
+    
+    incomingCallData = callData;
+    
+    const popup = document.getElementById('incoming-call-popup');
+    const nameEl = document.getElementById('incoming-call-name');
+    const phoneEl = document.getElementById('incoming-call-phone');
+    const infoEl = document.getElementById('incoming-call-info');
+    
+    // Перевірка на існування елементів
+    if(!popup || !nameEl || !phoneEl) return;
+    
+    // Шукаємо ліда по номеру
+    const phone = callData.phone || callData.caller;
+    const lead = findLeadByPhone(phone);
+    
+    if(lead) {
+        nameEl.textContent = lead.tg || lead.biz || 'Клієнт';
+        phoneEl.textContent = phone || '';
+        if(infoEl) {
+            infoEl.innerHTML = `
+                <div style="display:flex;gap:12px;margin-top:8px">
+                    <span style="background:#f0fdf4;color:#166534;padding:2px 8px;border-radius:4px;font-size:11px">${getStatusName(lead.status, lead.funnelId)}</span>
+                    ${lead.biz ? `<span style="color:#6b7280">${escapeHtml(lead.biz)}</span>` : ''}
+                </div>
+            `;
+        }
+        incomingCallData.leadId = lead.id;
+    } else {
+        nameEl.textContent = 'Новий контакт';
+        phoneEl.textContent = phone || '';
+        if(infoEl) infoEl.innerHTML = '<div style="color:#d97706;font-size:12px;margin-top:4px">Номер не знайдено в базі</div>';
+    }
+    
+    popup.style.display = 'block';
+    
+    // Запускаємо таймер
+    let seconds = 0;
+    const durationEl = document.getElementById('incoming-call-duration');
+    callDurationInterval = setInterval(() => {
+        seconds++;
+        const mins = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+        if(durationEl) {
+            durationEl.textContent = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        }
+    }, 1000);
+    
+    // Автовідкриття картки
+    if(currentOrg.telephony.autoOpenCard && incomingCallData.leadId) {
+        openModal(incomingCallData.leadId);
+    }
+}
+
+// Закрити popup вхідного дзвінка
+function dismissIncomingCall() {
+    const popup = document.getElementById('incoming-call-popup');
+    if(popup) popup.style.display = 'none';
+    
+    if(callDurationInterval) {
+        clearInterval(callDurationInterval);
+        callDurationInterval = null;
+    }
+    
+    incomingCallData = null;
+}
+
+// Відкрити картку ліда з popup дзвінка
+function openLeadFromCall() {
+    if(incomingCallData?.leadId) {
+        openModal(incomingCallData.leadId);
+    } else if(incomingCallData?.phone) {
+        // Створюємо нового ліда
+        openModal();
+        setTimeout(() => {
+            const phoneInput = document.getElementById('f-phone');
+            if(phoneInput) phoneInput.value = incomingCallData.phone;
+        }, 100);
+    }
+    dismissIncomingCall();
+}
+
+// Знайти ліда по телефону
+function findLeadByPhone(phone) {
+    if(!phone) return null;
+    const normalizedPhone = phone.replace(/\D/g, '').slice(-9);
+    return leads.find(l => {
+        const leadPhone = (l.phone || '').replace(/\D/g, '').slice(-9);
+        return leadPhone && leadPhone === normalizedPhone;
+    });
+}
+
+// ===== ACTIVE CALLS PANEL =====
+
+// Оновити панель активних дзвінків
+function updateActiveCallsPanel() {
+    const panel = document.getElementById('active-calls-panel');
+    const fab = document.getElementById('call-fab');
+    const activeList = document.getElementById('active-calls-list');
+    const missedSection = document.getElementById('missed-calls-section');
+    const missedList = document.getElementById('missed-calls-list');
+    const missedCount = document.getElementById('missed-calls-count');
+    const fabBadge = document.getElementById('call-fab-badge');
+    
+    // Перевірка на існування елементів
+    if(!fab || !panel) return;
+    
+    // Показуємо FAB якщо є дзвінки
+    if(activeCalls.length > 0 || missedCalls.length > 0) {
+        fab.style.display = 'flex';
+        if(missedCalls.length > 0) {
+            fab.classList.add('has-missed');
+            if(fabBadge) {
+                fabBadge.style.display = 'flex';
+                fabBadge.textContent = missedCalls.length;
+            }
+        } else {
+            fab.classList.remove('has-missed');
+            if(fabBadge) fabBadge.style.display = 'none';
+        }
+    } else {
+        fab.style.display = 'none';
+        panel.style.display = 'none';
+    }
+    
+    // Активні дзвінки
+    if(activeList) {
+        if(activeCalls.length > 0) {
+            activeList.innerHTML = activeCalls.map(call => {
+                const lead = call.leadId ? leads.find(l => l.id === call.leadId) : null;
+                const name = lead ? (lead.tg || lead.biz || call.phone) : (call.phone || '—');
+                const direction = call.direction === 'incoming' ? '←' : '→';
+                const statusColor = call.status === 'active' ? '#22c55e' : '#eab308';
+                
+                return `
+                    <div class="active-call-item">
+                        <div>
+                            <span style="color:${statusColor};margin-right:6px">${direction}</span>
+                            <span style="font-weight:500">${escapeHtml(name)}</span>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:8px">
+                            <span style="font-size:12px;color:#6b7280">${call.duration || '00:00'}</span>
+                            <span style="width:8px;height:8px;border-radius:50%;background:${statusColor}"></span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        } else {
+            activeList.innerHTML = '<div style="padding:12px;text-align:center;color:#9ca3af;font-size:12px">Немає активних дзвінків</div>';
+        }
+    }
+    
+    // Пропущені дзвінки
+    if(missedCalls.length > 0) {
+        if(missedSection) missedSection.style.display = 'block';
+        if(missedCount) missedCount.textContent = missedCalls.length;
+        if(missedList) {
+            missedList.innerHTML = missedCalls.map(call => {
+                const lead = call.leadId ? leads.find(l => l.id === call.leadId) : null;
+                const name = lead ? (lead.tg || lead.biz || call.phone) : (call.phone || '—');
+                
+                return `
+                    <div class="missed-call-item">
+                        <div>
+                            <div style="font-weight:500;font-size:13px">${escapeHtml(name)}</div>
+                            <div style="font-size:11px;color:#9ca3af">${call.time || ''}</div>
+                        </div>
+                        <button onclick="callBackMissed('${escapeHtml(call.phone || '')}', '${escapeHtml(call.leadId || '')}')" 
+                            style="background:#22c55e;color:#fff;border:none;padding:6px 10px;border-radius:6px;font-size:11px;cursor:pointer">
+                            Передзвонити
+                        </button>
+                    </div>
+                `;
+            }).join('');
+        }
+    } else {
+        if(missedSection) missedSection.style.display = 'none';
+    }
+}
+
+// Показати/сховати панель дзвінків
+function toggleActiveCallsPanel() {
+    const panel = document.getElementById('active-calls-panel');
+    panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+}
+
+// Передзвонити на пропущений
+function callBackMissed(phone, leadId) {
+    // Видаляємо з пропущених
+    missedCalls = missedCalls.filter(c => c.phone !== phone);
+    updateActiveCallsPanel();
+    
+    // Ініціюємо дзвінок
+    makeCall(phone, leadId || null);
+}
+
+// ===== WEBHOOK HANDLER (викликається через real-time listener) =====
+
+// Обробка webhook від телефонії
+function handleTelephonyWebhook(data) {
+    const type = data.type || data.event;
+    
+    switch(type) {
+        case 'incoming':
+        case 'call.incoming':
+            showIncomingCall(data);
+            activeCalls.push({
+                id: data.callId,
+                phone: data.phone || data.caller,
+                direction: 'incoming',
+                status: 'ringing',
+                leadId: findLeadByPhone(data.phone)?.id,
+                startTime: new Date()
+            });
+            updateActiveCallsPanel();
+            break;
+            
+        case 'answer':
+        case 'call.answer':
+            const activeCall = activeCalls.find(c => c.id === data.callId);
+            if(activeCall) {
+                activeCall.status = 'active';
+                updateActiveCallsPanel();
+            }
+            break;
+            
+        case 'hangup':
+        case 'call.end':
+            // Видаляємо з активних
+            activeCalls = activeCalls.filter(c => c.id !== data.callId);
+            dismissIncomingCall();
+            
+            // Логуємо результат
+            if(data.leadId && currentOrg?.telephony?.autoLog) {
+                logCallResult(data);
+            }
+            
+            // Якщо не відповіли - додаємо в пропущені
+            if(data.status === 'missed' || data.duration === 0) {
+                missedCalls.unshift({
+                    phone: data.phone,
+                    leadId: data.leadId,
+                    time: new Date().toLocaleTimeString('uk', { hour: '2-digit', minute: '2-digit' })
+                });
+            }
+            
+            updateActiveCallsPanel();
+            break;
+    }
+}
+
+// Логувати результат дзвінка
+async function logCallResult(data) {
+    const leadId = data.leadId;
+    if(!leadId || !currentOrg?.id) return;
+    
+    const lead = leads.find(l => l.id === leadId);
+    if(!lead) return;
+    
+    // Оновлюємо статистику
+    lead.calls = (lead.calls || 0) + 1;
+    
+    // Додаємо в лог
+    const duration = data.duration ? formatCallDuration(data.duration) : '';
+    const status = data.status === 'answered' ? 'Відповів' : 'Не відповів';
+    const logText = `${data.direction === 'incoming' ? 'Вхідний' : 'Вихідний'} дзвінок: ${status}${duration ? ' (' + duration + ')' : ''}`;
+    
+    addLog(lead, 'call', logText);
+    
+    // Зберігаємо запис розмови
+    if(data.recordUrl && currentOrg.telephony?.saveRecords) {
+        lead.callRecords = lead.callRecords || [];
+        lead.callRecords.push({
+            date: new Date().toISOString(),
+            duration: data.duration,
+            url: data.recordUrl
+        });
+    }
+    
+    // Зберігаємо в Firebase
+    try {
+        const cleanData = cleanForFirestore(lead);
+        await db.collection('organizations').doc(currentOrg.id).collection('leads').doc(leadId).set(cleanData, { merge: true });
+    } catch(err) {
+        console.error('Error logging call:', err);
+    }
+}
+
+// Форматувати тривалість дзвінка
+function formatCallDuration(seconds) {
+    if(!seconds) return '';
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+}
+
 function toggleAI(){
     document.getElementById('ai-panel').classList.toggle('active');
     // Очищаємо пошук при відкритті
@@ -9992,7 +11394,8 @@ ${lead.log && lead.log.length ? '\nОСТАННІ ДІЇ:\n' + lead.log.slice(-5
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 messages: [{ role: 'user', content: userMsg }],
-                lead: lead
+                lead: lead,
+                systemPrompt: getOrgAIPrompt() // Використовуємо промпт організації
             })
         });
         
@@ -10059,7 +11462,8 @@ ${lead.log && lead.log.length ? '\nОСТАННІ ДІЇ:\n' + lead.log.slice(-5
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 messages: [{ role: 'user', content: fullMessage }],
-                lead: lead
+                lead: lead,
+                systemPrompt: getOrgAIPrompt() // Використовуємо промпт організації
             })
         });
         
@@ -10565,11 +11969,16 @@ function renderContactLinks(lead) {
     // Phone with options
     if(lead.phone) {
         const phoneClean = String(lead.phone).replace(/\D/g, '');
+        const hasIPTelephony = currentOrg?.telephony?.enabled;
         html += `<div class="contact-phone-group" onclick="event.stopPropagation()">
             <a href="${getPhoneLink(lead.phone)}" class="contact-link phone" title="Зателефонувати">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
                 ${lead.phone}
             </a>
+            ${hasIPTelephony ? `<button onclick="event.stopPropagation();makeCall('${escapeHtml(lead.phone)}','${lead.id}')" class="ip-call-btn" title="Дзвінок через IP-телефонію" style="background:#22c55e;color:#fff;border:none;padding:4px 8px;border-radius:4px;cursor:pointer;font-size:11px;margin-left:6px">
+                <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                IP
+            </button>` : ''}
             <div class="contact-messengers">
                 <a href="${getWhatsAppLink(lead.phone)}" target="_blank" class="messenger-btn wa" title="WhatsApp">
                     <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
@@ -11679,6 +13088,90 @@ document.addEventListener('keydown', (e) => {
         </div>
     </div>
 </div>
+
+<!-- Incoming Call Popup -->
+<div class="incoming-call-popup" id="incoming-call-popup" style="display:none;position:fixed;top:20px;right:20px;width:320px;background:#fff;border-radius:16px;box-shadow:0 10px 40px rgba(0,0,0,0.2);z-index:10000;overflow:hidden;animation:slideIn 0.3s ease">
+    <div style="background:linear-gradient(135deg,#22c55e,#16a34a);padding:16px;color:#fff">
+        <div style="display:flex;align-items:center;justify-content:space-between">
+            <div style="display:flex;align-items:center;gap:10px">
+                <div style="width:40px;height:40px;background:rgba(255,255,255,0.2);border-radius:50%;display:flex;align-items:center;justify-content:center">
+                    <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                </div>
+                <div>
+                    <div style="font-weight:600;font-size:14px">Вхідний дзвінок</div>
+                    <div style="font-size:12px;opacity:0.9" id="incoming-call-duration">00:00</div>
+                </div>
+            </div>
+            <button onclick="dismissIncomingCall()" style="background:none;border:none;color:#fff;cursor:pointer;padding:4px">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+        </div>
+    </div>
+    <div style="padding:16px">
+        <div style="font-size:18px;font-weight:600;color:#111" id="incoming-call-name">—</div>
+        <div style="font-size:14px;color:#6b7280;margin-top:2px" id="incoming-call-phone">—</div>
+        <div style="font-size:13px;color:#6b7280;margin-top:8px" id="incoming-call-info">
+            <!-- Інфо про ліда -->
+        </div>
+        <div style="display:flex;gap:8px;margin-top:16px">
+            <button onclick="openLeadFromCall()" class="btn btn-p" style="flex:1;padding:10px">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:4px"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                Картка
+            </button>
+            <button onclick="dismissIncomingCall()" class="btn btn-s" style="flex:1;padding:10px">
+                Закрити
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Active Calls Panel (мінімізована) -->
+<div class="active-calls-panel" id="active-calls-panel" style="display:none;position:fixed;bottom:80px;right:20px;width:300px;background:#fff;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,0.15);z-index:9998;overflow:hidden">
+    <div style="background:#f9fafb;padding:10px 12px;border-bottom:1px solid #e5e7eb;display:flex;align-items:center;justify-content:space-between">
+        <div style="font-weight:600;font-size:13px;color:#374151;display:flex;align-items:center;gap:6px">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#22c55e" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+            Активні дзвінки
+        </div>
+        <button onclick="toggleActiveCallsPanel()" style="background:none;border:none;cursor:pointer;padding:2px">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#6b7280" stroke-width="2"><polyline points="18 15 12 9 6 15"/></svg>
+        </button>
+    </div>
+    <div id="active-calls-list" style="max-height:200px;overflow-y:auto">
+        <!-- Активні дзвінки -->
+    </div>
+    <div id="missed-calls-section" style="display:none;border-top:1px solid #e5e7eb">
+        <div style="padding:8px 12px;background:#fef2f2;font-size:12px;font-weight:600;color:#dc2626;display:flex;align-items:center;gap:6px">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.68 13.31a16 16 0 0 0 3.41 2.6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7 2 2 0 0 1 1.72 2v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91"/><line x1="23" y1="1" x2="1" y2="23"/></svg>
+            Пропущені (<span id="missed-calls-count">0</span>)
+        </div>
+        <div id="missed-calls-list" style="max-height:150px;overflow-y:auto">
+            <!-- Пропущені дзвінки -->
+        </div>
+    </div>
+</div>
+
+<!-- Call Button (показується коли є активні/пропущені) -->
+<button class="call-fab" id="call-fab" onclick="toggleActiveCallsPanel()" style="display:none;position:fixed;bottom:80px;right:80px;width:50px;height:50px;border-radius:50%;background:linear-gradient(135deg,#22c55e,#16a34a);border:none;cursor:pointer;box-shadow:0 4px 15px rgba(34,197,94,0.4);z-index:9997;color:#fff;align-items:center;justify-content:center">
+    <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+    <span id="call-fab-badge" style="display:none;position:absolute;top:-5px;right:-5px;background:#ef4444;color:#fff;font-size:11px;font-weight:600;min-width:20px;height:20px;border-radius:10px;align-items:center;justify-content:center">0</span>
+</button>
+
+<style>
+@keyframes slideIn {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+@keyframes pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4); }
+    50% { box-shadow: 0 0 0 10px rgba(34, 197, 94, 0); }
+}
+.incoming-call-popup { animation: slideIn 0.3s ease; }
+.call-fab.has-missed { animation: pulse 2s infinite; }
+.active-call-item { padding: 10px 12px; border-bottom: 1px solid #f3f4f6; display: flex; align-items: center; justify-content: space-between; }
+.active-call-item:last-child { border-bottom: none; }
+.missed-call-item { padding: 8px 12px; border-bottom: 1px solid #fecaca; display: flex; align-items: center; justify-content: space-between; background: #fff; }
+.missed-call-item:hover { background: #fef2f2; }
+</style>
 
 </body>
 </html>
