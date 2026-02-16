@@ -3713,12 +3713,23 @@ async function processInvite(code){
         }
         
         // Додаємо користувача до організації
+        const userRole = invite.role || 'employee';
         await db.collection('users').doc(currentUser.uid).set({
             email: currentUser.email,
             organizationId: invite.organizationId,
-            role: invite.role || 'employee',
+            role: userRole,
             invitedBy: invite.createdBy,
             createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        
+        // FIX: Додаємо в team субколекцію (було пропущено — причина невидимості лідів)
+        await db.collection('organizations').doc(invite.organizationId).collection('team').doc(currentUser.uid).set({
+            id: currentUser.uid,
+            email: currentUser.email,
+            role: userRole,
+            status: 'active',
+            invitedBy: invite.createdBy,
+            joinedAt: new Date().toISOString()
         });
         
         // Позначаємо інвайт як використаний
@@ -3784,6 +3795,68 @@ async function createInvite(role = 'employee'){
 function generateInviteCode(){
     return 'inv_' + Date.now().toString(36) + Math.random().toString(36).substr(2, 8);
 }
+
+// ===== ТЕСТОВА ФУНКЦІЯ: Додати менеджера вручну =====
+async function addTestManager(email, role = 'manager') {
+    if(!currentOrg?.id) {
+        console.error('Немає організації');
+        return;
+    }
+    
+    // FIX: Спочатку шукаємо реального користувача по email
+    let memberId = null;
+    try {
+        const usersSnapshot = await db.collection('users')
+            .where('email', '==', email)
+            .limit(1)
+            .get();
+        if(!usersSnapshot.empty) {
+            memberId = usersSnapshot.docs[0].id;
+            console.log('Found existing user:', memberId);
+        }
+    } catch(err) {
+        console.warn('Could not search users:', err);
+    }
+    
+    // Якщо реального юзера не знайдено — генеруємо тестовий ID
+    if(!memberId) {
+        memberId = 'test_' + Date.now();
+        console.log('Creating test member:', memberId);
+    }
+    
+    try {
+        // Додаємо в team субколекцію
+        await db.collection('organizations').doc(currentOrg.id).collection('team').doc(memberId).set({
+            id: memberId,
+            email: email,
+            role: role,
+            addedAt: new Date().toISOString(),
+            addedBy: currentUser?.uid || 'manual'
+        });
+        
+        // Оновлюємо локальний масив
+        // FIX: Перевіряємо чи вже є такий member (уникаємо дублів)
+        const existingIdx = teamMembers.findIndex(m => m.id === memberId || m.email === email);
+        if(existingIdx >= 0) {
+            teamMembers[existingIdx] = { id: memberId, email: email, role: role };
+        } else {
+            teamMembers.push({ id: memberId, email: email, role: role });
+        }
+        
+        console.log('✅ Менеджера додано:', email);
+        showToast('Менеджера ' + email + ' додано!');
+        
+        // Оновлюємо dropdown
+        renderAssigneeDropdown();
+        populateAssigneeDropdown();
+        
+    } catch(err) {
+        console.error('Помилка:', err);
+        showError(err.message);
+    }
+}
+
+// Виклик з консолі: addTestManager('manager@test.com', 'manager')
 
 // ===== UI HELPERS =====
 function showAdminPanel(){
@@ -4724,6 +4797,32 @@ async function loadTeamMembersForSettings(){
             });
         }
         
+        // FIX: Self-healing — якщо поточний юзер є в users, але відсутній в team subcollection
+        if(currentUser?.uid && currentUser?.email) {
+            const isInTeam = teamMembers.some(m => m.id === currentUser.uid);
+            if(!isInTeam) {
+                const userDoc = await db.collection('users').doc(currentUser.uid).get();
+                if(userDoc.exists && userDoc.data().organizationId === currentOrg.id) {
+                    const userData = userDoc.data();
+                    const memberData = {
+                        id: currentUser.uid,
+                        email: currentUser.email,
+                        role: userData.role || currentRole || 'employee',
+                        status: 'active',
+                        joinedAt: new Date().toISOString(),
+                        autoRepaired: true
+                    };
+                    
+                    // Додаємо в Firestore team subcollection
+                    await db.collection('organizations').doc(currentOrg.id)
+                        .collection('team').doc(currentUser.uid).set(memberData);
+                    
+                    teamMembers.push(memberData);
+                    console.log('FIX: Auto-added current user to team subcollection:', currentUser.email);
+                }
+            }
+        }
+        
         console.log('Team members loaded:', teamMembers.length);
         
         renderRoundRobinQueue();
@@ -5180,7 +5279,13 @@ function filterLeadsWithFunnelAndAssignee(leadsArray){
     
     // Фільтр по відповідальному
     if(currentAssigneeFilter === 'mine'){
-        filtered = filtered.filter(l => l.assignedTo === currentUser?.uid);
+        // FIX: Порівнюємо і з uid, і з team doc id (можуть відрізнятися для старих/тестових юзерів)
+        const myIds = new Set([currentUser?.uid]);
+        const myTeamMember = teamMembers.find(m => m.email === currentUser?.email);
+        if(myTeamMember && myTeamMember.id !== currentUser?.uid) {
+            myIds.add(myTeamMember.id);
+        }
+        filtered = filtered.filter(l => myIds.has(l.assignedTo));
     } else if(currentAssigneeFilter){
         filtered = filtered.filter(l => l.assignedTo === currentAssigneeFilter);
     }
@@ -5437,6 +5542,17 @@ async function bulkAssign() {
         for(const leadId of selectedLeadIds) {
             const lead = leads.find(l => l.id === leadId);
             if(lead) {
+                // FIX: Логуємо зміну відповідального
+                if(lead.assignedTo !== assignee) {
+                    const assigneeMember = teamMembers.find(m => m.id === assignee);
+                    const prevMember = teamMembers.find(m => m.id === lead.assignedTo);
+                    if(!lead.log) lead.log = [];
+                    addLog(lead, 'assign', 
+                        (prevMember?.email || lead.assignedTo || 'Не призначено') + 
+                        ' → ' + (assigneeMember?.email || assignee || 'Знято')
+                    );
+                    lead.assignedAt = new Date().toISOString();
+                }
                 lead.assignedTo = assignee;
                 // FIX: Використовуємо централізовану функцію збереження
                 await saveLeadToFirebase(lead);
@@ -6075,15 +6191,21 @@ async function incrementRoundRobinIndex(){
     const queue = currentOrg?.settings?.roundRobinQueue || [];
     if(queue.length === 0) return;
     
-    const currentIndex = currentOrg?.settings?.roundRobinIndex || 0;
-    const nextIndex = (currentIndex + 1) % queue.length;
-    
     try {
-        await db.collection('organizations').doc(currentOrg.id).update({
-            'settings.roundRobinIndex': nextIndex
+        // FIX: Використовуємо transaction для уникнення race condition
+        const orgRef = db.collection('organizations').doc(currentOrg.id);
+        await db.runTransaction(async (transaction) => {
+            const orgDoc = await transaction.get(orgRef);
+            const currentIndex = orgDoc.data()?.settings?.roundRobinIndex || 0;
+            const queueLen = orgDoc.data()?.settings?.roundRobinQueue?.length || queue.length;
+            const nextIndex = (currentIndex + 1) % queueLen;
+            
+            transaction.update(orgRef, {
+                'settings.roundRobinIndex': nextIndex
+            });
+            
+            currentOrg.settings.roundRobinIndex = nextIndex;
         });
-        
-        currentOrg.settings.roundRobinIndex = nextIndex;
         
     } catch(err){
         console.error('Error incrementing RR index:', err);
@@ -8002,6 +8124,10 @@ function renderTaskRow(t, status) {
             <span class="task-action-text">${icon}${escapeHtml(action)}</span>
             ${renderPrimaryContact(t.l)}
             ${t.l.biz ? `<span class="task-biz">${escapeHtml(t.l.biz)}</span>` : ''}
+            ${(() => {
+                const am = t.l.assignedTo ? teamMembers.find(m => m.id === t.l.assignedTo) : null;
+                return am ? `<span class="assignee-badge"><span class="assignee-avatar">${escapeHtml((am.email || '?')[0].toUpperCase())}</span>${escapeHtml((am.email || '').split('@')[0])}</span>` : '';
+            })()}
             <span class="task-score ${scoreClass}">${score}</span>
         </div>
         <div class="task-status-wrap" onclick="event.stopPropagation()">
@@ -8444,6 +8570,11 @@ function kCard(l){
     const score=calcScore(l);
     const scoreClass=score>=70?'hot':score>=50?'warm':'cold';
     const isSelected = selectedLeadIds.has(l.id);
+    // FIX: Показуємо badge відповідального
+    const assigneeMember = l.assignedTo ? teamMembers.find(m => m.id === l.assignedTo) : null;
+    const assigneeBadge = assigneeMember 
+        ? `<div class="assignee-badge"><div class="assignee-avatar">${escapeHtml((assigneeMember.email || '?')[0].toUpperCase())}</div>${escapeHtml((assigneeMember.email || '').split('@')[0])}</div>`
+        : '';
     return`<div class="k-card ${alert?'has-'+(alert.crit?'critical':'alert'):''} ${isSelected?'selected':''}" draggable="true" ondragstart="dStart(event,'${l.id}')" ondragend="dEnd(event)" onclick="handleCardClick(event,'${l.id}')" ontouchstart="touchStart(event,'${l.id}')" ontouchmove="touchMove(event)" ontouchend="touchEnd(event)" style="position:relative;touch-action:none">
         <div class="select-checkbox" onclick="event.stopPropagation();toggleLeadSelection('${l.id}')"></div>
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
@@ -8456,6 +8587,7 @@ function kCard(l){
             ${amt?`<span class="k-card-amount">${amt}${CUR[l.finTotalCur||l.finDepCur]||''}</span>`:''}
             <span class="k-card-days ${days>5?'over':''}">${days}д</span>
         </div>
+        ${assigneeBadge}
         ${tags.length?`<div class="k-card-tags">${tags.map(tag=>`<span class="k-tag ${tag.cls}">${tag.icon} ${tag.text}</span>`).join('')}</div>`:''}
     </div>`;
 }
@@ -9633,6 +9765,16 @@ function fillForm(l){
     document.getElementById('f-funnel').value=l.funnelId||'default';
     populateStatusDropdown(l.funnelId);
     document.getElementById('f-assignee').value=l.assignedTo||'';
+    // FIX: Якщо assignedTo не відповідає жодному option — додаємо тимчасовий option
+    const assigneeSelect = document.getElementById('f-assignee');
+    if(l.assignedTo && assigneeSelect.value !== l.assignedTo) {
+        const tempOption = document.createElement('option');
+        tempOption.value = l.assignedTo;
+        tempOption.textContent = l.assignedTo + ' (видалений)';
+        tempOption.style.color = '#ef4444';
+        assigneeSelect.appendChild(tempOption);
+        assigneeSelect.value = l.assignedTo;
+    }
     document.getElementById('f-status').value=l.status||'';
     document.getElementById('f-noshow').value=l.noshow||'0';
     document.getElementById('f-tg').value=l.tg||'';
@@ -9779,7 +9921,9 @@ async function saveLeadForm(){
     if(status==='failed'&&!document.getElementById('f-fail').value){showWarning('Вкажіть причину відмови');return;}
     
     const funnelId = document.getElementById('f-funnel')?.value || 'default';
-    const assignedTo = document.getElementById('f-assignee')?.value || null;
+    // FIX: Явна конвертація '' → null для assignedTo (порожній рядок != null в фільтрах)
+    const assignedToRaw = document.getElementById('f-assignee')?.value;
+    const assignedTo = assignedToRaw && assignedToRaw.trim() !== '' ? assignedToRaw : null;
     
     const data={
         id:document.getElementById('f-id').value||genId(),
