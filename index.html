@@ -4705,14 +4705,26 @@ async function loadTeamMembersForSettings(){
     if(!currentOrg) return;
     
     try {
-        const snapshot = await db.collection('users')
-            .where('organizationId', '==', currentOrg.id)
-            .get();
+        // Спочатку пробуємо з субколекції team (правильне місце)
+        const teamSnapshot = await db.collection('organizations').doc(currentOrg.id).collection('team').get();
         
         teamMembers = [];
-        snapshot.forEach(doc => {
+        teamSnapshot.forEach(doc => {
             teamMembers.push({ id: doc.id, ...doc.data() });
         });
+        
+        // Якщо team порожній, пробуємо з users колекції (fallback)
+        if(teamMembers.length === 0) {
+            const usersSnapshot = await db.collection('users')
+                .where('organizationId', '==', currentOrg.id)
+                .get();
+            
+            usersSnapshot.forEach(doc => {
+                teamMembers.push({ id: doc.id, ...doc.data() });
+            });
+        }
+        
+        console.log('Team members loaded:', teamMembers.length);
         
         renderRoundRobinQueue();
         renderAssigneeDropdown();
@@ -9497,11 +9509,16 @@ function exportReport(){
 }
 
 // ===== MODAL =====
-function openModal(id){
+async function openModal(id){
     editing=id||null;
     document.getElementById('modal').classList.add('active');
     document.getElementById('modal-title').textContent=id?'Редагувати':'Новий лід';
     document.getElementById('del-btn').style.display=id?'block':'none';
+    
+    // Завантажуємо команду якщо ще не завантажена
+    if(teamMembers.length === 0 && currentOrg?.id) {
+        await loadTeamMembersForSettings();
+    }
     
     // Заповнюємо dropdowns для воронок та відповідальних
     populateFunnelDropdown();
@@ -9528,10 +9545,11 @@ function populateAssigneeDropdown(){
     const select = document.getElementById('f-assignee');
     if(!select) return;
     
+    // Показуємо всіх крім employee (або якщо role не встановлений - показуємо)
+    const assignable = teamMembers.filter(m => !m.role || m.role === 'owner' || m.role === 'manager');
+    
     select.innerHTML = '<option value="">Не призначено</option>' +
-        teamMembers.filter(m => m.role === 'owner' || m.role === 'manager')
-            .map(m => `<option value="${m.id}">${m.email}</option>`)
-            .join('');
+        assignable.map(m => `<option value="${m.id}">${m.email || m.id}</option>`).join('');
 }
 
 function populateStatusDropdown(funnelId){
