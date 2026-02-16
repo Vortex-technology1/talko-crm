@@ -3479,6 +3479,12 @@ async function initUserMode(){
             // Показуємо funnel-bar
             document.getElementById('funnel-bar').style.display = 'flex';
             
+            // FIX: Менеджер та employee бачать тільки СВОЇ ліди по дефолту
+            if(currentRole === 'manager' || currentRole === 'employee'){
+                currentAssigneeFilter = 'mine';
+                document.getElementById('current-assignee-label').textContent = 'Мої ліди';
+            }
+            
             // Завантажуємо команду для фільтрів
             loadTeamMembersForSettings();
             
@@ -3857,6 +3863,149 @@ async function addTestManager(email, role = 'manager') {
 }
 
 // Виклик з консолі: addTestManager('manager@test.com', 'manager')
+
+// ===== ДІАГНОСТИКА ПЕРЕДАЧІ ЛІДІВ =====
+// Виклик з консолі: diagnoseAssignment() або diagnoseAssignment('LEAD_ID')
+async function diagnoseAssignment(leadId) {
+    console.log('=== TALKO CRM: Діагностика передачі лідів ===');
+    console.log('');
+    
+    // 1. Поточний юзер
+    console.log('1. ПОТОЧНИЙ ЮЗЕР:');
+    console.log('   auth.uid:', currentUser?.uid);
+    console.log('   email:', currentUser?.email);
+    console.log('   role:', currentRole);
+    console.log('');
+    
+    // 2. Організація
+    console.log('2. ОРГАНІЗАЦІЯ:');
+    console.log('   id:', currentOrg?.id);
+    console.log('   name:', currentOrg?.name);
+    console.log('   assignmentMode:', currentOrg?.settings?.assignmentMode || 'manual');
+    console.log('');
+    
+    // 3. Team members
+    console.log('3. TEAM MEMBERS (локальний кеш):');
+    if(teamMembers.length === 0) {
+        console.log('   ⚠️ ПОРОЖНЬО! Team members не завантажились');
+    }
+    teamMembers.forEach(m => {
+        console.log(`   ${m.id} | ${m.email} | role: ${m.role} | ${m.id === currentUser?.uid ? '← ЦЕ Я' : ''}`);
+    });
+    console.log('');
+    
+    // 4. Team subcollection в Firestore
+    console.log('4. TEAM В FIRESTORE (реальні дані):');
+    try {
+        const teamSnap = await db.collection('organizations').doc(currentOrg.id).collection('team').get();
+        if(teamSnap.empty) {
+            console.log('   ⚠️ TEAM SUBCOLLECTION ПОРОЖНЯ!');
+        }
+        teamSnap.forEach(doc => {
+            const d = doc.data();
+            console.log(`   doc.id: ${doc.id} | data.id: ${d.id} | email: ${d.email} | role: ${d.role}`);
+            if(doc.id !== d.id) {
+                console.log(`   ⚠️ РОЗБІЖНІСТЬ: doc.id (${doc.id}) ≠ data.id (${d.id})`);
+            }
+        });
+    } catch(err) {
+        console.log('   ❌ ПОМИЛКА:', err.message);
+    }
+    console.log('');
+    
+    // 5. Конкретний лід
+    if(leadId) {
+        const lead = leads.find(l => l.id === leadId);
+        console.log('5. ЛІД:', leadId);
+        if(lead) {
+            console.log('   assignedTo:', lead.assignedTo, typeof lead.assignedTo);
+            console.log('   assignedAt:', lead.assignedAt);
+            console.log('   funnelId:', lead.funnelId);
+            console.log('   status:', lead.status);
+            
+            // Перевірка в Firestore
+            try {
+                const doc = await db.collection('organizations').doc(currentOrg.id).collection('leads').doc(leadId).get();
+                if(doc.exists) {
+                    const fbData = doc.data();
+                    console.log('   [Firestore] assignedTo:', fbData.assignedTo, typeof fbData.assignedTo);
+                    if(fbData.assignedTo !== lead.assignedTo) {
+                        console.log('   ⚠️ РОЗБІЖНІСТЬ: локальний assignedTo ≠ Firestore!');
+                    }
+                } else {
+                    console.log('   ❌ ЛІД НЕ ІСНУЄ В FIRESTORE!');
+                }
+            } catch(err) {
+                console.log('   ❌ ПОМИЛКА ЧИТАННЯ FIRESTORE:', err.message);
+            }
+        } else {
+            console.log('   ❌ Лід не знайдено в локальному масиві');
+        }
+    } else {
+        // Статистика по assignedTo
+        console.log('5. РОЗПОДІЛ ЛІДІВ:');
+        const byAssignee = {};
+        leads.forEach(l => {
+            const key = l.assignedTo || '(не призначено)';
+            byAssignee[key] = (byAssignee[key] || 0) + 1;
+        });
+        Object.entries(byAssignee).forEach(([id, count]) => {
+            const member = teamMembers.find(m => m.id === id);
+            console.log(`   ${id} ${member ? '(' + member.email + ')' : ''}: ${count} лідів`);
+        });
+    }
+    console.log('');
+    
+    // 6. Фільтри
+    console.log('6. АКТИВНІ ФІЛЬТРИ:');
+    console.log('   currentAssigneeFilter:', currentAssigneeFilter);
+    console.log('   currentFunnelId:', currentFunnelId);
+    console.log('   currentSourceFilter:', currentSourceFilter);
+    console.log('   currentSearchQuery:', currentSearchQuery);
+    console.log('');
+    
+    // 7. Dropdown f-assignee
+    const select = document.getElementById('f-assignee');
+    if(select) {
+        console.log('7. DROPDOWN f-assignee OPTIONS:');
+        Array.from(select.options).forEach(o => {
+            console.log(`   value: "${o.value}" | text: "${o.text}"`);
+        });
+    }
+    
+    console.log('=== Кінець діагностики ===');
+    console.log('Щоб перевірити конкретний лід: diagnoseAssignment("LEAD_ID")');
+    
+    return { teamMembers, currentUser: { uid: currentUser?.uid, email: currentUser?.email }, currentOrg: { id: currentOrg?.id }, currentRole, leads: leads.length };
+}
+
+// Швидкий тест збереження assignedTo
+async function testAssignLead(leadId, newAssigneeId) {
+    console.log('=== Тест призначення ===');
+    const lead = leads.find(l => l.id === leadId);
+    if(!lead) { console.error('Лід не знайдено'); return; }
+    
+    console.log('До:', lead.assignedTo);
+    lead.assignedTo = newAssigneeId;
+    lead.assignedAt = new Date().toISOString();
+    
+    try {
+        await saveLeadToFirebase(lead);
+        console.log('✅ Збережено в Firestore. Нове значення:', newAssigneeId);
+        
+        // Перевіряємо
+        const doc = await db.collection('organizations').doc(currentOrg.id).collection('leads').doc(leadId).get();
+        console.log('Firestore читає:', doc.data()?.assignedTo);
+        
+        if(doc.data()?.assignedTo === newAssigneeId) {
+            console.log('✅ ТЕСТ ПРОЙДЕНО — дані збережені коректно');
+        } else {
+            console.log('❌ ТЕСТ ПРОВАЛЕНО — дані не збіглися!');
+        }
+    } catch(err) {
+        console.error('❌ ПОМИЛКА ЗБЕРЕЖЕННЯ:', err);
+    }
+}
 
 // ===== UI HELPERS =====
 function showAdminPanel(){
@@ -4841,7 +4990,7 @@ function renderRoundRobinQueue(){
     const currentIndex = currentOrg?.settings?.roundRobinIndex || 0;
     
     // Фільтруємо тільки активних членів (не employee якщо потрібно)
-    const activeMembers = teamMembers.filter(m => m.role === 'owner' || m.role === 'manager');
+    const activeMembers = teamMembers.filter(m => m.role === 'owner' || m.role === 'manager' || m.role === 'employee' || !m.role);
     
     container.innerHTML = activeMembers.map((member, index) => {
         const inQueue = queue.includes(member.id);
@@ -5083,11 +5232,21 @@ function renderAssigneeDropdown(){
     const list = document.getElementById('assignee-dropdown-list');
     if(!list) return;
     
-    const managers = teamMembers.filter(m => m.role === 'owner' || m.role === 'manager');
+    // FIX: Показуємо всіх членів команди (не тільки owner/manager)
+    // Employee теж можуть бути відповідальними за лідів
+    const managers = teamMembers.filter(m => m.role === 'owner' || m.role === 'manager' || m.role === 'employee' || !m.role);
+    
+    if(managers.length === 0) {
+        list.innerHTML = '<div style="padding:10px 14px;color:#9ca3af;font-size:12px">Команду не завантажено</div>';
+        return;
+    }
+    
+    const roleLabels = { owner: 'Власник', manager: 'Менеджер', employee: 'Співробітник' };
     
     list.innerHTML = managers.map(member => `
         <div class="funnel-dropdown-item ${currentAssigneeFilter === member.id ? 'active' : ''}" onclick="selectAssignee('${member.id}')">
-            ${member.email}
+            <span>${escapeHtml(member.email || member.id)}</span>
+            <span style="font-size:10px;color:#9ca3af;margin-left:6px">${roleLabels[member.role] || ''}</span>
         </div>
     `).join('');
 }
@@ -5518,14 +5677,15 @@ async function bulkAssign() {
     }
     
     // Показуємо dropdown з менеджерами
-    const managers = teamMembers.filter(m => m.role === 'owner' || m.role === 'manager');
+    const managers = teamMembers.filter(m => m.role === 'owner' || m.role === 'manager' || m.role === 'employee' || !m.role);
     
     if(managers.length === 0) {
         showWarning('Немає доступних менеджерів');
         return;
     }
     
-    const options = managers.map(m => ({ value: m.id, label: m.email }));
+    const roleLabels = { owner: ' (Власник)', manager: ' (Менеджер)', employee: ' (Співробітник)' };
+    const options = managers.map(m => ({ value: m.id, label: (m.email || m.id) + (roleLabels[m.role] || '') }));
     options.unshift({ value: '', label: '— Зняти призначення —' });
     
     const selected = await promptModal('Призначити відповідального:', '', {
@@ -9678,7 +9838,7 @@ function populateAssigneeDropdown(){
     if(!select) return;
     
     // Показуємо всіх крім employee (або якщо role не встановлений - показуємо)
-    const assignable = teamMembers.filter(m => !m.role || m.role === 'owner' || m.role === 'manager');
+    const assignable = teamMembers.filter(m => !m.role || m.role === 'owner' || m.role === 'manager' || m.role === 'employee');
     
     select.innerHTML = '<option value="">Не призначено</option>' +
         assignable.map(m => `<option value="${m.id}">${m.email || m.id}</option>`).join('');
@@ -10799,10 +10959,10 @@ function renderTelephonyExtensions() {
     const extensions = telephony.extensions || {};
     
     // Отримуємо список менеджерів
-    const managers = teamMembers.filter(m => m.role === 'owner' || m.role === 'manager');
+    const managers = teamMembers.filter(m => m.role === 'owner' || m.role === 'manager' || m.role === 'employee' || !m.role);
     
     if(managers.length === 0) {
-        container.innerHTML = '<div style="color:#9ca3af;font-size:12px;padding:8px">Немає менеджерів в команді</div>';
+        container.innerHTML = '<div style="color:#9ca3af;font-size:12px;padding:8px">Немає членів команди</div>';
         return;
     }
     
