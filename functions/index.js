@@ -99,6 +99,8 @@ async function createLead(orgId, orgData, leadData) {
     whatsapp: leadData.whatsapp || null, primaryChannel: leadData.channel || 'phone',
     telegramChatId: leadData.telegramChatId ? String(leadData.telegramChatId) : null,
     viberChatId: leadData.viberChatId ? String(leadData.viberChatId) : null,
+    chatId: leadData.chatId ? String(leadData.chatId) : null,
+    lastChannel: leadData.channel || null,
     biz: leadData.biz || leadData.name || null, source: leadData.source || 'webhook',
     created: now, createdAt: now, stageDate: now,
     nextDate: now.split('T')[0], nextTime: '10:00', nextAction: 'Подзвонити',
@@ -364,24 +366,45 @@ exports.sendpulseWebhook = functions.https.onRequest(async (req, res) => {
     const { orgId, orgData } = org;
     const body = req.body;
 
-    // Determine channel
-    const channel = (body.service || body.channel || '').toLowerCase();
+    // Log full body for debugging
+    console.log('SendPulse raw body:', JSON.stringify(body).slice(0, 500));
+
+    // Determine channel - SendPulse uses numeric service codes AND string names
+    const serviceMap = { 1: 'telegram', 2: 'facebook', 3: 'viber', 4: 'whatsapp', 5: 'instagram' };
+    const serviceRaw = body.service || body.channel || body.service_type || '';
     let normalizedChannel = 'unknown';
-    if (channel.includes('telegram') || body.bot_id) normalizedChannel = 'telegram';
-    else if (channel.includes('viber')) normalizedChannel = 'viber';
-    else if (channel.includes('whatsapp')) normalizedChannel = 'whatsapp';
-    else if (channel.includes('instagram')) normalizedChannel = 'instagram';
-    else if (channel.includes('facebook') || channel.includes('fb')) normalizedChannel = 'facebook';
+    if (typeof serviceRaw === 'number') {
+      normalizedChannel = serviceMap[serviceRaw] || 'unknown';
+    } else {
+      const ch = String(serviceRaw).toLowerCase();
+      if (ch.includes('telegram')) normalizedChannel = 'telegram';
+      else if (ch.includes('viber')) normalizedChannel = 'viber';
+      else if (ch.includes('whatsapp')) normalizedChannel = 'whatsapp';
+      else if (ch.includes('instagram')) normalizedChannel = 'instagram';
+      else if (ch.includes('facebook') || ch.includes('fb')) normalizedChannel = 'facebook';
+    }
+    // Fallback: detect from bot info or URL patterns
+    if (normalizedChannel === 'unknown') {
+      if (body.bot_id || body.bot?.type === 'tg') normalizedChannel = 'telegram';
+      else if (body.bot?.type === 'vb') normalizedChannel = 'viber';
+      else if (body.bot?.type === 'wa') normalizedChannel = 'whatsapp';
+      else if (body.bot?.type === 'ig') normalizedChannel = 'instagram';
+      else if (body.bot?.type === 'fb') normalizedChannel = 'facebook';
+    }
 
-    // Contact info
-    const contact = body.contact || body.subscriber || {};
-    const chatId = String(contact.id || body.chat_id || body.contact_id || '');
-    const name = contact.name || contact.first_name || [contact.first_name, contact.last_name].filter(Boolean).join(' ') || null;
-    const text = body.text || body.message?.text || body.message || null;
+    // Contact info - handle multiple SendPulse formats
+    const contact = body.contact || body.subscriber || body.data?.contact || {};
+    const chatId = String(contact.id || body.chat_id || body.contact_id || body.subscriber_id || '');
+    const firstName = contact.first_name || contact.name || body.first_name || '';
+    const lastName = contact.last_name || body.last_name || '';
+    const name = [firstName, lastName].filter(Boolean).join(' ') || null;
+    const phone = contact.phone || body.phone || null;
+    const username = contact.username || body.username || null;
+    const text = body.text || body.message?.text || (typeof body.message === 'string' ? body.message : null) || body.data?.text || null;
 
-    // Skip non-message events
-    const eventType = body.event || body.type || 'new_message';
-    if (!['new_message', 'message', 'text'].includes(eventType) && !text) {
+    // Skip non-message events  
+    const eventType = body.event || body.type || body.action || 'new_message';
+    if (!['new_message', 'message', 'text', 'incoming_message', 'subscribe'].includes(eventType) && !text) {
       return res.status(200).json({ success: true, skipped: true });
     }
 
@@ -399,10 +422,11 @@ exports.sendpulseWebhook = functions.https.onRequest(async (req, res) => {
 
     if (!lead) {
       lead = await createLead(orgId, orgData, {
-        biz: name, tg: normalizedChannel === 'telegram' ? (contact.username || name) : null,
-        phone: contact.phone || null, email: contact.email || null,
+        biz: name, tg: normalizedChannel === 'telegram' ? (username || name) : null,
+        phone: phone || null, email: contact.email || null,
         telegramChatId: normalizedChannel === 'telegram' ? chatId : null,
         viberChatId: normalizedChannel === 'viber' ? chatId : null,
+        chatId: chatId,
         source: `sendpulse_${normalizedChannel}`, channel: normalizedChannel
       });
       isNewLead = true;
@@ -489,7 +513,7 @@ exports.sendpulseSend = functions.https.onRequest(async (req, res) => {
 
     // Determine channel & chatId
     const sendChannel = channel || lead.lastChannel || 'telegram';
-    const chatId = sendChannel === 'telegram' ? lead.telegramChatId
+    const chatId = sendChannel === 'telegram' ? (lead.telegramChatId || lead.chatId)
                  : sendChannel === 'viber' ? lead.viberChatId
                  : lead.telegramChatId || lead.viberChatId;
     if (!chatId) return res.status(400).json({ error: `No ${sendChannel} chatId` });
