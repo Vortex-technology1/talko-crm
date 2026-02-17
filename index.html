@@ -202,6 +202,18 @@
         
         /* Assignee in Cards */
         .assignee-badge{display:flex;align-items:center;gap:4px;font-size:11px;color:#6b7280}
+        .chat-container{max-height:300px;overflow-y:auto;padding:8px;background:#f9fafb;border-radius:8px;border:1px solid #e5e7eb}
+        .chat-msg{padding:8px 10px;margin-bottom:6px;border-radius:10px;max-width:85%}
+        .chat-msg.in{background:#fff;border:1px solid #e5e7eb;margin-right:auto}
+        .chat-msg.out{background:#dcfce7;border:1px solid #bbf7d0;margin-left:auto}
+        .chat-msg-header{display:flex;align-items:center;gap:4px;margin-bottom:2px}
+        .chat-msg-channel{font-size:12px}
+        .chat-msg-sender{font-size:11px;font-weight:600;color:#374151}
+        .chat-msg-time{font-size:10px;color:#9ca3af;margin-left:auto}
+        .chat-msg-text{font-size:13px;color:#1f2937;line-height:1.4;word-break:break-word}
+        .chat-input-wrap{display:flex;gap:6px;margin-top:8px}
+        .chat-input-wrap input{flex:1;padding:8px 12px;border:1px solid #e5e7eb;border-radius:8px;font-size:13px}
+        .chat-input-wrap button{padding:8px 14px;background:#22c55e;color:#fff;border:none;border-radius:8px;font-size:13px;cursor:pointer}
         .assignee-avatar{width:18px;height:18px;background:#e5e7eb;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:600;color:#374151}
         
         /* Color Picker */
@@ -1729,6 +1741,7 @@
             <div class="modal-body">
                 <div class="tabs">
                     <button class="tab active" onclick="switchTab('main')">Основне</button>
+                    <button class="tab" onclick="switchTab('chat')">💬 Чат</button>
                     <button class="tab" onclick="switchTab('history')">Історія</button>
                     <button class="tab" onclick="switchTab('links')">Посилання</button>
                     <button class="tab" onclick="switchTab('finance')">Фінанси</button>
@@ -1881,6 +1894,18 @@
                     <div class="form-group">
                         <label class="form-label">Примітки</label>
                         <textarea class="form-textarea" id="f-notes" placeholder="..."></textarea>
+                    </div>
+                </div>
+                
+                <div class="tab-content" id="t-chat">
+                    <div class="chat-container" id="lead-chat-messages">
+                        <div style="text-align:center;padding:20px;color:#9ca3af;font-size:12px">Немає повідомлень</div>
+                    </div>
+                    <div class="chat-input-wrap">
+                        <input type="text" id="chat-input" placeholder="Написати повідомлення..." onkeydown="if(event.key==='Enter')sendLeadMessage(editing)">
+                        <button onclick="sendLeadMessage(editing)">
+                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13"/><path d="M22 2L15 22L11 13L2 9L22 2Z"/></svg>
+                        </button>
                     </div>
                 </div>
                 
@@ -2379,7 +2404,18 @@
             <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
     </div>
+    <!-- Settings Tabs -->
+    <div style="display:flex;gap:0;border-bottom:2px solid #e5e7eb;padding:0 16px;background:#fafafa">
+        <button class="settings-tab active" onclick="switchSettingsTab('general')" id="stab-general"
+            style="padding:10px 16px;font-size:13px;font-weight:600;border:none;background:none;cursor:pointer;color:#22c55e;border-bottom:2px solid #22c55e;margin-bottom:-2px">Основне</button>
+        <button class="settings-tab" onclick="switchSettingsTab('ai')" id="stab-ai"
+            style="padding:10px 16px;font-size:13px;font-weight:500;border:none;background:none;cursor:pointer;color:#6b7280;border-bottom:2px solid transparent;margin-bottom:-2px">AI & Telegram</button>
+        <button class="settings-tab" onclick="switchSettingsTab('integrations')" id="stab-integrations"
+            style="padding:10px 16px;font-size:13px;font-weight:500;border:none;background:none;cursor:pointer;color:#6b7280;border-bottom:2px solid transparent;margin-bottom:-2px">🔌 Інтеграції</button>
+    </div>
     <div class="settings-body">
+        <!-- ===== TAB: GENERAL ===== -->
+        <div id="stab-content-general">
         <!-- Funnels Section -->
         <div class="settings-section">
             <div class="settings-section-title">
@@ -2461,7 +2497,10 @@
                 <div class="rr-queue-list" id="rr-queue-list"></div>
             </div>
         </div>
+        </div><!-- /stab-content-general -->
         
+        <!-- ===== TAB: AI & TELEGRAM ===== -->
+        <div id="stab-content-ai" style="display:none">
         <!-- Telegram Notifications Section -->
         <div class="settings-section">
             <div class="settings-section-title">
@@ -2565,7 +2604,10 @@
                 </div>
             </div>
         </div>
+        </div><!-- /stab-content-ai -->
         
+        <!-- ===== TAB: INTEGRATIONS ===== -->
+        <div id="stab-content-integrations" style="display:none">
         <!-- Webhook Integration Section -->
         <div class="settings-section" id="webhook-settings-section">
             <div class="settings-section-title">
@@ -2827,6 +2869,57 @@
                 </details>
             </div>
         </div>
+        
+        <!-- ===== SENDPULSE INTEGRATION ===== -->
+        <div class="settings-section" id="sendpulse-settings-section">
+            <div class="settings-section-title">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                Месенджери (SendPulse)
+            </div>
+            <div style="padding:12px;background:#f0fdf4;border-radius:12px;border:1px solid #bbf7d0;margin-bottom:12px">
+                <div style="font-size:12px;color:#166534;margin-bottom:8px">
+                    <strong>SendPulse</strong> об'єднує Telegram, Viber, WhatsApp, Instagram, Facebook в одному місці.
+                </div>
+                <div id="sendpulse-status" style="font-size:12px"><span style="color:#9ca3af">Не підключено</span></div>
+            </div>
+            <div id="sendpulse-config" style="padding:12px;background:#f9fafb;border-radius:12px;border:1px solid #e5e7eb">
+                <div style="margin-bottom:12px">
+                    <div style="font-size:12px;font-weight:600;color:#374151;margin-bottom:8px">API ключі SendPulse</div>
+                    <div style="display:grid;gap:8px">
+                        <input type="text" id="sp-api-id" placeholder="API User ID" style="padding:8px 10px;border:1px solid #e5e7eb;border-radius:6px;font-size:12px">
+                        <input type="password" id="sp-api-secret" placeholder="API Secret" style="padding:8px 10px;border:1px solid #e5e7eb;border-radius:6px;font-size:12px">
+                    </div>
+                </div>
+                <div style="margin-bottom:12px">
+                    <div style="font-size:12px;font-weight:600;color:#374151;margin-bottom:8px">Webhook URL</div>
+                    <div style="display:flex;gap:4px">
+                        <input type="text" id="sp-webhook-url" readonly style="flex:1;padding:8px 10px;border:1px solid #e5e7eb;border-radius:6px;font-size:11px;background:#fff;color:#6b7280">
+                        <button class="btn btn-s" onclick="copySendPulseWebhook()" title="Копіювати">📋</button>
+                    </div>
+                </div>
+                <div style="margin-bottom:12px">
+                    <div style="font-size:12px;font-weight:600;color:#374151;margin-bottom:8px">Канали</div>
+                    <div style="display:grid;gap:6px">
+                        <label style="display:flex;align-items:center;gap:8px;font-size:12px;cursor:pointer"><input type="checkbox" id="sp-ch-telegram" checked style="accent-color:#22c55e"> 📱 Telegram</label>
+                        <label style="display:flex;align-items:center;gap:8px;font-size:12px;cursor:pointer"><input type="checkbox" id="sp-ch-viber" style="accent-color:#22c55e"> 💬 Viber</label>
+                        <label style="display:flex;align-items:center;gap:8px;font-size:12px;cursor:pointer"><input type="checkbox" id="sp-ch-whatsapp" style="accent-color:#22c55e"> 💚 WhatsApp</label>
+                        <label style="display:flex;align-items:center;gap:8px;font-size:12px;cursor:pointer"><input type="checkbox" id="sp-ch-instagram" style="accent-color:#22c55e"> 📷 Instagram</label>
+                        <label style="display:flex;align-items:center;gap:8px;font-size:12px;cursor:pointer"><input type="checkbox" id="sp-ch-facebook" style="accent-color:#22c55e"> 👤 Facebook</label>
+                    </div>
+                </div>
+                <div style="margin-bottom:12px">
+                    <div style="display:grid;gap:6px">
+                        <label style="display:flex;align-items:center;gap:8px;font-size:12px;cursor:pointer"><input type="checkbox" id="sp-auto-create" checked style="accent-color:#22c55e"> Авто-створення лідів</label>
+                        <label style="display:flex;align-items:center;gap:8px;font-size:12px;cursor:pointer"><input type="checkbox" id="sp-notify" checked style="accent-color:#22c55e"> Сповіщати менеджера</label>
+                    </div>
+                </div>
+                <div style="display:flex;gap:8px">
+                    <button class="btn btn-p" onclick="saveSendPulseSettings()" style="flex:1">Зберегти</button>
+                    <button class="btn btn-s" onclick="testSendPulseConnection()" title="Тест">✓</button>
+                </div>
+            </div>
+        </div>
+        </div><!-- /stab-content-integrations -->
     </div>
 </div>
 
@@ -4534,6 +4627,20 @@ function getOrgFunnels(){
     }];
 }
 
+function switchSettingsTab(tabId) {
+    document.querySelectorAll('.settings-tab').forEach(btn => {
+        btn.style.color = '#6b7280'; btn.style.fontWeight = '500'; btn.style.borderBottomColor = 'transparent';
+    });
+    ['general','ai','integrations'].forEach(id => {
+        const el = document.getElementById('stab-content-' + id);
+        if (el) el.style.display = 'none';
+    });
+    const btn = document.getElementById('stab-' + tabId);
+    const content = document.getElementById('stab-content-' + tabId);
+    if (btn) { btn.style.color = '#22c55e'; btn.style.fontWeight = '600'; btn.style.borderBottomColor = '#22c55e'; }
+    if (content) content.style.display = 'block';
+}
+
 function openSettingsPanel(){
     if(!currentOrg) return;
     
@@ -4567,6 +4674,9 @@ function openSettingsPanel(){
     
     // Завантажуємо налаштування телефонії
     loadTelephonySettings();
+    
+    // SendPulse
+    loadSendPulseSettings();
     
     renderColorPicker();
     
@@ -9893,6 +10003,9 @@ function switchTab(t){
     document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));
     document.querySelector(`.tab[onclick="switchTab('${t}')"]`).classList.add('active');
     document.getElementById('t-'+t).classList.add('active');
+    if(t === 'chat' && editing) {
+        loadLeadMessages(editing).then(messages => renderLeadChat(messages, 'lead-chat-messages'));
+    }
 }
 function resetForm(){
     ['f-id','f-status','f-noshow','f-tg','f-phone','f-viber','f-whatsapp','f-email','f-primary-channel','f-biz','f-source','f-consult','f-repeat','f-calls','f-sms','f-next','f-next-time','f-action','f-fail','f-report','f-notes','l-record','l-report','l-kp','l-contract','fin-dep','fin-dep-cur','fin-dep-date','fin-total','fin-total-cur','fin-paid-date'].forEach(id=>{
@@ -10868,6 +10981,129 @@ async function loadWebhookLogs() {
     } catch(err) {
         logsContainer.innerHTML = '<div style="color:#ef4444;text-align:center;padding:12px">Помилка завантаження</div>';
     }
+}
+
+// ===== SENDPULSE INTEGRATION =====
+const SENDPULSE_API_BASE = window.location.hostname.includes('vercel') 
+    ? 'https://us-central1-talko-crm.cloudfunctions.net' 
+    : 'https://us-central1-talko-crm.cloudfunctions.net';
+
+function loadSendPulseSettings() {
+    const sp = currentOrg?.integrations?.sendpulse || {};
+    const idEl = document.getElementById('sp-api-id');
+    if (!idEl) return;
+    idEl.value = sp.apiId || '';
+    document.getElementById('sp-api-secret').value = sp.apiSecret || '';
+    const webhookKey = sp.webhookKey || currentOrg?.webhook?.key || '';
+    document.getElementById('sp-webhook-url').value = webhookKey 
+        ? `${SENDPULSE_API_BASE}/sendpulseWebhook?key=${webhookKey}` : 'Збережіть налаштування';
+    document.getElementById('sp-ch-telegram').checked = sp.channels?.telegram !== false;
+    document.getElementById('sp-ch-viber').checked = sp.channels?.viber === true;
+    document.getElementById('sp-ch-whatsapp').checked = sp.channels?.whatsapp === true;
+    document.getElementById('sp-ch-instagram').checked = sp.channels?.instagram === true;
+    document.getElementById('sp-ch-facebook').checked = sp.channels?.facebook === true;
+    document.getElementById('sp-auto-create').checked = sp.autoCreateLead !== false;
+    document.getElementById('sp-notify').checked = sp.notifyManager !== false;
+    const statusEl = document.getElementById('sendpulse-status');
+    statusEl.innerHTML = (sp.apiId && sp.apiSecret) 
+        ? '<span style="color:#059669">✓ Підключено</span>' : '<span style="color:#9ca3af">Не підключено</span>';
+}
+
+async function saveSendPulseSettings() {
+    if (!currentOrg?.id) { showWarning('Організацію не вибрано'); return; }
+    let webhookKey = currentOrg?.integrations?.sendpulse?.webhookKey || currentOrg?.webhook?.key;
+    if (!webhookKey) webhookKey = generateWebhookKey();
+    const config = {
+        apiId: document.getElementById('sp-api-id').value.trim(),
+        apiSecret: document.getElementById('sp-api-secret').value.trim(),
+        webhookKey, enabled: true,
+        channels: {
+            telegram: document.getElementById('sp-ch-telegram').checked,
+            viber: document.getElementById('sp-ch-viber').checked,
+            whatsapp: document.getElementById('sp-ch-whatsapp').checked,
+            instagram: document.getElementById('sp-ch-instagram').checked,
+            facebook: document.getElementById('sp-ch-facebook').checked
+        },
+        autoCreateLead: document.getElementById('sp-auto-create').checked,
+        notifyManager: document.getElementById('sp-notify').checked,
+        updatedAt: new Date().toISOString()
+    };
+    try {
+        await db.collection('organizations').doc(currentOrg.id).update({'integrations.sendpulse': config});
+        if (!currentOrg.integrations) currentOrg.integrations = {};
+        currentOrg.integrations.sendpulse = config;
+        document.getElementById('sp-webhook-url').value = `${SENDPULSE_API_BASE}/sendpulseWebhook?key=${webhookKey}`;
+        showToast('SendPulse збережено');
+        loadSendPulseSettings();
+    } catch(err) { showError('Помилка: ' + err.message); }
+}
+
+async function testSendPulseConnection() {
+    const apiId = document.getElementById('sp-api-id').value.trim();
+    const apiSecret = document.getElementById('sp-api-secret').value.trim();
+    if (!apiId || !apiSecret) { showWarning('Вкажіть API ключі'); return; }
+    try {
+        const resp = await fetch('https://api.sendpulse.com/oauth/access_token', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ grant_type: 'client_credentials', client_id: apiId, client_secret: apiSecret })
+        });
+        const data = await resp.json();
+        if (data.access_token) showToast('✅ SendPulse працює!');
+        else showWarning('❌ Невірні API ключі');
+    } catch(err) { showError('Помилка: ' + err.message); }
+}
+
+function copySendPulseWebhook() {
+    const url = document.getElementById('sp-webhook-url').value;
+    if (!url || url.includes('Збережіть')) { showWarning('Спочатку збережіть'); return; }
+    navigator.clipboard.writeText(url).then(() => showToast('URL скопійовано'));
+}
+
+// ===== CHAT IN LEAD CARD =====
+async function loadLeadMessages(leadId) {
+    if (!currentOrg?.id || !leadId) return [];
+    try {
+        const snapshot = await db.collection('organizations').doc(currentOrg.id)
+            .collection('messages').where('leadId', '==', leadId).orderBy('createdAt', 'asc').limit(100).get();
+        const messages = [];
+        snapshot.forEach(doc => messages.push({ id: doc.id, ...doc.data() }));
+        return messages;
+    } catch(err) { console.error('Load messages:', err); return []; }
+}
+
+function renderLeadChat(messages, containerId) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    if (!messages.length) { container.innerHTML = '<div style="text-align:center;padding:20px;color:#9ca3af;font-size:12px">Немає повідомлень</div>'; return; }
+    const icons = {telegram:'📱',viber:'💬',whatsapp:'💚',instagram:'📷',facebook:'👤',phone:'📞'};
+    container.innerHTML = messages.map(m => {
+        const isOut = m.direction === 'out';
+        const time = m.createdAt ? new Date(m.createdAt).toLocaleString('uk',{hour:'2-digit',minute:'2-digit',day:'2-digit',month:'2-digit'}) : '';
+        return `<div class="chat-msg ${isOut?'out':'in'}"><div class="chat-msg-header"><span class="chat-msg-channel">${icons[m.channel]||'💬'}</span><span class="chat-msg-sender">${escapeHtml(isOut?'Менеджер':(m.senderName||'Клієнт'))}</span><span class="chat-msg-time">${time}</span></div><div class="chat-msg-text">${escapeHtml(m.text||'')}</div></div>`;
+    }).join('');
+    container.scrollTop = container.scrollHeight;
+}
+
+async function sendLeadMessage(leadId) {
+    const input = document.getElementById('chat-input');
+    if (!input) return;
+    const text = input.value.trim();
+    if (!text) return;
+    const lead = leads.find(l => l.id === leadId);
+    if (!lead) return;
+    const channel = lead.lastChannel || (lead.telegramChatId ? 'telegram' : lead.viberChatId ? 'viber' : null);
+    if (!channel) { showWarning('Клієнт ще не писав в месенджер'); return; }
+    input.disabled = true;
+    try {
+        const resp = await fetch(`${SENDPULSE_API_BASE}/sendpulseSend`, {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ orgId: currentOrg.id, leadId, channel, text, managerId: currentUser?.uid })
+        });
+        const result = await resp.json();
+        if (result.success) { input.value = ''; const msgs = await loadLeadMessages(leadId); renderLeadChat(msgs, 'lead-chat-messages'); }
+        else showWarning('Помилка: ' + (result.error || ''));
+    } catch(err) { showError(err.message); }
+    finally { input.disabled = false; input.focus(); }
 }
 
 // ===== IP TELEPHONY INTEGRATION =====
