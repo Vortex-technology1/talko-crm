@@ -45,7 +45,7 @@ async function findOrgByWebhookKey(webhookKey) {
 // =====================================================
 // UTILITY: Find lead by phone/email/chatId
 // =====================================================
-async function findLead(orgId, { phone, email, telegramChatId, viberChatId }) {
+async function findLead(orgId, { phone, email, telegramChatId, viberChatId, chatId }) {
   const leadsRef = db.collection('organizations').doc(orgId).collection('leads');
 
   if (phone) {
@@ -67,6 +67,10 @@ async function findLead(orgId, { phone, email, telegramChatId, viberChatId }) {
   }
   if (viberChatId) {
     const snapshot = await leadsRef.where('viberChatId', '==', String(viberChatId)).get();
+    for (const doc of snapshot.docs) { const d = doc.data(); if (!d.deleted) return { id: doc.id, ...d }; }
+  }
+  if (chatId) {
+    const snapshot = await leadsRef.where('chatId', '==', String(chatId)).get();
     for (const doc of snapshot.docs) { const d = doc.data(); if (!d.deleted) return { id: doc.id, ...d }; }
   }
   return null;
@@ -364,14 +368,21 @@ exports.sendpulseWebhook = functions.https.onRequest(async (req, res) => {
     if (!org) return res.status(401).json({ error: 'Invalid API key' });
 
     const { orgId, orgData } = org;
-    const body = req.body;
+    let body = req.body;
+
+    // SendPulse sends array - unwrap first element
+    if (Array.isArray(body)) body = body[0] || {};
 
     // Log full body for debugging
     console.log('SendPulse raw body:', JSON.stringify(body).slice(0, 500));
 
-    // Determine channel - SendPulse uses numeric service codes AND string names
-    const serviceMap = { 1: 'telegram', 2: 'facebook', 3: 'viber', 4: 'whatsapp', 5: 'instagram' };
+    // SendPulse structure: { info: { message: { text, chat_id } }, service: "telegram", title: "incoming_message" }
+    const info = body.info || {};
+    const msg = info.message || body.message || {};
+
+    // Determine channel
     const serviceRaw = body.service || body.channel || body.service_type || '';
+    const serviceMap = { 1: 'telegram', 2: 'facebook', 3: 'viber', 4: 'whatsapp', 5: 'instagram' };
     let normalizedChannel = 'unknown';
     if (typeof serviceRaw === 'number') {
       normalizedChannel = serviceMap[serviceRaw] || 'unknown';
@@ -383,7 +394,7 @@ exports.sendpulseWebhook = functions.https.onRequest(async (req, res) => {
       else if (ch.includes('instagram')) normalizedChannel = 'instagram';
       else if (ch.includes('facebook') || ch.includes('fb')) normalizedChannel = 'facebook';
     }
-    // Fallback: detect from bot info or URL patterns
+    // Fallback: detect from bot info
     if (normalizedChannel === 'unknown') {
       if (body.bot_id || body.bot?.type === 'tg') normalizedChannel = 'telegram';
       else if (body.bot?.type === 'vb') normalizedChannel = 'viber';
@@ -392,29 +403,29 @@ exports.sendpulseWebhook = functions.https.onRequest(async (req, res) => {
       else if (body.bot?.type === 'fb') normalizedChannel = 'facebook';
     }
 
-    // Contact info - handle multiple SendPulse formats
-    const contact = body.contact || body.subscriber || body.data?.contact || {};
-    const chatId = String(contact.id || body.chat_id || body.contact_id || body.subscriber_id || '');
+    // Contact info - from nested info.message or top-level
+    const contact = body.contact || body.subscriber || info.contact || {};
+    const chatId = String(msg.chat_id || contact.id || body.chat_id || body.contact_id || body.subscriber_id || '');
     const firstName = contact.first_name || contact.name || body.first_name || '';
     const lastName = contact.last_name || body.last_name || '';
     const name = [firstName, lastName].filter(Boolean).join(' ') || null;
     const phone = contact.phone || body.phone || null;
     const username = contact.username || body.username || null;
-    const text = body.text || body.message?.text || (typeof body.message === 'string' ? body.message : null) || body.data?.text || null;
+    const text = msg.text || body.text || (typeof body.message === 'string' ? body.message : null) || null;
 
-    // Skip non-message events  
-    const eventType = body.event || body.type || body.action || 'new_message';
-    if (!['new_message', 'message', 'text', 'incoming_message', 'subscribe'].includes(eventType) && !text) {
+    // Event type
+    const eventType = body.title || body.event || body.type || 'incoming_message';
+    if (!['incoming_message', 'new_message', 'message', 'text', 'subscribe'].includes(eventType) && !text) {
       return res.status(200).json({ success: true, skipped: true });
     }
 
     console.log(`SendPulse [${orgId}] [${normalizedChannel}]: ${name || chatId} — ${(text || '').slice(0, 50)}`);
 
     // Find or create lead
-    const searchParams = {};
+    const searchParams = { chatId };
     if (normalizedChannel === 'telegram') searchParams.telegramChatId = chatId;
     else if (normalizedChannel === 'viber') searchParams.viberChatId = chatId;
-    if (contact.phone) searchParams.phone = contact.phone;
+    if (contact.phone || phone) searchParams.phone = contact.phone || phone;
     if (contact.email) searchParams.email = contact.email;
 
     let lead = await findLead(orgId, searchParams);
@@ -443,7 +454,7 @@ exports.sendpulseWebhook = functions.https.onRequest(async (req, res) => {
     const message = await saveMessage(orgId, {
       leadId: lead.id, channel: normalizedChannel, direction: 'in', type: 'text',
       text, senderName: name, senderAvatar: contact.photo || null,
-      chatId, externalMsgId: body.message_id || null,
+      chatId, externalMsgId: msg.message_id || msg.id || body.message_id || null,
       managerId: lead.assignedTo || null, read: false, source: 'sendpulse'
     });
 
