@@ -526,7 +526,7 @@ exports.sendpulseSend = functions.https.onRequest(async (req, res) => {
     const sendChannel = channel || lead.lastChannel || 'telegram';
     const chatId = sendChannel === 'telegram' ? (lead.telegramChatId || lead.chatId)
                  : sendChannel === 'viber' ? lead.viberChatId
-                 : lead.telegramChatId || lead.viberChatId;
+                 : lead.telegramChatId || lead.viberChatId || lead.chatId;
     if (!chatId) return res.status(400).json({ error: `No ${sendChannel} chatId` });
 
     // Get SendPulse token
@@ -537,20 +537,74 @@ exports.sendpulseSend = functions.https.onRequest(async (req, res) => {
     const tokenData = await tokenResp.json();
     if (!tokenData.access_token) return res.status(500).json({ error: 'SendPulse auth failed' });
 
-    // Send via SendPulse
-    const endpoints = {
-      telegram: 'https://api.sendpulse.com/telegram/contacts/send',
-      viber: 'https://api.sendpulse.com/viber/contacts/send',
-      whatsapp: 'https://api.sendpulse.com/whatsapp/contacts/send',
-      facebook: 'https://api.sendpulse.com/facebook/contacts/send',
-      instagram: 'https://api.sendpulse.com/instagram/contacts/send'
-    };
-    const sendResp = await fetch(endpoints[sendChannel] || endpoints.telegram, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${tokenData.access_token}` },
-      body: JSON.stringify({ contact_id: chatId, messages: [{ type: 'text', text: { body: text } }] })
-    });
-    const sendResult = await sendResp.json();
+    const authHeaders = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${tokenData.access_token}` };
+
+    // Get bot info to find bot_id
+    const botsResp = await fetch(`https://api.sendpulse.com/${sendChannel}/bots`, { headers: authHeaders });
+    const botsData = await botsResp.json();
+    const botId = botsData?.[0]?.id || null;
+    console.log('SendPulse bots:', JSON.stringify(botsData).slice(0, 300));
+
+    // Lookup SendPulse contact_id by chat_id
+    let spContactId = lead.sendpulseContactId || null;
+    if (!spContactId && botId) {
+      const contactResp = await fetch(`https://api.sendpulse.com/${sendChannel}/contacts/getByTag?tag=chat_id&bot_id=${botId}`, { headers: authHeaders });
+      // Alternative: get contact by chat_id directly
+      const contactByIdResp = await fetch(`https://api.sendpulse.com/${sendChannel}/contacts/get?id=${chatId}&bot_id=${botId}`, { headers: authHeaders });
+      const contactByIdData = await contactByIdResp.json();
+      console.log('SendPulse contact lookup:', JSON.stringify(contactByIdData).slice(0, 300));
+      if (contactByIdData?.data?.id) spContactId = contactByIdData.data.id;
+    }
+
+    // Try multiple send approaches
+    let sendResult = null;
+    let sendSuccess = false;
+
+    // Approach 1: Send via contact_id (SendPulse internal ID)
+    if (spContactId) {
+      const resp1 = await fetch(`https://api.sendpulse.com/${sendChannel}/contacts/send`, {
+        method: 'POST', headers: authHeaders,
+        body: JSON.stringify({ contact_id: spContactId, messages: [{ type: 'text', text: { body: text } }] })
+      });
+      sendResult = await resp1.json();
+      console.log('SendPulse send (contact_id):', JSON.stringify(sendResult).slice(0, 300));
+      if (resp1.ok && !sendResult.error) sendSuccess = true;
+    }
+
+    // Approach 2: Send via contact_id = chat_id (some bots accept this)
+    if (!sendSuccess) {
+      const resp2 = await fetch(`https://api.sendpulse.com/${sendChannel}/contacts/send`, {
+        method: 'POST', headers: authHeaders,
+        body: JSON.stringify({ contact_id: chatId, messages: [{ type: 'text', text: { body: text } }] })
+      });
+      sendResult = await resp2.json();
+      console.log('SendPulse send (chat_id):', JSON.stringify(sendResult).slice(0, 300));
+      if (resp2.ok && !sendResult.error) sendSuccess = true;
+    }
+
+    // Approach 3: Send via Telegram Bot API directly as fallback
+    if (!sendSuccess && sendChannel === 'telegram') {
+      // Get bot token from SendPulse bot info
+      console.log('SendPulse send failed, trying direct Telegram API...');
+      // We can use the CRM's own Telegram bot to send if configured
+      const orgTgToken = orgData?.settings?.telegramBot?.token;
+      if (orgTgToken) {
+        const tgResp = await fetch(`https://api.telegram.org/bot${orgTgToken}/sendMessage`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ chat_id: chatId, text })
+        });
+        sendResult = await tgResp.json();
+        console.log('Telegram direct send:', JSON.stringify(sendResult).slice(0, 300));
+        sendSuccess = tgResp.ok;
+      }
+    }
+
+    console.log(`SendPulse send result: success=${sendSuccess}, channel=${sendChannel}, chatId=${chatId}`);
+
+    // Save SendPulse contact_id on lead for future sends
+    if (spContactId && !lead.sendpulseContactId) {
+      await db.collection('organizations').doc(orgId).collection('leads').doc(leadId).update({ sendpulseContactId: spContactId });
+    }
 
     // Save outgoing message
     const message = await saveMessage(orgId, {
