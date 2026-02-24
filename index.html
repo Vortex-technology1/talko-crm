@@ -12243,7 +12243,7 @@ if (typeof window !== 'undefined') {
 }
 
 // ===== DIRECT MESSENGER INTEGRATIONS =====
-const DIRECT_API_BASE = 'https://talko-crm.vercel.app/api';
+const DIRECT_API_BASE = 'https://us-central1-talko-crm.cloudfunctions.net';
 
 // --- Load integration statuses ---
 function loadDirectIntegrations() {
@@ -12295,7 +12295,7 @@ function loadDirectIntegrations() {
     if (currentOrg?.webhook?.key) {
         const baseUrl = DIRECT_API_BASE;
         const waDisplay = document.getElementById('wa-webhook-display');
-        if (waDisplay) waDisplay.textContent = `${baseUrl}/whatsapp?orgId=${currentOrg.id}`;
+        if (waDisplay) waDisplay.textContent = `${baseUrl}/directMetaWebhook?orgId=${currentOrg.id}`;
     }
 }
 
@@ -12331,7 +12331,7 @@ async function saveDirectTelegram() {
         const botName = '@' + meData.result.username;
         
         // 2. Встановлюємо webhook
-        const webhookUrl = `${DIRECT_API_BASE}/telegram?orgId=${currentOrg.id}`;
+        const webhookUrl = `${DIRECT_API_BASE}/directTelegramWebhook?orgId=${currentOrg.id}`;
         const whResp = await fetch(`https://api.telegram.org/bot${token}/setWebhook`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -12405,7 +12405,7 @@ async function saveDirectViber() {
         const botName = infoData.name || 'Viber Bot';
         
         // 2. Встановлюємо webhook
-        const webhookUrl = `${DIRECT_API_BASE}/viber?orgId=${currentOrg.id}`;
+        const webhookUrl = `${DIRECT_API_BASE}/directViberWebhook?orgId=${currentOrg.id}`;
         await fetch('https://chatapi.viber.com/pa/set_webhook', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'X-Viber-Auth-Token': token },
