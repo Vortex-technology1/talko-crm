@@ -8811,6 +8811,7 @@ function renderTaskRow(t, status) {
 }
 
 async function taskAction(id,a){
+  try {
     const idx=leads.findIndex(x=>x.id===id);if(idx<0)return;
     const lead = leads[idx]; // Працюємо з оригіналом!
     switch(a){
@@ -9054,10 +9055,12 @@ async function taskAction(id,a){
         .catch(err => showError('Помилка збереження: ' + err.message));
     
     render();
+  } catch(e) { console.error('taskAction error:', e); showError('Помилка: ' + e.message); }
 }
 
 // Quick actions from task list
 async function quickComplete(id) {
+  try {
     const idx = leads.findIndex(x => x.id === id);
     if(idx < 0) return;
     
@@ -9088,9 +9091,11 @@ async function quickComplete(id) {
         .catch(err => showError('Помилка збереження: ' + err.message));
     
     render();
+  } catch(e) { console.error('quickComplete error:', e); showError('Помилка: ' + e.message); }
 }
 
 async function quickReschedule(id) {
+  try {
     const idx = leads.findIndex(x => x.id === id);
     if(idx < 0) return;
     
@@ -9113,6 +9118,7 @@ async function quickReschedule(id) {
         .catch(err => showError('Помилка збереження: ' + err.message));
     
     render();
+  } catch(e) { console.error('quickReschedule error:', e); showError('Помилка: ' + e.message); }
 }
 
 function openAIPanel(id) {
@@ -11466,7 +11472,7 @@ async function testAIPrompt() {
 }
 
 // ===== WEBHOOK INTEGRATION =====
-const WEBHOOK_BASE_URL = 'https://talko-crm.vercel.app/api/webhook';
+const WEBHOOK_BASE_URL = 'https://us-central1-talko-crm.cloudfunctions.net/formsWebhook';
 
 // Генерація випадкового ключа
 function generateWebhookKey() {
@@ -11712,8 +11718,10 @@ function loadSendPulseSettings() {
     document.getElementById('sp-auto-create').checked = sp.autoCreateLead !== false;
     document.getElementById('sp-notify').checked = sp.notifyManager !== false;
     const statusEl = document.getElementById('sendpulse-status');
-    statusEl.innerHTML = (sp.apiId && sp.apiSecret) 
-        ? '<span style="color:#059669">✓ Підключено</span>' : '<span style="color:#9ca3af">Не підключено</span>';
+    if (statusEl) {
+        statusEl.innerHTML = (sp.apiId && sp.apiSecret) 
+            ? '<span style="color:#059669">✓ Підключено</span>' : '<span style="color:#9ca3af">Не підключено</span>';
+    }
 }
 
 async function saveSendPulseSettings() {
@@ -12675,7 +12683,7 @@ async function sendViaDirectAPI(channel, text, lead) {
 }
 
 // ===== IP TELEPHONY INTEGRATION =====
-const TELEPHONY_WEBHOOK_URL = 'https://talko-crm.vercel.app/api/telephony';
+const TELEPHONY_WEBHOOK_URL = 'https://us-central1-talko-crm.cloudfunctions.net/telephonyWebhook';
 
 // Провайдери телефонії та їх API
 const TELEPHONY_PROVIDERS = {
@@ -12958,7 +12966,7 @@ async function makeCall(phone, leadId) {
     
     try {
         // Відправляємо запит на наш API який проксує до телефонії
-        const response = await fetch('https://talko-crm.vercel.app/api/call', {
+        const response = await fetch('https://us-central1-talko-crm.cloudfunctions.net/telephonyWebhook', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -13715,6 +13723,7 @@ function closeStatusPicker() {
 }
 
 async function selectStatus(newStatus) {
+  try {
     if(!statusPickerLeadId) return;
     
     const lead = leads.find(l => l.id === statusPickerLeadId);
@@ -13731,6 +13740,7 @@ async function selectStatus(newStatus) {
     
     // Оновлюємо UI
     render();
+  } catch(e) { console.error('selectStatus error:', e); showError('Помилка: ' + e.message); }
 }
 
 function toggleStatusDropdown(leadId, btn) {
