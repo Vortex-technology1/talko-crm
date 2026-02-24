@@ -1715,6 +1715,7 @@
                 <button class="filter-btn" onclick="setFilter('tomorrow')"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> Завтра</button>
                 <button class="filter-btn" onclick="setFilter('action')"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> Дія сьогодні</button>
                 <button class="filter-btn" onclick="setFilter('money')"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg> Чекають оплату</button>
+                <button class="filter-btn" onclick="setFilter('overdue_hw')"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> Прострочені ДЗ</button>
             </div>
             <div class="kanban" id="kanban"></div>
         </div>
@@ -1883,6 +1884,7 @@
                 <div class="tabs">
                     <button class="tab active" onclick="switchTab('main')">Основне</button>
                     <button class="tab" onclick="switchTab('chat')">💬 Чат</button>
+                    <button class="tab" onclick="switchTab('program')"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-2px"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg> Програма</button>
                     <button class="tab" onclick="switchTab('history')">Історія</button>
                     <button class="tab" onclick="switchTab('links')">Посилання</button>
                     <button class="tab" onclick="switchTab('finance')">Фінанси</button>
@@ -2095,6 +2097,41 @@
                         <div class="omni-connect-section" id="omni-connect-section" style="display:none">
                             <div class="omni-connect-title">Швидке підключення каналів</div>
                             <div class="omni-connect-grid" id="omni-connect-grid"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="tab-content" id="t-program">
+                    <!-- Вибір програми + прогрес -->
+                    <div style="display:flex;gap:8px;align-items:center;margin-bottom:12px;flex-wrap:wrap">
+                        <div style="flex:1;min-width:180px">
+                            <select class="form-select" id="prog-select" onchange="onProgramSelect()">
+                                <option value="">— Програма не обрана —</option>
+                            </select>
+                        </div>
+                        <button class="btn btn-s" onclick="manageProgramTemplates()" title="Керувати шаблонами програм" style="font-size:12px;padding:6px 10px"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-1px"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg> Шаблони</button>
+                    </div>
+                    
+                    <!-- Прогрес-бар -->
+                    <div id="prog-progress-wrap" style="display:none;margin-bottom:16px">
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+                            <span style="font-weight:600;font-size:14px" id="prog-title">Програма</span>
+                            <span style="font-size:13px;font-weight:600" id="prog-percent">0%</span>
+                        </div>
+                        <div style="height:8px;background:#e5e7eb;border-radius:4px;overflow:hidden">
+                            <div id="prog-bar" style="height:100%;background:linear-gradient(90deg,#22c55e,#16a34a);border-radius:4px;transition:width .3s;width:0%"></div>
+                        </div>
+                        <div style="display:flex;gap:12px;margin-top:6px;font-size:12px;color:#6b7280">
+                            <span><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-1px"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> Старт: <b id="prog-start-date">—</b></span>
+                            <span><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-1px"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg> Дедлайн: <b id="prog-end-date">—</b></span>
+                            <span><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-1px"><path d="M21 21H4.6c-.56 0-.84 0-1.05-.11a1 1 0 0 1-.44-.44C3 20.24 3 19.96 3 19.4V3"/><path d="m7 14 4-4 4 4 6-6"/></svg> Модулів: <b id="prog-modules-count">0/0</b></span>
+                        </div>
+                    </div>
+                    
+                    <!-- Список модулів -->
+                    <div id="prog-modules" style="display:flex;flex-direction:column;gap:8px;max-height:400px;overflow-y:auto">
+                        <div style="color:#9ca3af;text-align:center;padding:30px;font-size:14px">
+                            Оберіть програму або створіть нову через Шаблони
                         </div>
                     </div>
                 </div>
@@ -9108,6 +9145,7 @@ function filterLeads(arr){
         case'tomorrow':return filtered.filter(l=>l.consult&&l.consult.split('T')[0]===tm);
         case'action':return filtered.filter(l=>l.nextDate===t);
         case'money':return filtered.filter(l=>l.status==='deposit'||(l.status==='report_sent'&&l.calls>=2));
+        case'overdue_hw':return filtered.filter(l=>hasOverdueHomework(l));
         default:return filtered;
     }
 }
@@ -9155,6 +9193,12 @@ function getTags(l){
     // No-show
     if(l.noshow > 0) {
         tags.push({cls:'noshow',icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>',text:'Не прийшов '+l.noshow+'x'});
+    }
+    
+    // Прострочене ДЗ
+    if(hasOverdueHomework(l)) {
+        const overdueCount = getOverdueHwCount(l);
+        tags.push({cls:'overdue',icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>',text:'ДЗ протерм.' + (overdueCount > 1 ? ' '+overdueCount+'x' : '')});
     }
     
     // Завдаток
@@ -10359,6 +10403,9 @@ function switchTab(t){
             messageUnsub = startMessageListener(editing);
         }
     }
+    if(t === 'program' && editing) {
+        initProgramTab();
+    }
 }
 function resetForm(){
     ['f-id','f-status','f-noshow','f-tg','f-phone','f-viber','f-whatsapp','f-email','f-primary-channel','f-biz','f-source','f-consult','f-repeat','f-calls','f-sms','f-next','f-next-time','f-action','f-fail','f-report','f-notes','l-record','l-report','l-kp','l-contract','fin-dep','fin-dep-cur','fin-dep-date','fin-total','fin-total-cur','fin-paid-date'].forEach(id=>{
@@ -10385,6 +10432,7 @@ function resetForm(){
     
     document.getElementById('comm-log').innerHTML='<div style="color:var(--g);text-align:center;padding:20px">Історія порожня</div>';
     document.getElementById('fail-group').style.display='none';
+    currentProgram = null;
 }
 function fillForm(l){
     document.getElementById('f-id').value=l.id;
@@ -10584,7 +10632,8 @@ async function saveLeadForm(){
         finDepDate:document.getElementById('fin-dep-date').value,
         finTotal:+document.getElementById('fin-total').value||null,
         finTotalCur:document.getElementById('fin-total-cur').value,
-        finPaidDate:document.getElementById('fin-paid-date').value
+        finPaidDate:document.getElementById('fin-paid-date').value,
+        program: getProgramDataFromForm()
     };
     
     const idx=leads.findIndex(l=>l.id===data.id);
@@ -15149,6 +15198,450 @@ document.addEventListener('keydown', (e) => {
         return;
     }
 });
+
+// ######################################################
+// ===== PROGRAM TRACKING SYSTEM =======================
+// ######################################################
+
+// Зберігаємо шаблони програм в org.programTemplates[]
+// Дані ліда в lead.program = { templateId, startDate, modules: [{...}] }
+
+let currentProgram = null; // Поточна програма для редагування
+
+function hasOverdueHomework(lead) {
+    if (!lead.program || !lead.program.modules) return false;
+    const t = today();
+    return lead.program.modules.some(m => 
+        m.homework && m.homework.some(hw => 
+            hw.status !== 'done' && hw.deadline && hw.deadline < t
+        )
+    );
+}
+
+function getOverdueHwCount(lead) {
+    if (!lead.program || !lead.program.modules) return 0;
+    const t = today();
+    let count = 0;
+    lead.program.modules.forEach(m => {
+        if (m.homework) m.homework.forEach(hw => {
+            if (hw.status !== 'done' && hw.deadline && hw.deadline < t) count++;
+        });
+    });
+    return count;
+}
+
+function getOrgProgramTemplates() {
+    return currentOrg?.programTemplates || [];
+}
+
+function onProgramSelect() {
+    const sel = document.getElementById('prog-select');
+    const templateId = sel.value;
+    if (!templateId) {
+        document.getElementById('prog-progress-wrap').style.display = 'none';
+        document.getElementById('prog-modules').innerHTML = '<div style="color:#9ca3af;text-align:center;padding:30px;font-size:14px">Оберіть програму або створіть нову через Шаблони</div>';
+        currentProgram = null;
+        return;
+    }
+    
+    const lead = leads.find(l => l.id === editing);
+    if (!lead) return;
+    
+    // Якщо лід вже має цю програму — завантажуємо прогрес
+    if (lead.program && lead.program.templateId === templateId) {
+        currentProgram = JSON.parse(JSON.stringify(lead.program));
+    } else {
+        // Попередження якщо вже є прогрес по іншій програмі
+        if (lead.program && lead.program.modules?.some(m => m.status !== 'pending')) {
+            if (!confirm('Увага! У ліда вже є прогрес по програмі "' + (lead.program.title || '') + '". Замінити на нову?')) {
+                sel.value = lead.program.templateId || '';
+                return;
+            }
+        }
+        // Створюємо нову програму з шаблону
+        const template = getOrgProgramTemplates().find(t => t.id === templateId);
+        if (!template) return;
+        const startDate = today();
+        currentProgram = {
+            templateId,
+            title: template.title,
+            startDate,
+            modules: template.modules.map((m, i) => ({
+                id: m.id || 'mod_' + i,
+                title: m.title,
+                status: 'pending', // pending, in_progress, done
+                curatorNote: '',
+                homework: (m.homework || []).map((hw, j) => ({
+                    id: hw.id || 'hw_' + i + '_' + j,
+                    title: hw.title,
+                    status: 'pending', // pending, done, overdue
+                    deadline: hw.daysFromStart ? addDays(startDate, hw.daysFromStart) : '',
+                    submittedAt: null,
+                    curatorNote: ''
+                }))
+            }))
+        };
+    }
+    
+    renderProgramProgress();
+    renderProgramModules();
+}
+
+function addDays(dateStr, days) {
+    const d = new Date(dateStr);
+    d.setDate(d.getDate() + days);
+    return d.toISOString().split('T')[0];
+}
+
+function renderProgramProgress() {
+    if (!currentProgram) return;
+    const wrap = document.getElementById('prog-progress-wrap');
+    wrap.style.display = 'block';
+    
+    const modules = currentProgram.modules || [];
+    const done = modules.filter(m => m.status === 'done').length;
+    const total = modules.length;
+    const percent = total > 0 ? Math.round((done / total) * 100) : 0;
+    
+    document.getElementById('prog-title').textContent = currentProgram.title || 'Програма';
+    document.getElementById('prog-percent').textContent = percent + '%';
+    document.getElementById('prog-bar').style.width = percent + '%';
+    document.getElementById('prog-start-date').textContent = currentProgram.startDate || '—';
+    
+    // Знаходимо останній дедлайн
+    let lastDeadline = '';
+    modules.forEach(m => {
+        (m.homework || []).forEach(hw => {
+            if (hw.deadline && hw.deadline > lastDeadline) lastDeadline = hw.deadline;
+        });
+    });
+    document.getElementById('prog-end-date').textContent = lastDeadline || '—';
+    document.getElementById('prog-modules-count').textContent = done + '/' + total;
+}
+
+function renderProgramModules() {
+    if (!currentProgram) return;
+    const container = document.getElementById('prog-modules');
+    const modules = currentProgram.modules || [];
+    const t = today();
+    
+    // SVG іконки
+    const svgCheck = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#16a34a" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>';
+    const svgProgress = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#2563eb" stroke-width="2"><path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83"/></svg>';
+    const svgEmpty = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#9ca3af" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>';
+    const svgOverdue = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#dc2626" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>';
+    const svgCal = '<svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-1px"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>';
+    const svgChat = '<svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-1px"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>';
+    const svgNote = '<svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-1px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>';
+    const svgCalBtn = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>';
+    const svgChatBtn = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>';
+    const svgChevDown = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>';
+    const svgChevUp = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><polyline points="18 15 12 9 6 15"/></svg>';
+    
+    if (!modules.length) {
+        container.innerHTML = '<div style="color:#9ca3af;text-align:center;padding:20px">Модулі відсутні</div>';
+        return;
+    }
+    
+    container.innerHTML = modules.map((m, mi) => {
+        const statusIcon = m.status === 'done' ? svgCheck : m.status === 'in_progress' ? svgProgress : svgEmpty;
+        const statusBg = m.status === 'done' ? '#f0fdf4' : m.status === 'in_progress' ? '#eff6ff' : '#f9fafb';
+        const statusBorder = m.status === 'done' ? '#bbf7d0' : m.status === 'in_progress' ? '#bfdbfe' : '#e5e7eb';
+        
+        const hwHtml = (m.homework || []).map((hw, hi) => {
+            const isOverdue = hw.status !== 'done' && hw.deadline && hw.deadline < t;
+            const hwIcon = hw.status === 'done' ? svgCheck : isOverdue ? svgOverdue : svgEmpty;
+            const hwBg = hw.status === 'done' ? '#f0fdf4' : isOverdue ? '#fef2f2' : '#fff';
+            const hwBorder = hw.status === 'done' ? '#bbf7d0' : isOverdue ? '#fecaca' : '#e5e7eb';
+            
+            return `<div style="display:flex;align-items:flex-start;gap:8px;padding:8px 10px;background:${hwBg};border:1px solid ${hwBorder};border-radius:6px;font-size:13px">
+                <button onclick="toggleHwStatus(${mi},${hi})" style="background:none;border:none;cursor:pointer;line-height:1;flex-shrink:0;padding:2px" title="Змінити статус">${hwIcon}</button>
+                <div style="flex:1;min-width:0">
+                    <div style="font-weight:500">${escapeHtml(hw.title)}</div>
+                    <div style="display:flex;gap:8px;margin-top:4px;flex-wrap:wrap">
+                        <span style="font-size:11px;color:${isOverdue ? '#dc2626' : '#6b7280'}">${svgCal} ${hw.deadline || 'без дедлайну'}</span>
+                        ${hw.status === 'done' && hw.submittedAt ? `<span style="font-size:11px;color:#059669"><svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="#059669" stroke-width="3" style="vertical-align:-1px"><path d="M20 6L9 17l-5-5"/></svg> ${hw.submittedAt}</span>` : ''}
+                    </div>
+                    ${hw.curatorNote ? `<div style="font-size:12px;color:#6b7280;margin-top:4px;padding:4px 8px;background:#f3f4f6;border-radius:4px">${svgChat} ${escapeHtml(hw.curatorNote)}</div>` : ''}
+                </div>
+                <div style="display:flex;gap:2px;flex-shrink:0">
+                    <button onclick="editHwDeadline(${mi},${hi})" style="background:none;border:none;cursor:pointer;padding:2px;color:#6b7280" title="Дедлайн">${svgCalBtn}</button>
+                    <button onclick="editHwNote(${mi},${hi})" style="background:none;border:none;cursor:pointer;padding:2px;color:#6b7280" title="Нотатка куратора">${svgChatBtn}</button>
+                </div>
+            </div>`;
+        }).join('');
+        
+        return `<div style="background:${statusBg};border:1px solid ${statusBorder};border-radius:10px;overflow:hidden">
+            <div style="display:flex;align-items:center;gap:8px;padding:10px 12px;cursor:pointer" onclick="toggleModuleExpand(${mi})">
+                <button onclick="event.stopPropagation();cycleModuleStatus(${mi})" style="background:none;border:none;cursor:pointer;line-height:1;padding:0" title="Статус модуля">${statusIcon}</button>
+                <div style="flex:1;font-weight:600;font-size:14px">${escapeHtml(m.title)}</div>
+                <span style="color:#6b7280" id="prog-mod-arrow-${mi}">${svgChevDown}</span>
+            </div>
+            <div id="prog-mod-body-${mi}" style="display:none;padding:0 12px 12px 12px">
+                ${m.curatorNote ? `<div style="font-size:13px;color:#374151;padding:8px 10px;background:#fff;border:1px solid #e5e7eb;border-radius:6px;margin-bottom:8px">${svgNote} ${escapeHtml(m.curatorNote)}</div>` : ''}
+                <div style="display:flex;gap:4px;margin-bottom:8px">
+                    <button class="btn btn-s" onclick="editModuleNote(${mi})" style="font-size:11px;padding:4px 8px">${svgNote} Нотатка</button>
+                    <button class="btn btn-s" onclick="addHomework(${mi})" style="font-size:11px;padding:4px 8px">+ ДЗ</button>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:6px">${hwHtml || '<div style="color:#9ca3af;font-size:12px;padding:4px 0">Немає домашніх завдань</div>'}</div>
+            </div>
+        </div>`;
+    }).join('');
+}
+
+function toggleModuleExpand(mi) {
+    const body = document.getElementById('prog-mod-body-' + mi);
+    const arrow = document.getElementById('prog-mod-arrow-' + mi);
+    if (body.style.display === 'none') {
+        body.style.display = 'block';
+        if (arrow) arrow.innerHTML = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><polyline points="18 15 12 9 6 15"/></svg>';
+    } else {
+        body.style.display = 'none';
+        if (arrow) arrow.innerHTML = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>';
+    }
+}
+
+function cycleModuleStatus(mi) {
+    if (!currentProgram || !currentProgram.modules[mi]) return;
+    const m = currentProgram.modules[mi];
+    const cycle = ['pending', 'in_progress', 'done'];
+    m.status = cycle[(cycle.indexOf(m.status) + 1) % cycle.length];
+    renderProgramProgress();
+    renderProgramModules();
+}
+
+function toggleHwStatus(mi, hi) {
+    if (!currentProgram || !currentProgram.modules[mi]) return;
+    const hw = currentProgram.modules[mi].homework[hi];
+    if (!hw) return;
+    if (hw.status === 'done') {
+        hw.status = 'pending';
+        hw.submittedAt = null;
+    } else {
+        hw.status = 'done';
+        hw.submittedAt = today();
+    }
+    renderProgramProgress();
+    renderProgramModules();
+}
+
+function editHwDeadline(mi, hi) {
+    if (!currentProgram) return;
+    const hw = currentProgram.modules[mi]?.homework[hi];
+    if (!hw) return;
+    const val = prompt('Дедлайн (YYYY-MM-DD):', hw.deadline || '');
+    if (val === null) return;
+    hw.deadline = val;
+    renderProgramModules();
+}
+
+function editHwNote(mi, hi) {
+    if (!currentProgram) return;
+    const hw = currentProgram.modules[mi]?.homework[hi];
+    if (!hw) return;
+    const val = prompt('Нотатка куратора:', hw.curatorNote || '');
+    if (val === null) return;
+    hw.curatorNote = val;
+    renderProgramModules();
+}
+
+function editModuleNote(mi) {
+    if (!currentProgram) return;
+    const m = currentProgram.modules[mi];
+    if (!m) return;
+    const val = prompt('Нотатка куратора по модулю:', m.curatorNote || '');
+    if (val === null) return;
+    m.curatorNote = val;
+    renderProgramModules();
+}
+
+function addHomework(mi) {
+    if (!currentProgram) return;
+    const m = currentProgram.modules[mi];
+    if (!m) return;
+    const title = prompt('Назва домашнього завдання:');
+    if (!title) return;
+    const deadline = prompt('Дедлайн (YYYY-MM-DD):', addDays(today(), 7));
+    if (!m.homework) m.homework = [];
+    m.homework.push({
+        id: 'hw_' + Date.now(),
+        title,
+        status: 'pending',
+        deadline: deadline || '',
+        submittedAt: null,
+        curatorNote: ''
+    });
+    renderProgramModules();
+}
+
+// Ініціалізація вкладки при відкритті
+function initProgramTab() {
+    const lead = leads.find(l => l.id === editing);
+    if (!lead) return;
+    
+    const templates = getOrgProgramTemplates();
+    const sel = document.getElementById('prog-select');
+    sel.innerHTML = '<option value="">— Програма не обрана —</option>' +
+        templates.map(t => `<option value="${t.id}">${escapeHtml(t.title)}</option>`).join('');
+    
+    if (lead.program && lead.program.templateId) {
+        sel.value = lead.program.templateId;
+        // Якщо шаблон був видалений — додаємо тимчасовий option
+        if (!sel.value || sel.value !== lead.program.templateId) {
+            const opt = document.createElement('option');
+            opt.value = lead.program.templateId;
+            opt.textContent = (lead.program.title || 'Програма') + ' (шаблон видалено)';
+            sel.appendChild(opt);
+            sel.value = lead.program.templateId;
+        }
+        currentProgram = JSON.parse(JSON.stringify(lead.program));
+        renderProgramProgress();
+        renderProgramModules();
+    } else {
+        currentProgram = null;
+        document.getElementById('prog-progress-wrap').style.display = 'none';
+        document.getElementById('prog-modules').innerHTML = '<div style="color:#9ca3af;text-align:center;padding:30px;font-size:14px">Оберіть програму або створіть нову через Шаблони</div>';
+    }
+}
+
+// ===== ШАБЛОНИ ПРОГРАМ =====
+function manageProgramTemplates() {
+    // Видаляємо попередній overlay якщо є
+    document.querySelector('div[style*="fixed"][style*="z-index:10000"]')?.remove();
+    
+    const templates = getOrgProgramTemplates();
+    
+    let html = '<div style="max-height:60vh;overflow-y:auto">';
+    html += '<div style="margin-bottom:12px;display:flex;justify-content:space-between;align-items:center"><b>Шаблони програм</b><button class="btn btn-p" onclick="addProgramTemplate()" style="font-size:12px;padding:5px 12px">+ Новий шаблон</button></div>';
+    
+    if (!templates.length) {
+        html += '<div style="color:#9ca3af;text-align:center;padding:20px">Немає шаблонів. Створіть перший!</div>';
+    } else {
+        templates.forEach((t, ti) => {
+            html += `<div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;padding:10px 12px;margin-bottom:8px">
+                <div style="display:flex;justify-content:space-between;align-items:center">
+                    <b>${escapeHtml(t.title)}</b>
+                    <div style="display:flex;gap:4px">
+                        <button onclick="editProgramTemplate(${ti})" style="background:none;border:none;cursor:pointer;color:#6b7280;padding:2px" title="Редагувати"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+                        <button onclick="deleteProgramTemplate(${ti})" style="background:none;border:none;cursor:pointer;color:#ef4444;padding:2px" title="Видалити"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
+                    </div>
+                </div>
+                <div style="font-size:12px;color:#6b7280;margin-top:4px">${t.modules?.length || 0} модулів</div>
+            </div>`;
+        });
+    }
+    html += '</div>';
+    
+    // Використовуємо простий alert-подібний підхід
+    const overlay = document.createElement('div');
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:10000;display:flex;align-items:center;justify-content:center';
+    overlay.onclick = function(e) { if (e.target === overlay) overlay.remove(); };
+    overlay.innerHTML = `<div style="background:#fff;border-radius:16px;padding:24px;width:90%;max-width:500px;box-shadow:0 20px 60px rgba(0,0,0,0.3)">
+        ${html}
+        <div style="text-align:right;margin-top:12px"><button class="btn btn-s" onclick="this.closest('div[style*=fixed]').remove()">Закрити</button></div>
+    </div>`;
+    document.body.appendChild(overlay);
+}
+
+function addProgramTemplate() {
+    const title = prompt('Назва програми (напр. "TALKO OS", "Бізнес на Автопілоті"):');
+    if (!title) return;
+    
+    const modulesStr = prompt('Модулі (через кому, напр. "Ціль,ЦКП,Структура,Процеси,Статистики"):');
+    if (!modulesStr) return;
+    
+    const daysPerModule = parseInt(prompt('Днів на кожен модуль (для дедлайнів ДЗ):', '5')) || 5;
+    
+    const modules = modulesStr.split(',').map((name, i) => ({
+        id: 'mod_' + i,
+        title: name.trim(),
+        homework: [{
+            id: 'hw_' + i + '_0',
+            title: 'ДЗ: ' + name.trim(),
+            daysFromStart: (i + 1) * daysPerModule
+        }]
+    }));
+    
+    const template = {
+        id: 'tpl_' + Date.now(),
+        title,
+        modules,
+        createdAt: new Date().toISOString()
+    };
+    
+    if (!currentOrg.programTemplates) currentOrg.programTemplates = [];
+    currentOrg.programTemplates.push(template);
+    saveOrgProgramTemplates();
+    
+    // Закриваємо і перевідкриваємо модалку
+    document.querySelector('div[style*="fixed"][style*="z-index:10000"]')?.remove();
+    manageProgramTemplates();
+    
+    // Оновлюємо select якщо вкладка програми відкрита
+    const sel = document.getElementById('prog-select');
+    if (sel) {
+        sel.innerHTML = '<option value="">— Програма не обрана —</option>' +
+            getOrgProgramTemplates().map(t => `<option value="${t.id}">${escapeHtml(t.title)}</option>`).join('');
+    }
+}
+
+function editProgramTemplate(ti) {
+    const templates = getOrgProgramTemplates();
+    const t = templates[ti];
+    if (!t) return;
+    
+    const newTitle = prompt('Назва програми:', t.title);
+    if (newTitle === null) return;
+    t.title = newTitle;
+    
+    const addMore = confirm('Додати модулі? (OK = так)');
+    if (addMore) {
+        const mods = prompt('Нові модулі (через кому):');
+        if (mods) {
+            const existing = t.modules.length;
+            mods.split(',').forEach((name, i) => {
+                t.modules.push({
+                    id: 'mod_' + (existing + i),
+                    title: name.trim(),
+                    homework: [{ id: 'hw_' + (existing + i) + '_0', title: 'ДЗ: ' + name.trim(), daysFromStart: (existing + i + 1) * 5 }]
+                });
+            });
+        }
+    }
+    
+    saveOrgProgramTemplates();
+    document.querySelector('div[style*="fixed"][style*="z-index:10000"]')?.remove();
+    manageProgramTemplates();
+}
+
+function deleteProgramTemplate(ti) {
+    if (!confirm('Видалити шаблон програми?')) return;
+    if (!currentOrg.programTemplates || !currentOrg.programTemplates[ti]) return;
+    currentOrg.programTemplates.splice(ti, 1);
+    saveOrgProgramTemplates();
+    document.querySelector('div[style*="fixed"][style*="z-index:10000"]')?.remove();
+    manageProgramTemplates();
+}
+
+async function saveOrgProgramTemplates() {
+    if (!currentOrg?.id) return;
+    try {
+        await db.collection('organizations').doc(currentOrg.id).update({
+            programTemplates: currentOrg.programTemplates || []
+        });
+    } catch (e) {
+        console.error('Error saving program templates:', e);
+    }
+}
+
+// Інтеграція з saveLeadForm — зберігаємо program дані
+// Повертаємо undefined (не null) якщо вкладку не відкривали — щоб не перезатерти існуючі дані
+function getProgramDataFromForm() {
+    // Якщо вкладку Програма не відкривали — зберігаємо існуючі дані ліда
+    const lead = leads.find(l => l.id === editing);
+    if (currentProgram === null && lead?.program) return lead.program;
+    return currentProgram ? JSON.parse(JSON.stringify(currentProgram)) : null;
+}
 </script>
 <!-- Status Picker Modal -->
 <div class="status-picker-overlay" id="status-picker-overlay" onclick="if(event.target===this)closeStatusPicker()">
