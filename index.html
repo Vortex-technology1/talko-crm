@@ -202,7 +202,131 @@
         
         /* Assignee in Cards */
         .assignee-badge{display:flex;align-items:center;gap:4px;font-size:11px;color:#6b7280}
-        .chat-container{max-height:300px;overflow-y:auto;padding:8px;background:#f9fafb;border-radius:8px;border:1px solid #e5e7eb}
+        .chat-container{max-height:none;height:100%;overflow-y:auto;padding:0;background:#f0f2f5;border-radius:0;border:none;display:flex;flex-direction:column}
+        
+        /* Omnichannel Chat - Premium */
+        .omni-chat-wrap{display:flex;flex-direction:column;height:420px;background:#fff;border-radius:12px;overflow:hidden;border:1px solid #e5e7eb}
+        .omni-chat-header{display:flex;align-items:center;gap:10px;padding:12px 16px;background:#fff;border-bottom:1px solid #e5e7eb;flex-shrink:0}
+        .omni-chat-avatar{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:14px;color:#fff;flex-shrink:0}
+        .omni-chat-info{flex:1;min-width:0}
+        .omni-chat-name{font-size:14px;font-weight:600;color:#1f2937;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+        .omni-chat-status{font-size:11px;color:#6b7280;display:flex;align-items:center;gap:4px}
+        .omni-chat-status .online-dot{width:6px;height:6px;border-radius:50%;background:#22c55e}
+        .omni-chat-actions{display:flex;gap:4px}
+        .omni-chat-action{width:32px;height:32px;border:none;background:#f3f4f6;border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#6b7280;transition:all .15s}
+        .omni-chat-action:hover{background:#e5e7eb;color:#374151}
+        .omni-chat-action.active{background:#f0fdf4;color:#22c55e}
+        
+        /* Channel Tabs */
+        .omni-channels{display:flex;gap:2px;padding:0 12px;background:#fff;border-bottom:1px solid #e5e7eb;flex-shrink:0;overflow-x:auto}
+        .omni-channels::-webkit-scrollbar{display:none}
+        .omni-ch-tab{display:flex;align-items:center;gap:6px;padding:8px 12px;font-size:12px;font-weight:500;color:#6b7280;cursor:pointer;border:none;background:none;border-bottom:2px solid transparent;white-space:nowrap;transition:all .15s}
+        .omni-ch-tab:hover{color:#374151;background:#f9fafb}
+        .omni-ch-tab.active{color:#22c55e;border-bottom-color:#22c55e}
+        .omni-ch-tab .ch-icon{width:18px;height:18px;display:flex;align-items:center;justify-content:center}
+        .omni-ch-tab .ch-badge{background:#ef4444;color:#fff;font-size:9px;font-weight:700;min-width:16px;height:16px;border-radius:8px;display:flex;align-items:center;justify-content:center;padding:0 4px}
+        
+        /* Messages Area */
+        .omni-messages{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:2px;background:#f0f2f5;scroll-behavior:smooth}
+        .omni-messages::-webkit-scrollbar{width:4px}
+        .omni-messages::-webkit-scrollbar-thumb{background:#d1d5db;border-radius:2px}
+        
+        /* Date Separator */
+        .omni-date-sep{display:flex;align-items:center;justify-content:center;padding:12px 0}
+        .omni-date-sep span{background:#e2e5e9;color:#54656f;font-size:11px;font-weight:500;padding:4px 12px;border-radius:6px}
+        
+        /* Message Bubbles - WhatsApp style */
+        .omni-msg{max-width:75%;padding:8px 10px 4px;border-radius:8px;position:relative;animation:msgIn .2s ease}
+        @keyframes msgIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+        .omni-msg.in{background:#fff;align-self:flex-start;border-top-left-radius:0;box-shadow:0 1px 1px rgba(0,0,0,.06)}
+        .omni-msg.out{background:#d9fdd3;align-self:flex-end;border-top-right-radius:0;box-shadow:0 1px 1px rgba(0,0,0,.06)}
+        .omni-msg.system{background:#fef3c7;align-self:center;max-width:85%;text-align:center;border-radius:8px;padding:6px 16px;font-size:11px;color:#92400e}
+        .omni-msg-channel{display:inline-flex;align-items:center;gap:3px;font-size:10px;font-weight:600;color:#6b7280;margin-bottom:2px}
+        .omni-msg-channel .ch-dot{width:6px;height:6px;border-radius:50%}
+        .omni-msg-channel .ch-dot.telegram{background:#0088cc}
+        .omni-msg-channel .ch-dot.viber{background:#7360f2}
+        .omni-msg-channel .ch-dot.whatsapp{background:#25d366}
+        .omni-msg-channel .ch-dot.instagram{background:#e4405f}
+        .omni-msg-channel .ch-dot.facebook{background:#1877f2}
+        .omni-msg-channel .ch-dot.phone{background:#6b7280}
+        .omni-msg-channel .ch-dot.email{background:#f59e0b}
+        .omni-msg-channel .ch-dot.sms{background:#8b5cf6}
+        .omni-msg-text{font-size:13px;color:#111b21;line-height:1.4;word-break:break-word;white-space:pre-wrap}
+        .omni-msg-meta{display:flex;align-items:center;justify-content:flex-end;gap:4px;margin-top:2px}
+        .omni-msg-time{font-size:10px;color:#667781}
+        .omni-msg-status{display:flex;align-items:center}
+        .omni-msg-status svg{width:14px;height:14px}
+        .omni-msg-status.sent{color:#667781}
+        .omni-msg-status.delivered{color:#667781}
+        .omni-msg-status.read{color:#53bdeb}
+        
+        /* Attachment previews */
+        .omni-msg-attachment{margin-bottom:4px}
+        .omni-msg-attachment img{max-width:250px;max-height:200px;border-radius:6px;cursor:pointer}
+        .omni-msg-attachment .file-attach{display:flex;align-items:center;gap:8px;padding:8px 10px;background:rgba(0,0,0,.05);border-radius:6px}
+        .omni-msg-attachment .file-icon{width:32px;height:32px;background:#e5e7eb;border-radius:6px;display:flex;align-items:center;justify-content:center}
+        .omni-msg-attachment .file-info{font-size:12px;color:#374151}
+        .omni-msg-attachment .file-size{font-size:10px;color:#6b7280}
+        
+        /* Quick Reply Templates */
+        .omni-templates{display:none;padding:8px 12px;background:#fff;border-top:1px solid #e5e7eb;max-height:120px;overflow-y:auto;flex-shrink:0}
+        .omni-templates.active{display:block}
+        .omni-template-item{padding:8px 12px;border-radius:6px;cursor:pointer;font-size:12px;color:#374151;transition:background .1s;border:1px solid transparent}
+        .omni-template-item:hover{background:#f0fdf4;border-color:#22c55e}
+        .omni-template-item .tpl-title{font-weight:600;margin-bottom:2px}
+        .omni-template-item .tpl-preview{color:#6b7280;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+        
+        /* Input Area - Premium */
+        .omni-input-area{padding:8px 12px;background:#fff;border-top:1px solid #e5e7eb;flex-shrink:0}
+        .omni-input-row{display:flex;align-items:flex-end;gap:6px}
+        .omni-input-actions{display:flex;gap:2px;flex-shrink:0}
+        .omni-input-btn{width:34px;height:34px;border:none;background:transparent;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#54656f;transition:all .15s}
+        .omni-input-btn:hover{background:#f0f2f5;color:#374151}
+        .omni-input-btn.active{color:#22c55e;background:#f0fdf4}
+        .omni-input-field{flex:1;position:relative}
+        .omni-input-field textarea{width:100%;min-height:36px;max-height:120px;padding:8px 12px;border:1px solid #e5e7eb;border-radius:20px;font-size:13px;font-family:inherit;resize:none;outline:none;line-height:1.4}
+        .omni-input-field textarea:focus{border-color:#22c55e}
+        .omni-send-btn{width:36px;height:36px;border:none;background:#22c55e;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#fff;flex-shrink:0;transition:all .15s}
+        .omni-send-btn:hover{background:#16a34a;transform:scale(1.05)}
+        .omni-send-btn:disabled{background:#d1d5db;cursor:not-allowed;transform:none}
+        
+        /* Channel Selector in Input */
+        .omni-channel-select{display:flex;align-items:center;gap:6px;padding:6px 0;flex-shrink:0}
+        .omni-ch-pill{display:flex;align-items:center;gap:4px;padding:4px 10px;border-radius:16px;font-size:11px;font-weight:500;cursor:pointer;border:1px solid #e5e7eb;background:#fff;color:#6b7280;transition:all .15s;white-space:nowrap}
+        .omni-ch-pill:hover{border-color:#d1d5db}
+        .omni-ch-pill.active{border-color:#22c55e;background:#f0fdf4;color:#16a34a}
+        .omni-ch-pill .ch-dot{width:6px;height:6px;border-radius:50%}
+        
+        /* Open in messenger buttons */
+        .omni-open-btns{display:flex;gap:6px;flex-wrap:wrap;padding:8px 0}
+        .omni-open-btn{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:8px;font-size:12px;font-weight:500;text-decoration:none;border:1px solid;cursor:pointer;transition:all .15s}
+        .omni-open-btn:hover{transform:translateY(-1px);box-shadow:0 2px 8px rgba(0,0,0,.1)}
+        .omni-open-btn.tg{background:#e3f2fd;color:#0088cc;border-color:#bbdefb}
+        .omni-open-btn.viber{background:#f3e5f5;color:#7360f2;border-color:#e1bee7}
+        .omni-open-btn.wa{background:#e8f5e9;color:#25d366;border-color:#c8e6c9}
+        .omni-open-btn.ig{background:#fce4ec;color:#e4405f;border-color:#f8bbd0}
+        .omni-open-btn.fb{background:#e3f2fd;color:#1877f2;border-color:#bbdefb}
+        .omni-open-btn.phone-btn{background:#f3f4f6;color:#374151;border-color:#e5e7eb}
+        .omni-open-btn.email-btn{background:#fff7ed;color:#ea580c;border-color:#fed7aa}
+        
+        /* Empty chat state */
+        .omni-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;padding:40px;text-align:center;color:#6b7280}
+        .omni-empty-icon{width:80px;height:80px;background:#f0f2f5;border-radius:50%;display:flex;align-items:center;justify-content:center;margin-bottom:16px}
+        .omni-empty-icon svg{width:40px;height:40px;color:#d1d5db}
+        .omni-empty-title{font-size:16px;font-weight:600;color:#374151;margin-bottom:4px}
+        .omni-empty-text{font-size:13px;margin-bottom:16px;max-width:280px}
+        
+        /* Integration connect badges */
+        .omni-connect-section{padding:12px;background:#f9fafb;border-top:1px solid #e5e7eb;flex-shrink:0}
+        .omni-connect-title{font-size:11px;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}
+        .omni-connect-grid{display:grid;grid-template-columns:repeat(auto-fill, minmax(120px, 1fr));gap:6px}
+        .omni-connect-item{display:flex;align-items:center;gap:6px;padding:8px 10px;border-radius:8px;border:1px solid #e5e7eb;cursor:pointer;font-size:11px;font-weight:500;transition:all .15s}
+        .omni-connect-item:hover{border-color:#22c55e;background:#f0fdf4}
+        .omni-connect-item.connected{background:#f0fdf4;border-color:#86efac}
+        .omni-connect-item .connect-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+        .omni-connect-item .connect-dot.active{background:#22c55e}
+        .omni-connect-item .connect-dot.inactive{background:#d1d5db}
+        
         .chat-msg{padding:8px 10px;margin-bottom:6px;border-radius:10px;max-width:85%}
         .chat-msg.in{background:#fff;border:1px solid #e5e7eb;margin-right:auto}
         .chat-msg.out{background:#dcfce7;border:1px solid #bbf7d0;margin-left:auto}
@@ -1297,6 +1421,19 @@
             .header .nav{display:none}
             .container{padding-bottom:80px}
             .modal-body{padding-bottom:100px}
+            
+            /* Omni Chat Mobile */
+            .omni-chat-wrap{height:380px}
+            .omni-msg{max-width:88%}
+            .omni-open-btns{flex-wrap:nowrap;overflow-x:auto;padding-bottom:4px}
+            .omni-open-btns::-webkit-scrollbar{display:none}
+            .omni-open-btn{flex-shrink:0;font-size:11px;padding:5px 10px}
+            .omni-channels{padding:0 8px}
+            .omni-ch-tab{padding:6px 8px;font-size:11px}
+            .omni-input-field textarea{font-size:14px;padding:8px 10px}
+            .omni-channel-select{overflow-x:auto;flex-wrap:nowrap}
+            .omni-channel-select::-webkit-scrollbar{display:none}
+            .omni-connect-grid{grid-template-columns:repeat(2, 1fr)}
         }
     </style>
 </head>
@@ -1410,6 +1547,10 @@
                 <button class="btn btn-p" onclick="openModal()">+ Додати</button>
                 <label class="btn btn-s">Імпорт<input type="file" accept=".xlsx,.xls" onchange="importXLS(event)" hidden></label>
                 <button class="btn btn-s" onclick="exportXLS()">Експорт</button>
+                <button class="btn btn-s" onclick="openActivityReport()" title="Аналітика дій користувачів за день">
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20V10"/><path d="M18 20V4"/><path d="M6 20v-4"/></svg>
+                    Дії
+                </button>
                 <button class="btn btn-s" onclick="findDuplicates()" title="Знайти дублікати лідів">
                     <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M4 16V4h12"/></svg>
                     Дублі
@@ -1898,14 +2039,63 @@
                 </div>
                 
                 <div class="tab-content" id="t-chat">
-                    <div class="chat-container" id="lead-chat-messages">
-                        <div style="text-align:center;padding:20px;color:#9ca3af;font-size:12px">Немає повідомлень</div>
-                    </div>
-                    <div class="chat-input-wrap">
-                        <input type="text" id="chat-input" placeholder="Написати повідомлення..." onkeydown="if(event.key==='Enter')sendLeadMessage(editing)">
-                        <button onclick="sendLeadMessage(editing)">
-                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13"/><path d="M22 2L15 22L11 13L2 9L22 2Z"/></svg>
-                        </button>
+                    <div class="omni-chat-wrap" id="omni-chat-wrap">
+                        <!-- Channel Tabs -->
+                        <div class="omni-channels" id="omni-channels">
+                            <button class="omni-ch-tab active" data-channel="all" onclick="switchChatChannel('all')">
+                                <span class="ch-icon">💬</span> Всі
+                            </button>
+                        </div>
+                        
+                        <!-- Quick Open Buttons -->
+                        <div id="omni-open-buttons" style="padding:6px 12px;background:#fff;border-bottom:1px solid #f3f4f6;display:none">
+                            <div class="omni-open-btns" id="omni-open-btns"></div>
+                        </div>
+                        
+                        <!-- Messages -->
+                        <div class="omni-messages" id="omni-messages">
+                            <div class="omni-empty">
+                                <div class="omni-empty-icon">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                                </div>
+                                <div class="omni-empty-title">Розпочніть комунікацію</div>
+                                <div class="omni-empty-text">Підключіть канали або напишіть клієнту першими через месенджер</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Quick Reply Templates -->
+                        <div class="omni-templates" id="omni-templates">
+                            <!-- Templates rendered dynamically -->
+                        </div>
+                        
+                        <!-- Input Area -->
+                        <div class="omni-input-area">
+                            <div class="omni-channel-select" id="omni-channel-select">
+                                <span style="font-size:11px;color:#6b7280">Канал:</span>
+                                <div id="omni-channel-pills"></div>
+                            </div>
+                            <div class="omni-input-row">
+                                <div class="omni-input-actions">
+                                    <button class="omni-input-btn" onclick="toggleOmniTemplates()" title="Шаблони">
+                                        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="7" y1="8" x2="17" y2="8"/><line x1="7" y1="12" x2="14" y2="12"/><line x1="7" y1="16" x2="11" y2="16"/></svg>
+                                    </button>
+                                </div>
+                                <div class="omni-input-field">
+                                    <textarea id="omni-input" placeholder="Написати повідомлення..." rows="1" 
+                                        oninput="autoResizeOmni(this)" 
+                                        onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendOmniMessage()}"></textarea>
+                                </div>
+                                <button class="omni-send-btn" id="omni-send-btn" onclick="sendOmniMessage()" title="Надіслати">
+                                    <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Integration Quick Connect -->
+                        <div class="omni-connect-section" id="omni-connect-section" style="display:none">
+                            <div class="omni-connect-title">Швидке підключення каналів</div>
+                            <div class="omni-connect-grid" id="omni-connect-grid"></div>
+                        </div>
                     </div>
                 </div>
                 
@@ -2870,54 +3060,209 @@
             </div>
         </div>
         
-        <!-- ===== SENDPULSE INTEGRATION ===== -->
+        <!-- ===== DIRECT MESSENGER INTEGRATIONS ===== -->
         <div class="settings-section" id="sendpulse-settings-section">
             <div class="settings-section-title">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-                Месенджери (SendPulse)
+                Месенджери — пряме підключення
             </div>
-            <div style="padding:12px;background:#f0fdf4;border-radius:12px;border:1px solid #bbf7d0;margin-bottom:12px">
-                <div style="font-size:12px;color:#166534;margin-bottom:8px">
-                    <strong>SendPulse</strong> об'єднує Telegram, Viber, WhatsApp, Instagram, Facebook в одному місці.
-                </div>
-                <div id="sendpulse-status" style="font-size:12px"><span style="color:#9ca3af">Не підключено</span></div>
+            
+            <div style="padding:10px 12px;background:#eff6ff;border-radius:8px;border:1px solid #bfdbfe;margin-bottom:16px;font-size:12px;color:#1e40af;line-height:1.5">
+                <strong>Без посередників.</strong> Кожен канал підключається напряму через офіційне API. Ваші дані не проходять через треті сервіси.
             </div>
-            <div id="sendpulse-config" style="padding:12px;background:#f9fafb;border-radius:12px;border:1px solid #e5e7eb">
-                <div style="margin-bottom:12px">
-                    <div style="font-size:12px;font-weight:600;color:#374151;margin-bottom:8px">API ключі SendPulse</div>
-                    <div style="display:grid;gap:8px">
-                        <input type="text" id="sp-api-id" placeholder="API User ID" style="padding:8px 10px;border:1px solid #e5e7eb;border-radius:6px;font-size:12px">
-                        <input type="password" id="sp-api-secret" placeholder="API Secret" style="padding:8px 10px;border:1px solid #e5e7eb;border-radius:6px;font-size:12px">
+            
+            <!-- ===== TELEGRAM BOT ===== -->
+            <div style="padding:16px;background:#f9fafb;border-radius:12px;border:1px solid #e5e7eb;margin-bottom:12px">
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+                    <div style="width:36px;height:36px;background:linear-gradient(135deg,#0088cc,#0077b5);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;color:#fff;flex-shrink:0">📱</div>
+                    <div style="flex:1">
+                        <div style="font-size:14px;font-weight:600;color:#1f2937">Telegram Bot</div>
+                        <div style="font-size:11px;color:#6b7280" id="tg-bot-status">Не підключено</div>
                     </div>
+                    <div id="tg-bot-indicator" style="width:10px;height:10px;border-radius:50%;background:#d1d5db"></div>
                 </div>
-                <div style="margin-bottom:12px">
-                    <div style="font-size:12px;font-weight:600;color:#374151;margin-bottom:8px">Webhook URL</div>
-                    <div style="display:flex;gap:4px">
-                        <input type="text" id="sp-webhook-url" readonly style="flex:1;padding:8px 10px;border:1px solid #e5e7eb;border-radius:6px;font-size:11px;background:#fff;color:#6b7280">
-                        <button class="btn btn-s" onclick="copySendPulseWebhook()" title="Копіювати">📋</button>
+                <div style="display:grid;gap:8px;margin-bottom:12px">
+                    <input type="text" id="direct-tg-bot-token" placeholder="Bot Token від @BotFather" style="padding:10px 12px;border:1px solid #e5e7eb;border-radius:8px;font-size:13px;font-family:monospace">
+                </div>
+                <div style="display:flex;gap:8px;margin-bottom:12px">
+                    <button class="btn btn-p" onclick="saveDirectTelegram()" style="flex:1">Підключити</button>
+                    <button class="btn btn-s" onclick="testDirectTelegram()">Тест</button>
+                </div>
+                <div id="tg-bot-webhook-info" style="display:none;padding:10px;background:#f0fdf4;border-radius:8px;border:1px solid #bbf7d0;font-size:11px;color:#166534">
+                    <div style="font-weight:600;margin-bottom:4px">✓ Бот підключено</div>
+                    <div>Webhook: <span id="tg-bot-webhook-url" style="font-family:monospace">—</span></div>
+                    <div style="margin-top:4px">Бот: <span id="tg-bot-name">—</span></div>
+                </div>
+                <details style="margin-top:8px">
+                    <summary style="cursor:pointer;font-size:12px;font-weight:500;color:#6b7280">Як отримати Bot Token?</summary>
+                    <div style="margin-top:8px;font-size:11px;color:#6b7280;line-height:1.6">
+                        1. Відкрийте <a href="https://t.me/BotFather" target="_blank" style="color:#0088cc">@BotFather</a> в Telegram<br>
+                        2. Надішліть /newbot і дайте назву<br>
+                        3. Скопіюйте токен і вставте вище<br>
+                        4. Натисніть "Підключити" — webhook встановиться автоматично
                     </div>
-                </div>
-                <div style="margin-bottom:12px">
-                    <div style="font-size:12px;font-weight:600;color:#374151;margin-bottom:8px">Канали</div>
-                    <div style="display:grid;gap:6px">
-                        <label style="display:flex;align-items:center;gap:8px;font-size:12px;cursor:pointer"><input type="checkbox" id="sp-ch-telegram" checked style="accent-color:#22c55e"> 📱 Telegram</label>
-                        <label style="display:flex;align-items:center;gap:8px;font-size:12px;cursor:pointer"><input type="checkbox" id="sp-ch-viber" style="accent-color:#22c55e"> 💬 Viber</label>
-                        <label style="display:flex;align-items:center;gap:8px;font-size:12px;cursor:pointer"><input type="checkbox" id="sp-ch-whatsapp" style="accent-color:#22c55e"> 💚 WhatsApp</label>
-                        <label style="display:flex;align-items:center;gap:8px;font-size:12px;cursor:pointer"><input type="checkbox" id="sp-ch-instagram" style="accent-color:#22c55e"> 📷 Instagram</label>
-                        <label style="display:flex;align-items:center;gap:8px;font-size:12px;cursor:pointer"><input type="checkbox" id="sp-ch-facebook" style="accent-color:#22c55e"> 👤 Facebook</label>
+                </details>
+            </div>
+            
+            <!-- ===== VIBER ===== -->
+            <div style="padding:16px;background:#f9fafb;border-radius:12px;border:1px solid #e5e7eb;margin-bottom:12px">
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+                    <div style="width:36px;height:36px;background:linear-gradient(135deg,#7360f2,#665af0);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;color:#fff;flex-shrink:0">💬</div>
+                    <div style="flex:1">
+                        <div style="font-size:14px;font-weight:600;color:#1f2937">Viber Bot</div>
+                        <div style="font-size:11px;color:#6b7280" id="viber-bot-status">Не підключено</div>
                     </div>
+                    <div id="viber-bot-indicator" style="width:10px;height:10px;border-radius:50%;background:#d1d5db"></div>
                 </div>
-                <div style="margin-bottom:12px">
-                    <div style="display:grid;gap:6px">
-                        <label style="display:flex;align-items:center;gap:8px;font-size:12px;cursor:pointer"><input type="checkbox" id="sp-auto-create" checked style="accent-color:#22c55e"> Авто-створення лідів</label>
-                        <label style="display:flex;align-items:center;gap:8px;font-size:12px;cursor:pointer"><input type="checkbox" id="sp-notify" checked style="accent-color:#22c55e"> Сповіщати менеджера</label>
+                <div style="display:grid;gap:8px;margin-bottom:12px">
+                    <input type="text" id="direct-viber-token" placeholder="Viber Auth Token" style="padding:10px 12px;border:1px solid #e5e7eb;border-radius:8px;font-size:13px;font-family:monospace">
+                </div>
+                <div style="display:flex;gap:8px;margin-bottom:12px">
+                    <button class="btn btn-p" onclick="saveDirectViber()" style="flex:1">Підключити</button>
+                    <button class="btn btn-s" onclick="testDirectViber()">Тест</button>
+                </div>
+                <details>
+                    <summary style="cursor:pointer;font-size:12px;font-weight:500;color:#6b7280">Як отримати Viber Token?</summary>
+                    <div style="margin-top:8px;font-size:11px;color:#6b7280;line-height:1.6">
+                        1. Зайдіть на <a href="https://partners.viber.com/" target="_blank" style="color:#7360f2">partners.viber.com</a><br>
+                        2. Створіть бота (Create Bot Account)<br>
+                        3. Скопіюйте Auth Token
                     </div>
+                </details>
+            </div>
+            
+            <!-- ===== WHATSAPP ===== -->
+            <div style="padding:16px;background:#f9fafb;border-radius:12px;border:1px solid #e5e7eb;margin-bottom:12px">
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+                    <div style="width:36px;height:36px;background:linear-gradient(135deg,#25d366,#128c7e);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;color:#fff;flex-shrink:0">💚</div>
+                    <div style="flex:1">
+                        <div style="font-size:14px;font-weight:600;color:#1f2937">WhatsApp Business API</div>
+                        <div style="font-size:11px;color:#6b7280" id="wa-bot-status">Не підключено</div>
+                    </div>
+                    <div id="wa-bot-indicator" style="width:10px;height:10px;border-radius:50%;background:#d1d5db"></div>
                 </div>
-                <div style="display:flex;gap:8px">
-                    <button class="btn btn-p" onclick="saveSendPulseSettings()" style="flex:1">Зберегти</button>
-                    <button class="btn btn-s" onclick="testSendPulseConnection()" title="Тест">✓</button>
+                <div style="display:grid;gap:8px;margin-bottom:12px">
+                    <input type="text" id="direct-wa-phone-id" placeholder="Phone Number ID" style="padding:10px 12px;border:1px solid #e5e7eb;border-radius:8px;font-size:13px;font-family:monospace">
+                    <input type="text" id="direct-wa-token" placeholder="Permanent Access Token" style="padding:10px 12px;border:1px solid #e5e7eb;border-radius:8px;font-size:13px;font-family:monospace">
+                    <input type="text" id="direct-wa-verify" placeholder="Verify Token (для webhook)" style="padding:10px 12px;border:1px solid #e5e7eb;border-radius:8px;font-size:13px;font-family:monospace">
+                </div>
+                <div style="display:flex;gap:8px;margin-bottom:12px">
+                    <button class="btn btn-p" onclick="saveDirectWhatsApp()" style="flex:1">Підключити</button>
+                    <button class="btn btn-s" onclick="testDirectWhatsApp()">Тест</button>
+                </div>
+                <details>
+                    <summary style="cursor:pointer;font-size:12px;font-weight:500;color:#6b7280">Як підключити WhatsApp?</summary>
+                    <div style="margin-top:8px;font-size:11px;color:#6b7280;line-height:1.6">
+                        1. Зайдіть на <a href="https://developers.facebook.com/" target="_blank" style="color:#25d366">developers.facebook.com</a><br>
+                        2. Створіть App → WhatsApp → WhatsApp Business<br>
+                        3. Отримайте Phone Number ID та Access Token<br>
+                        4. Придумайте Verify Token (будь-який рядок)<br>
+                        5. Webhook URL: <span style="font-family:monospace" id="wa-webhook-display">—</span>
+                    </div>
+                </details>
+            </div>
+            
+            <!-- ===== INSTAGRAM ===== -->
+            <div style="padding:16px;background:#f9fafb;border-radius:12px;border:1px solid #e5e7eb;margin-bottom:12px">
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+                    <div style="width:36px;height:36px;background:linear-gradient(135deg,#e4405f,#c13584);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;color:#fff;flex-shrink:0">📷</div>
+                    <div style="flex:1">
+                        <div style="font-size:14px;font-weight:600;color:#1f2937">Instagram Direct</div>
+                        <div style="font-size:11px;color:#6b7280" id="ig-bot-status">Не підключено</div>
+                    </div>
+                    <div id="ig-bot-indicator" style="width:10px;height:10px;border-radius:50%;background:#d1d5db"></div>
+                </div>
+                <div style="display:grid;gap:8px;margin-bottom:12px">
+                    <input type="text" id="direct-ig-page-id" placeholder="Instagram Business Account ID" style="padding:10px 12px;border:1px solid #e5e7eb;border-radius:8px;font-size:13px;font-family:monospace">
+                    <input type="text" id="direct-ig-token" placeholder="Page Access Token" style="padding:10px 12px;border:1px solid #e5e7eb;border-radius:8px;font-size:13px;font-family:monospace">
+                </div>
+                <div style="display:flex;gap:8px;margin-bottom:12px">
+                    <button class="btn btn-p" onclick="saveDirectInstagram()" style="flex:1">Підключити</button>
+                    <button class="btn btn-s" onclick="testDirectInstagram()">Тест</button>
+                </div>
+                <details>
+                    <summary style="cursor:pointer;font-size:12px;font-weight:500;color:#6b7280">Як підключити Instagram?</summary>
+                    <div style="margin-top:8px;font-size:11px;color:#6b7280;line-height:1.6">
+                        1. Потрібен Instagram Business акаунт + Facebook Page<br>
+                        2. Зайдіть на <a href="https://developers.facebook.com/" target="_blank" style="color:#e4405f">developers.facebook.com</a><br>
+                        3. Створіть App → Instagram → Messaging<br>
+                        4. Отримайте Page Access Token<br>
+                        5. Використовує те ж API що й WhatsApp (Meta Graph API)
+                    </div>
+                </details>
+            </div>
+            
+            <!-- ===== FACEBOOK MESSENGER ===== -->
+            <div style="padding:16px;background:#f9fafb;border-radius:12px;border:1px solid #e5e7eb;margin-bottom:12px">
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+                    <div style="width:36px;height:36px;background:linear-gradient(135deg,#1877f2,#0b5fcc);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;color:#fff;flex-shrink:0">👤</div>
+                    <div style="flex:1">
+                        <div style="font-size:14px;font-weight:600;color:#1f2937">Facebook Messenger</div>
+                        <div style="font-size:11px;color:#6b7280" id="fb-bot-status">Не підключено</div>
+                    </div>
+                    <div id="fb-bot-indicator" style="width:10px;height:10px;border-radius:50%;background:#d1d5db"></div>
+                </div>
+                <div style="display:grid;gap:8px;margin-bottom:12px">
+                    <input type="text" id="direct-fb-page-id" placeholder="Facebook Page ID" style="padding:10px 12px;border:1px solid #e5e7eb;border-radius:8px;font-size:13px;font-family:monospace">
+                    <input type="text" id="direct-fb-token" placeholder="Page Access Token" style="padding:10px 12px;border:1px solid #e5e7eb;border-radius:8px;font-size:13px;font-family:monospace">
+                </div>
+                <div style="display:flex;gap:8px;margin-bottom:12px">
+                    <button class="btn btn-p" onclick="saveDirectFacebook()" style="flex:1">Підключити</button>
+                    <button class="btn btn-s" onclick="testDirectFacebook()">Тест</button>
                 </div>
             </div>
+            
+            <!-- Global settings -->
+            <div style="padding:16px;background:#fff7ed;border-radius:12px;border:1px solid #fed7aa;margin-bottom:12px">
+                <div style="font-size:13px;font-weight:600;color:#9a3412;margin-bottom:8px">⚡ Загальні налаштування</div>
+                <div style="display:grid;gap:6px">
+                    <label style="display:flex;align-items:center;gap:8px;font-size:12px;cursor:pointer"><input type="checkbox" id="direct-auto-create" checked style="accent-color:#22c55e"> Автоматично створювати лідів з нових чатів</label>
+                    <label style="display:flex;align-items:center;gap:8px;font-size:12px;cursor:pointer"><input type="checkbox" id="direct-notify" checked style="accent-color:#22c55e"> Сповіщати менеджера про нові повідомлення</label>
+                    <label style="display:flex;align-items:center;gap:8px;font-size:12px;cursor:pointer"><input type="checkbox" id="direct-save-history" checked style="accent-color:#22c55e"> Зберігати історію чату</label>
+                    <label style="display:flex;align-items:center;gap:8px;font-size:12px;cursor:pointer"><input type="checkbox" id="direct-ai-assist" style="accent-color:#22c55e"> AI автовідповідач (коли менеджер не онлайн)</label>
+                </div>
+            </div>
+            
+            <!-- SendPulse fallback (legacy) -->
+            <details style="margin-top:8px">
+                <summary style="cursor:pointer;font-size:12px;font-weight:500;color:#9ca3af">Або підключити через SendPulse (legacy)</summary>
+                <div id="sendpulse-legacy-config" style="margin-top:12px;padding:12px;background:#f9fafb;border-radius:12px;border:1px solid #e5e7eb">
+                    <div style="margin-bottom:12px">
+                        <div style="font-size:12px;font-weight:600;color:#374151;margin-bottom:8px">API ключі SendPulse</div>
+                        <div style="display:grid;gap:8px">
+                            <input type="text" id="sp-api-id" placeholder="API User ID" style="padding:8px 10px;border:1px solid #e5e7eb;border-radius:6px;font-size:12px">
+                            <input type="password" id="sp-api-secret" placeholder="API Secret" style="padding:8px 10px;border:1px solid #e5e7eb;border-radius:6px;font-size:12px">
+                        </div>
+                    </div>
+                    <div style="margin-bottom:12px">
+                        <div style="font-size:12px;font-weight:600;color:#374151;margin-bottom:8px">Webhook URL</div>
+                        <div style="display:flex;gap:4px">
+                            <input type="text" id="sp-webhook-url" readonly style="flex:1;padding:8px 10px;border:1px solid #e5e7eb;border-radius:6px;font-size:11px;background:#fff;color:#6b7280">
+                            <button class="btn btn-s" onclick="copySendPulseWebhook()" title="Копіювати">📋</button>
+                        </div>
+                    </div>
+                    <div style="margin-bottom:12px">
+                        <div style="font-size:12px;font-weight:600;color:#374151;margin-bottom:8px">Канали</div>
+                        <div style="display:grid;gap:6px">
+                            <label style="display:flex;align-items:center;gap:8px;font-size:12px;cursor:pointer"><input type="checkbox" id="sp-ch-telegram" checked style="accent-color:#22c55e"> 📱 Telegram</label>
+                            <label style="display:flex;align-items:center;gap:8px;font-size:12px;cursor:pointer"><input type="checkbox" id="sp-ch-viber" style="accent-color:#22c55e"> 💬 Viber</label>
+                            <label style="display:flex;align-items:center;gap:8px;font-size:12px;cursor:pointer"><input type="checkbox" id="sp-ch-whatsapp" style="accent-color:#22c55e"> 💚 WhatsApp</label>
+                            <label style="display:flex;align-items:center;gap:8px;font-size:12px;cursor:pointer"><input type="checkbox" id="sp-ch-instagram" style="accent-color:#22c55e"> 📷 Instagram</label>
+                            <label style="display:flex;align-items:center;gap:8px;font-size:12px;cursor:pointer"><input type="checkbox" id="sp-ch-facebook" style="accent-color:#22c55e"> 👤 Facebook</label>
+                        </div>
+                    </div>
+                    <div style="margin-bottom:12px">
+                        <div style="display:grid;gap:6px">
+                            <label style="display:flex;align-items:center;gap:8px;font-size:12px;cursor:pointer"><input type="checkbox" id="sp-auto-create" checked style="accent-color:#22c55e"> Авто-створення лідів</label>
+                            <label style="display:flex;align-items:center;gap:8px;font-size:12px;cursor:pointer"><input type="checkbox" id="sp-notify" checked style="accent-color:#22c55e"> Сповіщати менеджера</label>
+                        </div>
+                    </div>
+                    <div style="display:flex;gap:8px">
+                        <button class="btn btn-p" onclick="saveSendPulseSettings()" style="flex:1">Зберегти</button>
+                        <button class="btn btn-s" onclick="testSendPulseConnection()" title="Тест">✓</button>
+                    </div>
+                </div>
+            </details>
         </div>
         </div><!-- /stab-content-integrations -->
     </div>
@@ -4677,6 +5022,9 @@ function openSettingsPanel(){
     
     // SendPulse
     loadSendPulseSettings();
+    
+    // Direct integrations
+    loadDirectIntegrations();
     
     renderColorPicker();
     
@@ -10001,10 +10349,15 @@ function closeModal(){
 function switchTab(t){
     document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
     document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));
-    document.querySelector(`.tab[onclick="switchTab('${t}')"]`).classList.add('active');
-    document.getElementById('t-'+t).classList.add('active');
+    document.querySelector(`.tab[onclick="switchTab('${t}')"]`)?.classList.add('active');
+    document.getElementById('t-'+t)?.classList.add('active');
     if(t === 'chat' && editing) {
-        loadLeadMessages(editing).then(messages => renderLeadChat(messages, 'lead-chat-messages'));
+        const lead = leads.find(l => l.id === editing);
+        if (lead) {
+            initOmniChat(lead);
+            if (messageUnsub) messageUnsub();
+            messageUnsub = startMessageListener(editing);
+        }
     }
 }
 function resetForm(){
@@ -10428,11 +10781,316 @@ function qAction(a){if(!editing)return;closeModal();taskAction(editing,a==='call
 // ===== IMPORT/EXPORT =====
 function exportXLS(){
     if(!leads.length){showToast('Немає даних для експорту');return;}
-    const data=leads.map(l=>({Телеграм:l.tg,Телефон:l.phone,Бізнес:l.biz,Джерело:SRC[l.source]||l.source,Статус:ST[l.status]||l.status,Консультація:l.consult,Дзвінки:l.calls,SMS:l.sms,'Наступна дія':l.nextDate,Завдаток:l.finDep,'Повна сума':l.finTotal,Примітки:l.notes}));
-    const ws=XLSX.utils.json_to_sheet(data);
-    const wb=XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb,ws,'Leads');
-    XLSX.writeFile(wb,'TALKO_CRM_'+today()+'.xlsx');
+    
+    const getAssigneeEmail = (id) => {
+        if(!id) return '';
+        const m = teamMembers.find(t => t.id === id);
+        return m ? m.email : id;
+    };
+    
+    const getFunnelName = (fid) => {
+        const funnels = getOrgFunnels();
+        const f = funnels.find(x => x.id === fid);
+        return f ? f.name : (fid || 'За замовчуванням');
+    };
+    
+    const data = filterLeadsWithFunnelAndAssignee(leads).map(l => ({
+        'ID': l.id || '',
+        'Telegram': l.tg || '',
+        'Телефон': l.phone || '',
+        'Email': l.email || '',
+        'Viber': l.viber || '',
+        'WhatsApp': l.whatsapp || '',
+        'Основний канал': l.primaryChannel || '',
+        'Бізнес': l.biz || '',
+        'Джерело': SRC[l.source] || l.source || '',
+        'Воронка': getFunnelName(l.funnelId),
+        'Статус (код)': l.status || '',
+        'Статус': getStatusName(l.status, l.funnelId),
+        'Відповідальний': getAssigneeEmail(l.assignedTo),
+        'Створено': l.created ? new Date(l.created).toLocaleString('uk-UA') : '',
+        'Дата статусу': l.stageDate ? new Date(l.stageDate).toLocaleString('uk-UA') : '',
+        'Наступна дія': l.nextAction || '',
+        'Дата дії': l.nextDate || '',
+        'Час дії': l.nextTime || '',
+        'Консультація': l.consult || '',
+        'Повторна': l.repeatCount || 0,
+        'Дзвінки': l.calls || 0,
+        'SMS': l.sms || 0,
+        'No-show': l.noshow || 0,
+        'Причина відмови': l.failReason || '',
+        'Завдаток': l.finDep || '',
+        'Валюта завдатку': l.finDepCur || '',
+        'Дата завдатку': l.finDepDate || '',
+        'Повна сума': l.finTotal || '',
+        'Валюта суми': l.finTotalCur || '',
+        'Дата оплати': l.finPaidDate || '',
+        'Примітки': (l.notes || '').replace(/[\n\r]/g, ' '),
+        'Звіт': (l.report || '').replace(/[\n\r]/g, ' '),
+        'Посилання запис': l.linkRecord || '',
+        'Посилання звіт': l.linkReport || '',
+        'Посилання КП': l.linkKP || '',
+        'Посилання договір': l.linkContract || '',
+        'К-ть записів в лозі': (l.log || []).length,
+        'Останній запис лога': (l.log && l.log.length) ? (l.log[l.log.length-1].type + ': ' + l.log[l.log.length-1].text + ' (' + new Date(l.log[l.log.length-1].date).toLocaleString('uk-UA') + ')') : ''
+    }));
+    
+    const ws = XLSX.utils.json_to_sheet(data);
+    
+    // Автоширина колонок
+    const colWidths = Object.keys(data[0] || {}).map(key => ({
+        wch: Math.max(key.length, ...data.map(r => String(r[key] || '').length).slice(0, 50)) + 2
+    }));
+    ws['!cols'] = colWidths.map(w => ({ wch: Math.min(w.wch, 50) }));
+    
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Ліди');
+    
+    // Додаємо лист зі статистикою по статусах
+    const statusStats = {};
+    data.forEach(row => {
+        const st = row['Статус'] || 'Без статусу';
+        statusStats[st] = (statusStats[st] || 0) + 1;
+    });
+    const statsData = Object.entries(statusStats).map(([status, count]) => ({
+        'Статус': status,
+        'Кількість': count,
+        '% від загального': Math.round(count / data.length * 100) + '%'
+    }));
+    statsData.push({ 'Статус': 'ВСЬОГО', 'Кількість': data.length, '% від загального': '100%' });
+    const wsStats = XLSX.utils.json_to_sheet(statsData);
+    wsStats['!cols'] = [{ wch: 25 }, { wch: 12 }, { wch: 16 }];
+    XLSX.utils.book_append_sheet(wb, wsStats, 'Статистика');
+    
+    XLSX.writeFile(wb, 'TALKO_CRM_Full_' + today() + '.xlsx');
+    showToast(`Експортовано ${data.length} лідів (повна база + статистика)`);
+}
+
+// ===== АНАЛІТИКА ДІЙ КОРИСТУВАЧІВ =====
+function openActivityReport() {
+    const dateStr = today();
+    showActivityModal(dateStr);
+}
+
+function showActivityModal(dateStr) {
+    // Збираємо всі дії з логів лідів за обрану дату
+    const activities = collectActivities(dateStr);
+    
+    const modal = document.createElement('div');
+    modal.id = 'activity-modal';
+    modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:500;display:flex;align-items:center;justify-content:center;padding:20px';
+    
+    const getAssigneeEmail = (id) => {
+        if(!id) return 'Система';
+        const m = teamMembers.find(t => t.id === id);
+        return m ? m.email : id;
+    };
+    
+    // Групуємо по користувачах
+    const byUser = {};
+    activities.forEach(a => {
+        const user = getAssigneeEmail(a.assignedTo);
+        if(!byUser[user]) byUser[user] = [];
+        byUser[user].push(a);
+    });
+    
+    // Зведення по типах дій
+    const summary = {};
+    activities.forEach(a => {
+        const key = a.type;
+        summary[key] = (summary[key] || 0) + 1;
+    });
+    
+    let usersHTML = '';
+    Object.entries(byUser).sort((a,b) => b[1].length - a[1].length).forEach(([user, acts]) => {
+        const typeCounts = {};
+        acts.forEach(a => { typeCounts[a.type] = (typeCounts[a.type] || 0) + 1; });
+        const typeStr = Object.entries(typeCounts).map(([t, c]) => `<span style="background:#f0fdf4;color:#166534;padding:2px 8px;border-radius:4px;font-size:11px;margin-right:4px">${actTypeName(t)}: ${c}</span>`).join('');
+        
+        usersHTML += `
+            <div style="padding:14px;background:#f9fafb;border-radius:10px;margin-bottom:8px">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+                    <div style="font-weight:600;font-size:14px;color:#1f2937">${escapeHtml(user)}</div>
+                    <div style="font-size:13px;font-weight:600;color:#22c55e">${acts.length} дій</div>
+                </div>
+                <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px">${typeStr}</div>
+                <div style="max-height:200px;overflow-y:auto">
+                    ${acts.slice(0, 50).map(a => `
+                        <div style="display:flex;gap:8px;padding:6px 0;border-bottom:1px solid #e5e7eb;font-size:12px">
+                            <span style="color:#6b7280;min-width:50px">${a.time}</span>
+                            <span style="background:${actTypeColor(a.type)};color:#fff;padding:1px 6px;border-radius:3px;font-size:10px;min-width:60px;text-align:center">${actTypeName(a.type)}</span>
+                            <span style="color:#374151;flex:1">${escapeHtml(a.leadName)} — ${escapeHtml(a.text.substring(0, 80))}</span>
+                        </div>
+                    `).join('')}
+                    ${acts.length > 50 ? `<div style="text-align:center;color:#6b7280;padding:8px;font-size:12px">... ще ${acts.length - 50} дій</div>` : ''}
+                </div>
+            </div>
+        `;
+    });
+    
+    if(!activities.length) {
+        usersHTML = '<div style="text-align:center;padding:40px;color:#6b7280">Немає дій за обрану дату</div>';
+    }
+    
+    const summaryHTML = Object.entries(summary).map(([t, c]) => 
+        `<div style="text-align:center;padding:10px 14px;background:#fff;border-radius:8px;border:1px solid #e5e7eb">
+            <div style="font-size:20px;font-weight:700;color:${actTypeColor(t)}">${c}</div>
+            <div style="font-size:11px;color:#6b7280">${actTypeName(t)}</div>
+        </div>`
+    ).join('');
+    
+    modal.innerHTML = `
+        <div style="background:#fff;border-radius:16px;width:100%;max-width:700px;max-height:85vh;overflow:hidden;display:flex;flex-direction:column">
+            <div style="padding:20px;border-bottom:1px solid #e5e7eb;display:flex;justify-content:space-between;align-items:center">
+                <div>
+                    <div style="font-size:18px;font-weight:600;color:#1f2937">Аналітика дій</div>
+                    <div style="font-size:13px;color:#6b7280;margin-top:2px">Всього: ${activities.length} дій</div>
+                </div>
+                <div style="display:flex;gap:8px;align-items:center">
+                    <input type="date" id="activity-date" value="${dateStr}" 
+                        onchange="document.getElementById('activity-modal').remove();showActivityModal(this.value)"
+                        style="padding:8px 12px;border:1px solid #e5e7eb;border-radius:8px;font-size:13px">
+                    <button onclick="exportActivityXLS('${dateStr}')" style="padding:8px 16px;background:#22c55e;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap">
+                        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:4px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                        Excel
+                    </button>
+                    <button onclick="this.closest('#activity-modal').remove()" style="width:36px;height:36px;border:none;background:#f3f4f6;border-radius:50%;cursor:pointer;font-size:20px;color:#6b7280">×</button>
+                </div>
+            </div>
+            ${summaryHTML ? `<div style="padding:16px 20px;display:flex;gap:8px;flex-wrap:wrap;background:#f9fafb;border-bottom:1px solid #e5e7eb">${summaryHTML}</div>` : ''}
+            <div style="padding:20px;overflow-y:auto;flex:1">
+                ${usersHTML}
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    modal.addEventListener('click', (e) => { if(e.target === modal) modal.remove(); });
+}
+
+function collectActivities(dateStr) {
+    const activities = [];
+    const targetDate = dateStr; // YYYY-MM-DD
+    
+    leads.forEach(l => {
+        const logs = l.log || [];
+        const leadName = l.tg || l.phone || l.email || l.biz || 'Без імені';
+        
+        logs.forEach(entry => {
+            if(!entry.date) return;
+            const entryDate = entry.date.substring(0, 10); // YYYY-MM-DD
+            if(entryDate === targetDate) {
+                const d = new Date(entry.date);
+                activities.push({
+                    time: d.toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit' }),
+                    timestamp: entry.date,
+                    type: entry.type || 'note',
+                    text: entry.text || '',
+                    leadId: l.id,
+                    leadName: leadName,
+                    leadStatus: getStatusName(l.status, l.funnelId),
+                    leadBiz: l.biz || '',
+                    assignedTo: l.assignedTo || null,
+                    funnelName: (() => { const funnels = getOrgFunnels(); const f = funnels.find(x => x.id === l.funnelId); return f ? f.name : ''; })()
+                });
+            }
+        });
+    });
+    
+    // Сортуємо по часу
+    activities.sort((a, b) => a.timestamp.localeCompare(b.timestamp));
+    return activities;
+}
+
+function actTypeName(type) {
+    return { call: 'Дзвінок', sms: 'SMS', note: 'Нотатка', status: 'Статус', assign: 'Призначення', email: 'Email', meeting: 'Зустріч' }[type] || type;
+}
+
+function actTypeColor(type) {
+    return { call: '#3b82f6', sms: '#22c55e', note: '#8b5cf6', status: '#f97316', assign: '#06b6d4', email: '#eab308', meeting: '#ec4899' }[type] || '#6b7280';
+}
+
+function exportActivityXLS(dateStr) {
+    const activities = collectActivities(dateStr);
+    if(!activities.length) { showToast('Немає дій для експорту'); return; }
+    
+    const getAssigneeEmail = (id) => {
+        if(!id) return '';
+        const m = teamMembers.find(t => t.id === id);
+        return m ? m.email : id;
+    };
+    
+    // Лист 1: Детальний лог дій
+    const detailData = activities.map(a => ({
+        'Час': a.time,
+        'Тип дії': actTypeName(a.type),
+        'Опис': a.text,
+        'Лід': a.leadName,
+        'Бізнес': a.leadBiz,
+        'Статус ліда': a.leadStatus,
+        'Воронка': a.funnelName,
+        'Відповідальний': getAssigneeEmail(a.assignedTo)
+    }));
+    
+    const ws1 = XLSX.utils.json_to_sheet(detailData);
+    ws1['!cols'] = [{ wch: 8 }, { wch: 14 }, { wch: 40 }, { wch: 20 }, { wch: 20 }, { wch: 16 }, { wch: 16 }, { wch: 25 }];
+    
+    // Лист 2: Зведення по користувачах
+    const byUser = {};
+    activities.forEach(a => {
+        const user = getAssigneeEmail(a.assignedTo) || '(не призначено)';
+        if(!byUser[user]) byUser[user] = { total: 0, call: 0, sms: 0, note: 0, status: 0, assign: 0, other: 0 };
+        byUser[user].total++;
+        if(byUser[user][a.type] !== undefined) byUser[user][a.type]++;
+        else byUser[user].other++;
+    });
+    
+    const summaryData = Object.entries(byUser).map(([user, s]) => ({
+        'Користувач': user,
+        'Всього дій': s.total,
+        'Дзвінки': s.call,
+        'SMS': s.sms,
+        'Нотатки': s.note,
+        'Зміни статусу': s.status,
+        'Призначення': s.assign,
+        'Інше': s.other
+    }));
+    // Підсумок
+    summaryData.push({
+        'Користувач': 'ВСЬОГО',
+        'Всього дій': activities.length,
+        'Дзвінки': activities.filter(a => a.type === 'call').length,
+        'SMS': activities.filter(a => a.type === 'sms').length,
+        'Нотатки': activities.filter(a => a.type === 'note').length,
+        'Зміни статусу': activities.filter(a => a.type === 'status').length,
+        'Призначення': activities.filter(a => a.type === 'assign').length,
+        'Інше': activities.filter(a => !['call','sms','note','status','assign'].includes(a.type)).length
+    });
+    
+    const ws2 = XLSX.utils.json_to_sheet(summaryData);
+    ws2['!cols'] = [{ wch: 30 }, { wch: 12 }, { wch: 10 }, { wch: 8 }, { wch: 10 }, { wch: 16 }, { wch: 14 }, { wch: 8 }];
+    
+    // Лист 3: По годинах (розподіл активності)
+    const byHour = {};
+    for(let h = 0; h < 24; h++) byHour[h] = 0;
+    activities.forEach(a => {
+        const h = new Date(a.timestamp).getHours();
+        byHour[h]++;
+    });
+    const hourData = Object.entries(byHour).filter(([,c]) => c > 0).map(([h, c]) => ({
+        'Година': h.padStart(2, '0') + ':00',
+        'Кількість дій': c
+    }));
+    
+    const ws3 = XLSX.utils.json_to_sheet(hourData);
+    ws3['!cols'] = [{ wch: 10 }, { wch: 16 }];
+    
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws1, 'Дії детально');
+    XLSX.utils.book_append_sheet(wb, ws2, 'По користувачах');
+    XLSX.utils.book_append_sheet(wb, ws3, 'По годинах');
+    XLSX.writeFile(wb, 'TALKO_Activity_' + dateStr + '.xlsx');
+    showToast(`Експортовано ${activities.length} дій за ${dateStr}`);
 }
 function importXLS(e){
     const file=e.target.files[0];if(!file)return;
@@ -11059,51 +11717,912 @@ function copySendPulseWebhook() {
     navigator.clipboard.writeText(url).then(() => showToast('URL скопійовано'));
 }
 
-// ===== CHAT IN LEAD CARD =====
+// ===== OMNICHANNEL CHAT SYSTEM =====
+let omniCurrentChannel = 'all';
+let omniMessages = [];
+let omniTemplates = [
+    { id: 't1', title: 'Привітання', text: 'Доброго дня! Дякую за звернення. Як можу допомогти?' },
+    { id: 't2', title: 'Підтвердження зустрічі', text: 'Нагадую про нашу зустріч завтра о {{time}}. Підтверджуєте?' },
+    { id: 't3', title: 'Після консультації', text: 'Дякую за консультацію! Надсилаю вам звіт та комерційну пропозицію.' },
+    { id: 't4', title: 'Нагадування', text: 'Доброго дня! Чи є у вас питання по нашій пропозиції? Буду рад допомогти.' },
+    { id: 't5', title: 'Рахунок', text: 'Надсилаю рахунок для оплати. Якщо є питання — пишіть, я на зв\'язку.' }
+];
+
+const CHANNEL_CONFIG = {
+    telegram: { name: 'Telegram', icon: '📱', color: '#0088cc', urlFn: (l) => l.tg ? `https://t.me/${l.tg.replace('@','')}` : l.phone ? `https://t.me/${l.phone}` : null },
+    viber: { name: 'Viber', icon: '💬', color: '#7360f2', urlFn: (l) => { const p = l.viber || l.phone; return p ? `viber://chat?number=${encodeURIComponent(p.replace(/[^+\d]/g,''))}` : null; }},
+    whatsapp: { name: 'WhatsApp', icon: '💚', color: '#25d366', urlFn: (l) => { const p = l.whatsapp || l.phone; return p ? `https://wa.me/${p.replace(/[^+\d]/g,'').replace('+','')}` : null; }},
+    instagram: { name: 'Instagram', icon: '📷', color: '#e4405f', urlFn: (l) => l.instagram ? `https://instagram.com/${l.instagram.replace('@','')}` : null },
+    facebook: { name: 'Facebook', icon: '👤', color: '#1877f2', urlFn: (l) => l.facebookUrl || null },
+    phone: { name: 'Телефон', icon: '📞', color: '#6b7280', urlFn: (l) => l.phone ? `tel:${l.phone}` : null },
+    sms: { name: 'SMS', icon: '💬', color: '#8b5cf6', urlFn: (l) => l.phone ? `sms:${l.phone}` : null },
+    email: { name: 'Email', icon: '📧', color: '#f59e0b', urlFn: (l) => l.email ? `mailto:${l.email}` : null }
+};
+
 async function loadLeadMessages(leadId) {
     if (!currentOrg?.id || !leadId) return [];
     try {
         const snapshot = await db.collection('organizations').doc(currentOrg.id)
-            .collection('messages').where('leadId', '==', leadId).orderBy('createdAt', 'asc').limit(100).get();
+            .collection('messages').where('leadId', '==', leadId).orderBy('createdAt', 'asc').limit(200).get();
         const messages = [];
         snapshot.forEach(doc => messages.push({ id: doc.id, ...doc.data() }));
         return messages;
     } catch(err) { console.error('Load messages:', err); return []; }
 }
 
-function renderLeadChat(messages, containerId) {
-    const container = document.getElementById(containerId);
+function initOmniChat(lead) {
+    if (!lead) return;
+    omniCurrentChannel = 'all';
+    
+    // Build channel tabs
+    const channels = getLeadChannels(lead);
+    const tabsEl = document.getElementById('omni-channels');
+    tabsEl.innerHTML = `
+        <button class="omni-ch-tab active" data-channel="all" onclick="switchChatChannel('all')">
+            <span class="ch-icon">💬</span> Всі
+        </button>
+        ${channels.map(ch => `
+            <button class="omni-ch-tab" data-channel="${ch.id}" onclick="switchChatChannel('${ch.id}')">
+                <span class="ch-icon">${ch.icon}</span> ${ch.name}
+                ${ch.unread ? `<span class="ch-badge">${ch.unread}</span>` : ''}
+            </button>
+        `).join('')}
+    `;
+    
+    // Build open-in-messenger buttons
+    buildOpenButtons(lead);
+    
+    // Build channel pills for input
+    buildChannelPills(lead);
+    
+    // Load and render messages
+    loadLeadMessages(lead.id).then(messages => {
+        omniMessages = messages;
+        renderOmniMessages(messages);
+    });
+    
+    // Show/hide connect section
+    const hasAnyChannel = lead.tg || lead.phone || lead.email || lead.viber || lead.whatsapp;
+    const connectSection = document.getElementById('omni-connect-section');
+    if (connectSection) {
+        connectSection.style.display = hasAnyChannel ? 'none' : 'block';
+        if (!hasAnyChannel) buildConnectGrid();
+    }
+    
+    // Load custom templates
+    loadOrgTemplates();
+}
+
+function getLeadChannels(lead) {
+    const channels = [];
+    if (lead.telegramChatId || lead.tg) channels.push({ id: 'telegram', name: 'Telegram', icon: '📱', unread: 0 });
+    if (lead.viberChatId || lead.viber) channels.push({ id: 'viber', name: 'Viber', icon: '💬', unread: 0 });
+    if (lead.whatsappChatId || lead.whatsapp) channels.push({ id: 'whatsapp', name: 'WhatsApp', icon: '💚', unread: 0 });
+    if (lead.instagramChatId || lead.instagram) channels.push({ id: 'instagram', name: 'Instagram', icon: '📷', unread: 0 });
+    if (lead.facebookChatId) channels.push({ id: 'facebook', name: 'Facebook', icon: '👤', unread: 0 });
+    if (lead.phone) channels.push({ id: 'phone', name: 'Телефон', icon: '📞', unread: 0 });
+    if (lead.email) channels.push({ id: 'email', name: 'Email', icon: '📧', unread: 0 });
+    
+    // Count unread per channel
+    if (omniMessages.length) {
+        omniMessages.filter(m => !m.read && m.direction === 'in').forEach(m => {
+            const ch = channels.find(c => c.id === m.channel);
+            if (ch) ch.unread++;
+        });
+    }
+    
+    return channels;
+}
+
+function buildOpenButtons(lead) {
+    const container = document.getElementById('omni-open-btns');
+    const wrapper = document.getElementById('omni-open-buttons');
+    if (!container || !wrapper) return;
+    
+    const buttons = [];
+    
+    Object.entries(CHANNEL_CONFIG).forEach(([chId, config]) => {
+        const url = config.urlFn(lead);
+        if (!url) return;
+        
+        const classMap = { telegram: 'tg', viber: 'viber', whatsapp: 'wa', instagram: 'ig', facebook: 'fb', phone: 'phone-btn', email: 'email-btn', sms: 'phone-btn' };
+        buttons.push(`
+            <a href="${url}" target="_blank" class="omni-open-btn ${classMap[chId] || ''}" title="Відкрити ${config.name}">
+                <span style="font-size:14px">${config.icon}</span>
+                ${config.name}
+            </a>
+        `);
+    });
+    
+    if (buttons.length) {
+        container.innerHTML = buttons.join('');
+        wrapper.style.display = 'block';
+    } else {
+        wrapper.style.display = 'none';
+    }
+}
+
+function buildChannelPills(lead) {
+    const container = document.getElementById('omni-channel-pills');
     if (!container) return;
-    if (!messages.length) { container.innerHTML = '<div style="text-align:center;padding:20px;color:#9ca3af;font-size:12px">Немає повідомлень</div>'; return; }
-    const icons = {telegram:'📱',viber:'💬',whatsapp:'💚',instagram:'📷',facebook:'👤',phone:'📞'};
-    container.innerHTML = messages.map(m => {
+    
+    const available = [];
+    if (lead.telegramChatId || lead.tg) available.push({ id: 'telegram', name: 'TG', color: '#0088cc' });
+    if (lead.viberChatId || lead.viber) available.push({ id: 'viber', name: 'Viber', color: '#7360f2' });
+    if (lead.whatsappChatId || lead.whatsapp) available.push({ id: 'whatsapp', name: 'WA', color: '#25d366' });
+    if (lead.phone) available.push({ id: 'sms', name: 'SMS', color: '#8b5cf6' });
+    if (lead.email) available.push({ id: 'email', name: 'Email', color: '#f59e0b' });
+    
+    // Default to last channel or first available
+    const defaultCh = lead.lastChannel || (available[0]?.id || 'telegram');
+    
+    container.innerHTML = available.map((ch, i) => `
+        <button class="omni-ch-pill ${ch.id === defaultCh ? 'active' : ''}" data-send-channel="${ch.id}" onclick="selectSendChannel('${ch.id}')">
+            <span class="ch-dot" style="background:${ch.color}"></span>
+            ${ch.name}
+        </button>
+    `).join('');
+    
+    if (!available.length) {
+        container.innerHTML = '<span style="font-size:11px;color:#9ca3af">Немає підключених каналів</span>';
+    }
+}
+
+function selectSendChannel(channelId) {
+    document.querySelectorAll('.omni-ch-pill').forEach(el => el.classList.toggle('active', el.dataset.sendChannel === channelId));
+}
+
+function getActiveSendChannel() {
+    const active = document.querySelector('.omni-ch-pill.active');
+    return active ? active.dataset.sendChannel : null;
+}
+
+function switchChatChannel(channel) {
+    omniCurrentChannel = channel;
+    document.querySelectorAll('.omni-ch-tab').forEach(el => el.classList.toggle('active', el.dataset.channel === channel));
+    
+    const filtered = channel === 'all' ? omniMessages : omniMessages.filter(m => m.channel === channel);
+    renderOmniMessages(filtered);
+}
+
+function renderOmniMessages(messages) {
+    const container = document.getElementById('omni-messages');
+    if (!container) return;
+    
+    if (!messages || !messages.length) {
+        const lead = leads.find(l => l.id === editing);
+        const hasChannels = lead && (lead.tg || lead.phone || lead.email);
+        container.innerHTML = `
+            <div class="omni-empty">
+                <div class="omni-empty-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                </div>
+                <div class="omni-empty-title">${hasChannels ? 'Чат порожній' : 'Підключіть канали'}</div>
+                <div class="omni-empty-text">${hasChannels ? 'Напишіть клієнту першим або очікуйте вхідне повідомлення' : 'Додайте контакти клієнта (Telegram, телефон, email) в основних даних'}</div>
+            </div>
+        `;
+        return;
+    }
+    
+    let html = '';
+    let lastDate = '';
+    
+    messages.forEach(m => {
+        const dt = m.createdAt ? new Date(m.createdAt) : new Date();
+        const dateStr = dt.toLocaleDateString('uk-UA', { day: 'numeric', month: 'long', year: 'numeric' });
+        
+        // Date separator
+        if (dateStr !== lastDate) {
+            html += `<div class="omni-date-sep"><span>${dateStr}</span></div>`;
+            lastDate = dateStr;
+        }
+        
         const isOut = m.direction === 'out';
-        const time = m.createdAt ? new Date(m.createdAt).toLocaleString('uk',{hour:'2-digit',minute:'2-digit',day:'2-digit',month:'2-digit'}) : '';
-        return `<div class="chat-msg ${isOut?'out':'in'}"><div class="chat-msg-header"><span class="chat-msg-channel">${icons[m.channel]||'💬'}</span><span class="chat-msg-sender">${escapeHtml(isOut?'Менеджер':(m.senderName||'Клієнт'))}</span><span class="chat-msg-time">${time}</span></div><div class="chat-msg-text">${escapeHtml(m.text||'')}</div></div>`;
-    }).join('');
+        const time = dt.toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit' });
+        const chConfig = CHANNEL_CONFIG[m.channel] || {};
+        
+        // System messages (status changes, assignments, etc.)
+        if (m.type === 'system' || m.type === 'status') {
+            html += `<div class="omni-msg system">${escapeHtml(m.text || '')}</div>`;
+            return;
+        }
+        
+        html += `
+            <div class="omni-msg ${isOut ? 'out' : 'in'}">
+                ${!isOut ? `<div class="omni-msg-channel"><span class="ch-dot ${m.channel || ''}"></span> ${chConfig.name || m.channel || ''}</div>` : ''}
+                ${m.attachments?.length ? renderAttachments(m.attachments) : ''}
+                <div class="omni-msg-text">${formatMessageText(m.text || '')}</div>
+                <div class="omni-msg-meta">
+                    ${isOut && m.channel ? `<span style="font-size:9px;color:#667781">${chConfig.name || ''}</span>` : ''}
+                    <span class="omni-msg-time">${time}</span>
+                    ${isOut ? `<span class="omni-msg-status ${m.status || 'sent'}">
+                        ${m.status === 'read' ? '<svg viewBox="0 0 16 11" fill="currentColor"><path d="M11.071.653a.457.457 0 0 0-.304-.102.493.493 0 0 0-.381.178l-6.19 7.636-2.011-2.175a.463.463 0 0 0-.336-.171.48.48 0 0 0-.312.085.467.467 0 0 0-.086.724l2.45 2.593c.07.074.17.131.262.131a.384.384 0 0 0 .294-.155l6.551-8.014a.475.475 0 0 0 .063-.473z"/><path d="M14.071.653a.457.457 0 0 0-.304-.102.493.493 0 0 0-.381.178l-6.19 7.636-2.011-2.175a.463.463 0 0 0-.336-.171.48.48 0 0 0-.312.085.467.467 0 0 0-.086.724l2.45 2.593c.07.074.17.131.262.131a.384.384 0 0 0 .294-.155l6.551-8.014a.475.475 0 0 0 .063-.473z"/></svg>' : 
+                        m.status === 'delivered' ? '<svg viewBox="0 0 16 11" fill="currentColor"><path d="M11.071.653a.457.457 0 0 0-.304-.102.493.493 0 0 0-.381.178l-6.19 7.636-2.011-2.175a.463.463 0 0 0-.336-.171.48.48 0 0 0-.312.085.467.467 0 0 0-.086.724l2.45 2.593c.07.074.17.131.262.131a.384.384 0 0 0 .294-.155l6.551-8.014a.475.475 0 0 0 .063-.473z"/><path d="M14.071.653a.457.457 0 0 0-.304-.102.493.493 0 0 0-.381.178l-6.19 7.636"/></svg>' : 
+                        '<svg viewBox="0 0 12 11" fill="currentColor"><path d="M11.071.653a.457.457 0 0 0-.304-.102.493.493 0 0 0-.381.178l-6.19 7.636-2.011-2.175a.463.463 0 0 0-.336-.171.48.48 0 0 0-.312.085.467.467 0 0 0-.086.724l2.45 2.593c.07.074.17.131.262.131a.384.384 0 0 0 .294-.155l6.551-8.014a.475.475 0 0 0 .063-.473z"/></svg>'}
+                    </span>` : ''}
+                </div>
+            </div>
+        `;
+    });
+    
+    container.innerHTML = html;
     container.scrollTop = container.scrollHeight;
 }
 
-async function sendLeadMessage(leadId) {
-    const input = document.getElementById('chat-input');
+function formatMessageText(text) {
+    // Basic formatting: URLs, bold, italic
+    let formatted = escapeHtml(text);
+    // URLs
+    formatted = formatted.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" style="color:#0088cc;text-decoration:underline">$1</a>');
+    // Bold *text*
+    formatted = formatted.replace(/\*([^*]+)\*/g, '<strong>$1</strong>');
+    // Italic _text_
+    formatted = formatted.replace(/_([^_]+)_/g, '<em>$1</em>');
+    return formatted;
+}
+
+function renderAttachments(attachments) {
+    if (!attachments || !attachments.length) return '';
+    return attachments.map(att => {
+        if (att.type === 'image' || att.mimeType?.startsWith('image/')) {
+            return `<div class="omni-msg-attachment"><img src="${escapeHtml(att.url || '')}" alt="Image" loading="lazy" onclick="window.open(this.src)"></div>`;
+        }
+        return `<div class="omni-msg-attachment">
+            <div class="file-attach">
+                <div class="file-icon"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#6b7280" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg></div>
+                <div><div class="file-info">${escapeHtml(att.name || 'File')}</div><div class="file-size">${att.size ? formatFileSize(att.size) : ''}</div></div>
+            </div>
+        </div>`;
+    }).join('');
+}
+
+function formatFileSize(bytes) {
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / 1048576).toFixed(1) + ' MB';
+}
+
+async function sendOmniMessage() {
+    const input = document.getElementById('omni-input');
     if (!input) return;
     const text = input.value.trim();
-    if (!text) return;
-    const lead = leads.find(l => l.id === leadId);
+    if (!text || !editing) return;
+    
+    const lead = leads.find(l => l.id === editing);
     if (!lead) return;
-    const channel = lead.lastChannel || (lead.telegramChatId ? 'telegram' : lead.viberChatId ? 'viber' : null);
-    if (!channel) { showWarning('Клієнт ще не писав в месенджер'); return; }
+    
+    const channel = getActiveSendChannel();
+    if (!channel) { 
+        showWarning('Оберіть канал для відправки'); 
+        return; 
+    }
+    
+    const sendBtn = document.getElementById('omni-send-btn');
     input.disabled = true;
+    if (sendBtn) sendBtn.disabled = true;
+    
+    // Optimistic UI — show message immediately
+    const tempMsg = {
+        id: 'temp_' + Date.now(),
+        leadId: editing,
+        channel: channel,
+        direction: 'out',
+        text: text,
+        createdAt: new Date().toISOString(),
+        status: 'sending',
+        managerId: currentUser?.uid
+    };
+    omniMessages.push(tempMsg);
+    renderOmniMessages(omniCurrentChannel === 'all' ? omniMessages : omniMessages.filter(m => m.channel === omniCurrentChannel));
+    input.value = '';
+    input.style.height = 'auto';
+    
     try {
-        const resp = await fetch(`${SENDPULSE_API_BASE}/sendpulseSend`, {
-            method: 'POST', headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ orgId: currentOrg.id, leadId, channel, text, managerId: currentUser?.uid })
+        // Save to Firestore
+        const msgData = {
+            leadId: editing,
+            channel: channel,
+            direction: 'out',
+            text: text,
+            createdAt: new Date().toISOString(),
+            status: 'sent',
+            managerId: currentUser?.uid,
+            managerEmail: currentUser?.email
+        };
+        
+        const docRef = await db.collection('organizations').doc(currentOrg.id)
+            .collection('messages').add(msgData);
+        
+        // Update temp message
+        const idx = omniMessages.findIndex(m => m.id === tempMsg.id);
+        if (idx >= 0) { omniMessages[idx] = { ...msgData, id: docRef.id }; }
+        
+        // Also try to send via integration (Direct API first, then SendPulse fallback)
+        if (['telegram', 'viber', 'whatsapp', 'instagram', 'facebook'].includes(channel)) {
+            try {
+                // Try direct API first
+                const directResult = await sendViaDirectAPI(channel, text, lead);
+                if (directResult.success) {
+                    await db.collection('organizations').doc(currentOrg.id)
+                        .collection('messages').doc(docRef.id).update({ status: 'delivered', sentVia: 'direct' });
+                } else {
+                    // Fallback to SendPulse
+                    console.log('Direct API failed:', directResult.error, '— trying SendPulse');
+                    const resp = await fetch(`${SENDPULSE_API_BASE}/sendpulseSend`, {
+                        method: 'POST', headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ orgId: currentOrg.id, leadId: editing, channel, text, managerId: currentUser?.uid })
+                    });
+                    const spResult = await resp.json();
+                    if (spResult.success) {
+                        await db.collection('organizations').doc(currentOrg.id)
+                            .collection('messages').doc(docRef.id).update({ status: 'delivered', sentVia: 'sendpulse' });
+                    } else {
+                        // Both failed - show actionable error
+                        showWarning(directResult.error || 'Не вдалося надіслати. Перевірте підключення каналу.');
+                    }
+                }
+            } catch(sendErr) { console.warn('Send via integration failed:', sendErr); }
+        }
+        
+        // Add to comm log
+        addLog(lead, channel === 'phone' ? 'call' : 'sms', `[${CHANNEL_CONFIG[channel]?.name || channel}] ${text.substring(0, 100)}`);
+        
+        // Update last channel
+        lead.lastChannel = channel;
+        
+        renderOmniMessages(omniCurrentChannel === 'all' ? omniMessages : omniMessages.filter(m => m.channel === omniCurrentChannel));
+        
+    } catch(err) { 
+        showError('Помилка: ' + err.message);
+        // Remove optimistic message on error
+        omniMessages = omniMessages.filter(m => m.id !== tempMsg.id);
+        renderOmniMessages(omniCurrentChannel === 'all' ? omniMessages : omniMessages.filter(m => m.channel === omniCurrentChannel));
+    } finally { 
+        input.disabled = false; 
+        if (sendBtn) sendBtn.disabled = false;
+        input.focus(); 
+    }
+}
+
+// Keep old function for backward compatibility
+async function sendLeadMessage(leadId) { 
+    editing = leadId;
+    sendOmniMessage(); 
+}
+
+function renderLeadChat(messages, containerId) {
+    omniMessages = messages || [];
+    renderOmniMessages(omniMessages);
+}
+
+function autoResizeOmni(el) {
+    el.style.height = 'auto';
+    el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+}
+
+// Quick Reply Templates
+function toggleOmniTemplates() {
+    const el = document.getElementById('omni-templates');
+    if (el) el.classList.toggle('active');
+}
+
+function loadOrgTemplates() {
+    // Load from org settings if available
+    const orgTpl = currentOrg?.settings?.messageTemplates;
+    if (orgTpl && Array.isArray(orgTpl) && orgTpl.length) {
+        omniTemplates = orgTpl;
+    }
+    
+    const container = document.getElementById('omni-templates');
+    if (!container) return;
+    
+    container.innerHTML = omniTemplates.map(t => `
+        <div class="omni-template-item" onclick="insertTemplate('${t.id}')">
+            <div class="tpl-title">${escapeHtml(t.title)}</div>
+            <div class="tpl-preview">${escapeHtml(t.text.substring(0, 60))}${t.text.length > 60 ? '...' : ''}</div>
+        </div>
+    `).join('');
+}
+
+function insertTemplate(templateId) {
+    const tpl = omniTemplates.find(t => t.id === templateId);
+    if (!tpl) return;
+    
+    const input = document.getElementById('omni-input');
+    if (!input) return;
+    
+    // Replace variables
+    let text = tpl.text;
+    const lead = leads.find(l => l.id === editing);
+    if (lead) {
+        text = text.replace('{{name}}', lead.tg || lead.phone || lead.biz || '');
+        text = text.replace('{{business}}', lead.biz || '');
+        text = text.replace('{{time}}', lead.nextTime || '10:00');
+        text = text.replace('{{date}}', lead.nextDate || '');
+    }
+    
+    input.value = text;
+    autoResizeOmni(input);
+    input.focus();
+    
+    // Hide templates
+    document.getElementById('omni-templates')?.classList.remove('active');
+}
+
+// Connect grid for empty chat
+function buildConnectGrid() {
+    const grid = document.getElementById('omni-connect-grid');
+    if (!grid) return;
+    
+    const integrations = [
+        { id: 'telegram', name: 'Telegram', icon: '📱', connected: !!currentOrg?.integrations?.sendpulse?.channels?.telegram },
+        { id: 'viber', name: 'Viber', icon: '💬', connected: !!currentOrg?.integrations?.sendpulse?.channels?.viber },
+        { id: 'whatsapp', name: 'WhatsApp', icon: '💚', connected: !!currentOrg?.integrations?.sendpulse?.channels?.whatsapp },
+        { id: 'instagram', name: 'Instagram', icon: '📷', connected: !!currentOrg?.integrations?.sendpulse?.channels?.instagram },
+        { id: 'facebook', name: 'Facebook', icon: '👤', connected: !!currentOrg?.integrations?.sendpulse?.channels?.facebook }
+    ];
+    
+    grid.innerHTML = integrations.map(i => `
+        <div class="omni-connect-item ${i.connected ? 'connected' : ''}" onclick="openSettingsPanel()">
+            <span class="connect-dot ${i.connected ? 'active' : 'inactive'}"></span>
+            <span style="font-size:14px">${i.icon}</span>
+            <span>${i.name}</span>
+        </div>
+    `).join('');
+}
+
+// Real-time listener for incoming messages
+function startMessageListener(leadId) {
+    if (!currentOrg?.id || !leadId) return null;
+    
+    try {
+        return db.collection('organizations').doc(currentOrg.id)
+            .collection('messages')
+            .where('leadId', '==', leadId)
+            .orderBy('createdAt', 'desc')
+            .limit(1)
+            .onSnapshot(snapshot => {
+                snapshot.docChanges().forEach(change => {
+                    if (change.type === 'added') {
+                        const msg = { id: change.doc.id, ...change.doc.data() };
+                        // Avoid duplicates
+                        if (!omniMessages.find(m => m.id === msg.id) && !msg.id?.startsWith('temp_')) {
+                            omniMessages.push(msg);
+                            omniMessages.sort((a, b) => (a.createdAt || '').localeCompare(b.createdAt || ''));
+                            if (editing === leadId) {
+                                renderOmniMessages(omniCurrentChannel === 'all' ? omniMessages : omniMessages.filter(m => m.channel === omniCurrentChannel));
+                            }
+                            // Show notification for incoming
+                            if (msg.direction === 'in') {
+                                showToast(`💬 Нове повідомлення від ${msg.senderName || 'клієнта'}`);
+                            }
+                        }
+                    }
+                });
+            }, err => console.warn('Message listener error:', err));
+    } catch(e) { return null; }
+}
+
+let messageUnsub = null;
+
+// Hook into modal open to init omni chat
+const _origSwitchTab = typeof switchTab === 'function' ? switchTab : null;
+function switchTabWithOmni(tab) {
+    // Call original switchTab
+    document.querySelectorAll('.tab').forEach((t, i) => t.classList.toggle('active', t.textContent.trim().toLowerCase().includes(tab)));
+    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+    const target = document.getElementById('t-' + tab);
+    if (target) target.classList.add('active');
+    
+    // Init omni chat when switching to chat tab
+    if (tab === 'chat' && editing) {
+        const lead = leads.find(l => l.id === editing);
+        if (lead) {
+            initOmniChat(lead);
+            // Start real-time listener
+            if (messageUnsub) messageUnsub();
+            messageUnsub = startMessageListener(editing);
+        }
+    }
+}
+
+// Override switchTab to hook omni init
+if (typeof window !== 'undefined') {
+    const _origSwitch = window.switchTab;
+    window.switchTab = function(tab) {
+        if (_origSwitch) _origSwitch(tab);
+        if (tab === 'chat' && editing) {
+            const lead = leads.find(l => l.id === editing);
+            if (lead) {
+                setTimeout(() => initOmniChat(lead), 50);
+                if (messageUnsub) messageUnsub();
+                messageUnsub = startMessageListener(editing);
+            }
+        }
+    };
+}
+
+// ===== DIRECT MESSENGER INTEGRATIONS =====
+const DIRECT_API_BASE = 'https://talko-crm.vercel.app/api';
+
+// --- Load integration statuses ---
+function loadDirectIntegrations() {
+    if (!currentOrg?.integrations?.direct) return;
+    const d = currentOrg.integrations.direct;
+    
+    // Telegram
+    if (d.telegram?.botToken) {
+        document.getElementById('direct-tg-bot-token').value = maskToken(d.telegram.botToken);
+        setIntegrationStatus('tg', true, d.telegram.botName || 'Підключено');
+    }
+    // Viber
+    if (d.viber?.authToken) {
+        document.getElementById('direct-viber-token').value = maskToken(d.viber.authToken);
+        setIntegrationStatus('viber', true, d.viber.botName || 'Підключено');
+    }
+    // WhatsApp
+    if (d.whatsapp?.phoneNumberId) {
+        document.getElementById('direct-wa-phone-id').value = d.whatsapp.phoneNumberId;
+        document.getElementById('direct-wa-token').value = maskToken(d.whatsapp.accessToken || '');
+        document.getElementById('direct-wa-verify').value = d.whatsapp.verifyToken || '';
+        setIntegrationStatus('wa', true, 'Підключено');
+    }
+    // Instagram
+    if (d.instagram?.pageId) {
+        document.getElementById('direct-ig-page-id').value = d.instagram.pageId;
+        document.getElementById('direct-ig-token').value = maskToken(d.instagram.accessToken || '');
+        setIntegrationStatus('ig', true, 'Підключено');
+    }
+    // Facebook
+    if (d.facebook?.pageId) {
+        document.getElementById('direct-fb-page-id').value = d.facebook.pageId;
+        document.getElementById('direct-fb-token').value = maskToken(d.facebook.accessToken || '');
+        setIntegrationStatus('fb', true, 'Підключено');
+    }
+    
+    // Global settings
+    const g = d.global || {};
+    const autoEl = document.getElementById('direct-auto-create');
+    const notifyEl = document.getElementById('direct-notify');
+    const histEl = document.getElementById('direct-save-history');
+    const aiEl = document.getElementById('direct-ai-assist');
+    if (autoEl) autoEl.checked = g.autoCreateLead !== false;
+    if (notifyEl) notifyEl.checked = g.notifyManager !== false;
+    if (histEl) histEl.checked = g.saveHistory !== false;
+    if (aiEl) aiEl.checked = g.aiAutoResponder === true;
+    
+    // Webhook URLs
+    if (currentOrg?.webhook?.key) {
+        const baseUrl = DIRECT_API_BASE;
+        const waDisplay = document.getElementById('wa-webhook-display');
+        if (waDisplay) waDisplay.textContent = `${baseUrl}/whatsapp?orgId=${currentOrg.id}`;
+    }
+}
+
+function maskToken(token) {
+    if (!token || token.length < 10) return token;
+    return token.substring(0, 6) + '...' + token.substring(token.length - 4);
+}
+
+function setIntegrationStatus(prefix, connected, label) {
+    const statusEl = document.getElementById(`${prefix}-bot-status`);
+    const indicator = document.getElementById(`${prefix}-bot-indicator`);
+    if (statusEl) {
+        statusEl.textContent = connected ? (label || 'Підключено') : 'Не підключено';
+        statusEl.style.color = connected ? '#059669' : '#6b7280';
+    }
+    if (indicator) indicator.style.background = connected ? '#22c55e' : '#d1d5db';
+}
+
+// --- TELEGRAM ---
+async function saveDirectTelegram() {
+    if (!currentOrg?.id) { showWarning('Оберіть організацію'); return; }
+    const token = document.getElementById('direct-tg-bot-token').value.trim();
+    if (!token || token.includes('...')) { showWarning('Вставте повний Bot Token'); return; }
+    
+    try {
+        showToast('Підключаю Telegram...');
+        
+        // 1. Перевіряємо токен через getMe
+        const meResp = await fetch(`https://api.telegram.org/bot${token}/getMe`);
+        const meData = await meResp.json();
+        if (!meData.ok) { showError('Невірний токен: ' + (meData.description || '')); return; }
+        
+        const botName = '@' + meData.result.username;
+        
+        // 2. Встановлюємо webhook
+        const webhookUrl = `${DIRECT_API_BASE}/telegram?orgId=${currentOrg.id}`;
+        const whResp = await fetch(`https://api.telegram.org/bot${token}/setWebhook`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ url: webhookUrl, allowed_updates: ['message', 'callback_query'] })
         });
-        const result = await resp.json();
-        if (result.success) { input.value = ''; const msgs = await loadLeadMessages(leadId); renderLeadChat(msgs, 'lead-chat-messages'); }
-        else showWarning('Помилка: ' + (result.error || ''));
+        const whData = await whResp.json();
+        
+        // 3. Зберігаємо в Firebase
+        const config = {
+            botToken: token,
+            botName: botName,
+            botId: meData.result.id,
+            webhookUrl: webhookUrl,
+            connectedAt: new Date().toISOString()
+        };
+        
+        await db.collection('organizations').doc(currentOrg.id).update({
+            'integrations.direct.telegram': config
+        });
+        if (!currentOrg.integrations) currentOrg.integrations = {};
+        if (!currentOrg.integrations.direct) currentOrg.integrations.direct = {};
+        currentOrg.integrations.direct.telegram = config;
+        
+        setIntegrationStatus('tg', true, botName);
+        
+        // Show webhook info
+        const whInfo = document.getElementById('tg-bot-webhook-info');
+        if (whInfo) {
+            whInfo.style.display = 'block';
+            document.getElementById('tg-bot-webhook-url').textContent = webhookUrl;
+            document.getElementById('tg-bot-name').textContent = botName;
+        }
+        
+        showToast(`✅ Telegram бот ${botName} підключено!`);
+        saveDirectGlobalSettings();
+        
+    } catch(err) { showError('Помилка: ' + err.message); }
+}
+
+async function testDirectTelegram() {
+    const token = currentOrg?.integrations?.direct?.telegram?.botToken;
+    if (!token) { showWarning('Спочатку підключіть бота'); return; }
+    try {
+        const resp = await fetch(`https://api.telegram.org/bot${token}/getWebhookInfo`);
+        const data = await resp.json();
+        if (data.ok) {
+            const info = data.result;
+            showToast(`✅ Webhook: ${info.url ? 'активний' : 'не встановлений'}. Pending: ${info.pending_update_count || 0}`);
+        } else { showWarning('Помилка: ' + data.description); }
     } catch(err) { showError(err.message); }
-    finally { input.disabled = false; input.focus(); }
+}
+
+// --- VIBER ---
+async function saveDirectViber() {
+    if (!currentOrg?.id) { showWarning('Оберіть організацію'); return; }
+    const token = document.getElementById('direct-viber-token').value.trim();
+    if (!token || token.includes('...')) { showWarning('Вставте Auth Token'); return; }
+    
+    try {
+        showToast('Підключаю Viber...');
+        
+        // 1. Перевіряємо токен
+        const infoResp = await fetch('https://chatapi.viber.com/pa/get_account_info', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-Viber-Auth-Token': token },
+            body: JSON.stringify({})
+        });
+        const infoData = await infoResp.json();
+        if (infoData.status !== 0) { showError('Невірний токен: ' + (infoData.status_message || '')); return; }
+        
+        const botName = infoData.name || 'Viber Bot';
+        
+        // 2. Встановлюємо webhook
+        const webhookUrl = `${DIRECT_API_BASE}/viber?orgId=${currentOrg.id}`;
+        await fetch('https://chatapi.viber.com/pa/set_webhook', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-Viber-Auth-Token': token },
+            body: JSON.stringify({ url: webhookUrl, event_types: ['delivered', 'seen', 'message', 'subscribed', 'unsubscribed', 'conversation_started'] })
+        });
+        
+        // 3. Зберігаємо
+        const config = { authToken: token, botName, webhookUrl, connectedAt: new Date().toISOString() };
+        await db.collection('organizations').doc(currentOrg.id).update({ 'integrations.direct.viber': config });
+        if (!currentOrg.integrations?.direct) currentOrg.integrations = { ...currentOrg.integrations, direct: {} };
+        currentOrg.integrations.direct.viber = config;
+        
+        setIntegrationStatus('viber', true, botName);
+        showToast(`✅ Viber "${botName}" підключено!`);
+        saveDirectGlobalSettings();
+    } catch(err) { showError('Помилка: ' + err.message); }
+}
+
+async function testDirectViber() {
+    const token = currentOrg?.integrations?.direct?.viber?.authToken;
+    if (!token) { showWarning('Спочатку підключіть бота'); return; }
+    try {
+        const resp = await fetch('https://chatapi.viber.com/pa/get_account_info', {
+            method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Viber-Auth-Token': token }, body: '{}'
+        });
+        const data = await resp.json();
+        showToast(data.status === 0 ? `✅ Viber OK: ${data.name}, subscribers: ${data.subscribers_count || 0}` : '❌ Помилка: ' + data.status_message);
+    } catch(err) { showError(err.message); }
+}
+
+// --- WHATSAPP ---
+async function saveDirectWhatsApp() {
+    if (!currentOrg?.id) { showWarning('Оберіть організацію'); return; }
+    const phoneId = document.getElementById('direct-wa-phone-id').value.trim();
+    const token = document.getElementById('direct-wa-token').value.trim();
+    const verify = document.getElementById('direct-wa-verify').value.trim();
+    if (!phoneId || !token || token.includes('...')) { showWarning('Заповніть Phone Number ID та Access Token'); return; }
+    
+    try {
+        showToast('Підключаю WhatsApp...');
+        
+        // Перевіряємо токен
+        const resp = await fetch(`https://graph.facebook.com/v18.0/${phoneId}?access_token=${token}`);
+        const data = await resp.json();
+        if (data.error) { showError('Помилка: ' + data.error.message); return; }
+        
+        const config = {
+            phoneNumberId: phoneId, accessToken: token, verifyToken: verify || generateWebhookKey(),
+            displayPhone: data.display_phone_number || '', connectedAt: new Date().toISOString()
+        };
+        
+        await db.collection('organizations').doc(currentOrg.id).update({ 'integrations.direct.whatsapp': config });
+        if (!currentOrg.integrations?.direct) currentOrg.integrations = { ...currentOrg.integrations, direct: {} };
+        currentOrg.integrations.direct.whatsapp = config;
+        
+        setIntegrationStatus('wa', true, config.displayPhone || 'Підключено');
+        showToast(`✅ WhatsApp ${config.displayPhone || ''} підключено!`);
+        saveDirectGlobalSettings();
+    } catch(err) { showError('Помилка: ' + err.message); }
+}
+
+async function testDirectWhatsApp() {
+    const cfg = currentOrg?.integrations?.direct?.whatsapp;
+    if (!cfg?.phoneNumberId) { showWarning('Спочатку підключіть'); return; }
+    try {
+        const resp = await fetch(`https://graph.facebook.com/v18.0/${cfg.phoneNumberId}?access_token=${cfg.accessToken}`);
+        const data = await resp.json();
+        showToast(data.error ? '❌ ' + data.error.message : `✅ WhatsApp OK: ${data.display_phone_number || data.id}`);
+    } catch(err) { showError(err.message); }
+}
+
+// --- INSTAGRAM ---
+async function saveDirectInstagram() {
+    if (!currentOrg?.id) { showWarning('Оберіть організацію'); return; }
+    const pageId = document.getElementById('direct-ig-page-id').value.trim();
+    const token = document.getElementById('direct-ig-token').value.trim();
+    if (!pageId || !token || token.includes('...')) { showWarning('Заповніть всі поля'); return; }
+    
+    const config = { pageId, accessToken: token, connectedAt: new Date().toISOString() };
+    try {
+        await db.collection('organizations').doc(currentOrg.id).update({ 'integrations.direct.instagram': config });
+        if (!currentOrg.integrations?.direct) currentOrg.integrations = { ...currentOrg.integrations, direct: {} };
+        currentOrg.integrations.direct.instagram = config;
+        setIntegrationStatus('ig', true, 'Підключено');
+        showToast('✅ Instagram підключено!');
+        saveDirectGlobalSettings();
+    } catch(err) { showError(err.message); }
+}
+
+async function testDirectInstagram() {
+    const cfg = currentOrg?.integrations?.direct?.instagram;
+    if (!cfg?.pageId) { showWarning('Спочатку підключіть'); return; }
+    try {
+        const resp = await fetch(`https://graph.facebook.com/v18.0/${cfg.pageId}?access_token=${cfg.accessToken}&fields=name,username`);
+        const data = await resp.json();
+        showToast(data.error ? '❌ ' + data.error.message : `✅ Instagram OK: ${data.username || data.name || data.id}`);
+    } catch(err) { showError(err.message); }
+}
+
+// --- FACEBOOK ---
+async function saveDirectFacebook() {
+    if (!currentOrg?.id) { showWarning('Оберіть організацію'); return; }
+    const pageId = document.getElementById('direct-fb-page-id').value.trim();
+    const token = document.getElementById('direct-fb-token').value.trim();
+    if (!pageId || !token || token.includes('...')) { showWarning('Заповніть всі поля'); return; }
+    
+    const config = { pageId, accessToken: token, connectedAt: new Date().toISOString() };
+    try {
+        await db.collection('organizations').doc(currentOrg.id).update({ 'integrations.direct.facebook': config });
+        if (!currentOrg.integrations?.direct) currentOrg.integrations = { ...currentOrg.integrations, direct: {} };
+        currentOrg.integrations.direct.facebook = config;
+        setIntegrationStatus('fb', true, 'Підключено');
+        showToast('✅ Facebook Messenger підключено!');
+        saveDirectGlobalSettings();
+    } catch(err) { showError(err.message); }
+}
+
+async function testDirectFacebook() {
+    const cfg = currentOrg?.integrations?.direct?.facebook;
+    if (!cfg?.pageId) { showWarning('Спочатку підключіть'); return; }
+    try {
+        const resp = await fetch(`https://graph.facebook.com/v18.0/${cfg.pageId}?access_token=${cfg.accessToken}&fields=name`);
+        const data = await resp.json();
+        showToast(data.error ? '❌ ' + data.error.message : `✅ Facebook OK: ${data.name || data.id}`);
+    } catch(err) { showError(err.message); }
+}
+
+// --- Global settings ---
+async function saveDirectGlobalSettings() {
+    if (!currentOrg?.id) return;
+    const global = {
+        autoCreateLead: document.getElementById('direct-auto-create')?.checked !== false,
+        notifyManager: document.getElementById('direct-notify')?.checked !== false,
+        saveHistory: document.getElementById('direct-save-history')?.checked !== false,
+        aiAutoResponder: document.getElementById('direct-ai-assist')?.checked === true,
+        updatedAt: new Date().toISOString()
+    };
+    try {
+        await db.collection('organizations').doc(currentOrg.id).update({ 'integrations.direct.global': global });
+        if (!currentOrg.integrations?.direct) currentOrg.integrations = { ...currentOrg.integrations, direct: {} };
+        currentOrg.integrations.direct.global = global;
+    } catch(e) { console.warn('Save global settings:', e); }
+}
+
+// Update sendOmniMessage to use direct APIs
+const _origSendOmni = sendOmniMessage;
+
+// Override omni send to route through direct APIs
+async function sendViaDirectAPI(channel, text, lead) {
+    const d = currentOrg?.integrations?.direct;
+    if (!d) return { success: false, error: 'No direct integrations' };
+    
+    try {
+        if (channel === 'telegram' && d.telegram?.botToken) {
+            const chatId = lead.telegramChatId;
+            if (!chatId) return { success: false, error: 'Клієнт ще не писав боту. Надішліть посилання на бота клієнту.' };
+            const resp = await fetch(`https://api.telegram.org/bot${d.telegram.botToken}/sendMessage`, {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ chat_id: chatId, text: text, parse_mode: 'HTML' })
+            });
+            const data = await resp.json();
+            return { success: data.ok, error: data.description };
+        }
+        
+        if (channel === 'viber' && d.viber?.authToken) {
+            const receiverId = lead.viberChatId || lead.viberUserId;
+            if (!receiverId) return { success: false, error: 'Клієнт ще не писав боту' };
+            const resp = await fetch('https://chatapi.viber.com/pa/send_message', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-Viber-Auth-Token': d.viber.authToken },
+                body: JSON.stringify({ receiver: receiverId, type: 'text', text: text })
+            });
+            const data = await resp.json();
+            return { success: data.status === 0, error: data.status_message };
+        }
+        
+        if (channel === 'whatsapp' && d.whatsapp?.phoneNumberId) {
+            const phone = lead.whatsapp || lead.phone;
+            if (!phone) return { success: false, error: 'Немає номера телефону' };
+            const cleanPhone = phone.replace(/[^0-9]/g, '');
+            const resp = await fetch(`https://graph.facebook.com/v18.0/${d.whatsapp.phoneNumberId}/messages`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${d.whatsapp.accessToken}` },
+                body: JSON.stringify({ messaging_product: 'whatsapp', to: cleanPhone, type: 'text', text: { body: text } })
+            });
+            const data = await resp.json();
+            return { success: !data.error, error: data.error?.message };
+        }
+        
+        if (channel === 'instagram' && d.instagram?.pageId) {
+            const igId = lead.instagramChatId;
+            if (!igId) return { success: false, error: 'Клієнт ще не писав в Direct' };
+            const resp = await fetch(`https://graph.facebook.com/v18.0/${d.instagram.pageId}/messages`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${d.instagram.accessToken}` },
+                body: JSON.stringify({ recipient: { id: igId }, message: { text } })
+            });
+            const data = await resp.json();
+            return { success: !data.error, error: data.error?.message };
+        }
+        
+        if (channel === 'facebook' && d.facebook?.pageId) {
+            const fbId = lead.facebookChatId;
+            if (!fbId) return { success: false, error: 'Клієнт ще не писав в Messenger' };
+            const resp = await fetch(`https://graph.facebook.com/v18.0/${d.facebook.pageId}/messages`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${d.facebook.accessToken}` },
+                body: JSON.stringify({ recipient: { id: fbId }, message: { text } })
+            });
+            const data = await resp.json();
+            return { success: !data.error, error: data.error?.message };
+        }
+        
+        return { success: false, error: 'Канал не підключено через пряме API' };
+    } catch(err) {
+        return { success: false, error: err.message };
+    }
 }
 
 // ===== IP TELEPHONY INTEGRATION =====
