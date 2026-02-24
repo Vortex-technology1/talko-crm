@@ -2,6 +2,7 @@
  * =====================================================
  * TALKO CRM - Firebase Functions
  * Telegram Bot + IP Telephony + SendPulse + Forms
+ * + DIRECT Messenger Integrations (TG, Viber, WA, IG, FB)
  * =====================================================
  */
 
@@ -45,7 +46,7 @@ async function findOrgByWebhookKey(webhookKey) {
 // =====================================================
 // UTILITY: Find lead by phone/email/chatId
 // =====================================================
-async function findLead(orgId, { phone, email, telegramChatId, viberChatId, chatId }) {
+async function findLead(orgId, { phone, email, telegramChatId, viberChatId, whatsappChatId, instagramChatId, facebookChatId, chatId }) {
   const leadsRef = db.collection('organizations').doc(orgId).collection('leads');
 
   if (phone) {
@@ -67,6 +68,18 @@ async function findLead(orgId, { phone, email, telegramChatId, viberChatId, chat
   }
   if (viberChatId) {
     const snapshot = await leadsRef.where('viberChatId', '==', String(viberChatId)).get();
+    for (const doc of snapshot.docs) { const d = doc.data(); if (!d.deleted) return { id: doc.id, ...d }; }
+  }
+  if (whatsappChatId) {
+    const snapshot = await leadsRef.where('whatsappChatId', '==', String(whatsappChatId)).get();
+    for (const doc of snapshot.docs) { const d = doc.data(); if (!d.deleted) return { id: doc.id, ...d }; }
+  }
+  if (instagramChatId) {
+    const snapshot = await leadsRef.where('instagramChatId', '==', String(instagramChatId)).get();
+    for (const doc of snapshot.docs) { const d = doc.data(); if (!d.deleted) return { id: doc.id, ...d }; }
+  }
+  if (facebookChatId) {
+    const snapshot = await leadsRef.where('facebookChatId', '==', String(facebookChatId)).get();
     for (const doc of snapshot.docs) { const d = doc.data(); if (!d.deleted) return { id: doc.id, ...d }; }
   }
   if (chatId) {
@@ -103,6 +116,9 @@ async function createLead(orgId, orgData, leadData) {
     whatsapp: leadData.whatsapp || null, primaryChannel: leadData.channel || 'phone',
     telegramChatId: leadData.telegramChatId ? String(leadData.telegramChatId) : null,
     viberChatId: leadData.viberChatId ? String(leadData.viberChatId) : null,
+    whatsappChatId: leadData.whatsappChatId ? String(leadData.whatsappChatId) : null,
+    instagramChatId: leadData.instagramChatId ? String(leadData.instagramChatId) : null,
+    facebookChatId: leadData.facebookChatId ? String(leadData.facebookChatId) : null,
     chatId: leadData.chatId ? String(leadData.chatId) : null,
     lastChannel: leadData.channel || null,
     biz: leadData.biz || leadData.name || null, source: leadData.source || 'webhook',
@@ -761,6 +777,601 @@ exports.formsWebhook = functions.https.onRequest(async (req, res) => {
   } catch (err) {
     console.error('Form error:', err);
     return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+
+// #####################################################
+// ===== 6. DIRECT TELEGRAM BOT WEBHOOK ================
+// #####################################################
+// Receives messages from client's own Telegram bot
+// (NOT the CRM notification bot, but the business bot)
+// URL: /directTelegramWebhook?orgId=xxx
+
+exports.directTelegramWebhook = functions.https.onRequest(async (req, res) => {
+  setCors(res);
+  if (req.method === 'OPTIONS') return res.status(200).end();
+  if (req.method === 'GET') return res.status(200).json({ status: 'ok', service: 'TALKO CRM Direct Telegram' });
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+
+  const orgId = req.query.orgId;
+  if (!orgId) return res.status(400).json({ error: 'Missing orgId' });
+
+  try {
+    const update = req.body;
+    const message = update.message || update.edited_message;
+
+    if (!message) {
+      // Handle callback_query (button clicks)
+      if (update.callback_query) {
+        const cb = update.callback_query;
+        const from = cb.from || {};
+        const cbChatId = String(cb.message?.chat?.id || from.id || '');
+        if (!cbChatId) return res.status(200).json({ ok: true });
+
+        const senderName = [from.first_name, from.last_name].filter(Boolean).join(' ') || from.username || 'Unknown';
+        const orgDoc = await db.collection('organizations').doc(orgId).get();
+        const orgData = orgDoc.exists ? orgDoc.data() : {};
+
+        let lead = await findLead(orgId, { telegramChatId: cbChatId });
+        if (!lead) {
+          const autoCreate = orgData.integrations?.direct?.global?.autoCreateLead !== false;
+          if (autoCreate) {
+            lead = await createLead(orgId, orgData, {
+              biz: senderName, tg: from.username ? '@' + from.username : null,
+              telegramChatId: cbChatId, source: 'telegram_direct', channel: 'telegram'
+            });
+          }
+        }
+        if (lead) {
+          await saveMessage(orgId, {
+            leadId: lead.id, channel: 'telegram', direction: 'in', type: 'text',
+            text: `🔘 Натиснув кнопку: ${cb.data || ''}`, senderName,
+            chatId: cbChatId, read: false, source: 'telegram_direct'
+          });
+        }
+        return res.status(200).json({ ok: true });
+      }
+      return res.status(200).json({ ok: true });
+    }
+
+    const chat = message.chat;
+    const from = message.from || {};
+
+    // Skip groups/channels
+    if (!chat || chat.type !== 'private') return res.status(200).json({ ok: true, skipped: 'not_private' });
+
+    const chatId = String(chat.id);
+    const senderName = [from.first_name, from.last_name].filter(Boolean).join(' ') || from.username || 'Unknown';
+    const username = from.username || '';
+    const phone = message.contact?.phone_number || '';
+
+    // Extract text and attachments
+    let text = message.text || message.caption || '';
+    const attachments = [];
+
+    if (message.photo) {
+      const photo = message.photo[message.photo.length - 1];
+      attachments.push({ type: 'image', fileId: photo.file_id, width: photo.width, height: photo.height });
+      if (!text) text = '🖼 Фото';
+    }
+    if (message.document) {
+      attachments.push({ type: 'file', fileId: message.document.file_id, name: message.document.file_name, mimeType: message.document.mime_type });
+      if (!text) text = `📎 ${message.document.file_name || 'Файл'}`;
+    }
+    if (message.voice) {
+      attachments.push({ type: 'voice', fileId: message.voice.file_id, duration: message.voice.duration });
+      if (!text) text = '🎤 Голосове повідомлення';
+    }
+    if (message.video) {
+      attachments.push({ type: 'video', fileId: message.video.file_id, duration: message.video.duration });
+      if (!text) text = '🎬 Відео';
+    }
+    if (message.sticker) { if (!text) text = `${message.sticker.emoji || '🏷️'} Стікер`; }
+    if (message.location) { if (!text) text = `📍 Локація: ${message.location.latitude}, ${message.location.longitude}`; }
+    if (message.contact) { if (!text) text = `👤 Контакт: ${message.contact.first_name || ''} ${message.contact.phone_number || ''}`; }
+
+    if (text === '/start') text = '▶️ Розпочав чат з ботом';
+
+    // Get org data
+    const orgDoc = await db.collection('organizations').doc(orgId).get();
+    const orgData = orgDoc.exists ? orgDoc.data() : {};
+
+    // Find or create lead
+    let lead = await findLead(orgId, { telegramChatId: chatId, phone: phone || undefined });
+
+    // Also try by @username
+    if (!lead && username) {
+      const tgHandle = '@' + username.replace('@', '');
+      const leadsRef = db.collection('organizations').doc(orgId).collection('leads');
+      const snap = await leadsRef.where('tg', '==', tgHandle).limit(1).get();
+      if (!snap.empty) {
+        const doc = snap.docs[0];
+        const d = doc.data();
+        if (!d.deleted) {
+          lead = { id: doc.id, ...d };
+          // Update telegramChatId for future
+          await leadsRef.doc(doc.id).update({ telegramChatId: chatId });
+        }
+      }
+    }
+
+    let isNewLead = false;
+    if (!lead) {
+      const autoCreate = orgData.integrations?.direct?.global?.autoCreateLead !== false;
+      if (!autoCreate) return res.status(200).json({ ok: true, action: 'skipped_no_autocreate' });
+
+      lead = await createLead(orgId, orgData, {
+        biz: senderName, tg: username ? '@' + username : null,
+        phone: phone ? normalizePhone(phone) : null,
+        telegramChatId: chatId, source: 'telegram_direct', channel: 'telegram'
+      });
+      isNewLead = true;
+    }
+
+    // Save message
+    const savedMsg = await saveMessage(orgId, {
+      leadId: lead.id, channel: 'telegram', direction: 'in', type: 'text',
+      text, senderName, chatId, attachments,
+      externalMsgId: String(message.message_id),
+      managerId: lead.assignedTo || null, read: false, source: 'telegram_direct'
+    });
+
+    // Update lead
+    await db.collection('organizations').doc(orgId).collection('leads').doc(lead.id).update({
+      lastChannel: 'telegram', telegramChatId: chatId,
+      lastMessageAt: new Date().toISOString(),
+      log: admin.firestore.FieldValue.arrayUnion({
+        type: 'message_in',
+        text: `[telegram] ${senderName}: ${(text || '').slice(0, 100)}`,
+        date: new Date().toISOString()
+      })
+    });
+
+    // Real-time event
+    await emitEvent(orgId, {
+      type: 'new_message', channel: 'telegram',
+      leadId: lead.id, leadName: lead.biz || senderName || lead.tg || lead.phone,
+      text: (text || '').slice(0, 100), senderName,
+      managerId: lead.assignedTo, isNewLead
+    });
+
+    // Notify manager via CRM Telegram bot
+    if (lead.assignedTo) {
+      const managerChatId = await getUserTelegramChatId(lead.assignedTo);
+      if (managerChatId) {
+        await sendTelegramMessage(managerChatId,
+          `💬 Нове повідомлення [telegram]\n\n` +
+          `${senderName}: ${(text || '').slice(0, 200)}\n\n` +
+          `🔗 <a href="https://talko-crm.vercel.app">Відкрити CRM</a>`
+        );
+      }
+    }
+
+    // Auto-responder for new leads
+    if (isNewLead && orgData.integrations?.direct?.global?.aiAutoResponder) {
+      const botToken = orgData.integrations?.direct?.telegram?.botToken;
+      if (botToken) {
+        const bizName = orgData.aiConfig?.business?.name || '';
+        const greeting = bizName
+          ? `Доброго дня! Дякую за звернення до ${bizName}. Менеджер зв'яжеться з вами найближчим часом!`
+          : "Доброго дня! Ваше повідомлення отримано, менеджер зв'яжеться з вами найближчим часом!";
+
+        await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ chat_id: chatId, text: greeting })
+        });
+
+        // Save auto-response
+        await saveMessage(orgId, {
+          leadId: lead.id, channel: 'telegram', direction: 'out', type: 'text',
+          text: greeting, senderName: 'AI Авто-відповідач', chatId,
+          managerId: null, read: true, source: 'auto_responder'
+        });
+      }
+    }
+
+    console.log(`DirectTG [${orgId}] lead:${lead.id} ${isNewLead ? '(NEW)' : ''} text:"${(text||'').slice(0, 50)}"`);
+    return res.status(200).json({ ok: true, leadId: lead.id, messageId: savedMsg.id, isNewLead });
+
+  } catch (err) {
+    console.error('[DirectTG] Error:', err);
+    return res.status(200).json({ ok: true, error: err.message }); // Always 200 for Telegram
+  }
+});
+
+
+// #####################################################
+// ===== 7. DIRECT VIBER BOT WEBHOOK ==================
+// #####################################################
+// URL: /directViberWebhook?orgId=xxx
+
+exports.directViberWebhook = functions.https.onRequest(async (req, res) => {
+  setCors(res);
+  if (req.method === 'OPTIONS') return res.status(200).end();
+  if (req.method === 'GET') return res.status(200).json({ status: 'ok', service: 'TALKO CRM Direct Viber' });
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+
+  const orgId = req.query.orgId;
+  if (!orgId) return res.status(400).json({ error: 'Missing orgId' });
+
+  try {
+    const event = req.body;
+    const eventType = event.event;
+
+    // Viber webhook verification
+    if (eventType === 'webhook') {
+      console.log(`[DirectViber] Webhook set for org ${orgId}`);
+      return res.status(200).json({ status: 0, status_message: 'ok' });
+    }
+
+    // Message event
+    if (eventType === 'message') {
+      const sender = event.sender || {};
+      const viberChatId = sender.id;
+      if (!viberChatId) return res.status(200).json({ status: 0, status_message: 'ok' });
+
+      const senderName = sender.name || 'Viber User';
+      const message = event.message || {};
+      if (!message.type) return res.status(200).json({ status: 0, status_message: 'ok' });
+
+      // Extract text
+      let text = '';
+      const attachments = [];
+      switch (message.type) {
+        case 'text': text = message.text || ''; break;
+        case 'picture':
+          text = message.text || '🖼 Фото';
+          if (message.media) attachments.push({ type: 'image', url: message.media });
+          break;
+        case 'video': text = '🎬 Відео'; if (message.media) attachments.push({ type: 'video', url: message.media }); break;
+        case 'file':
+          text = `📎 ${message.file_name || 'Файл'}`;
+          if (message.media) attachments.push({ type: 'file', url: message.media, name: message.file_name });
+          break;
+        case 'contact':
+          const c = message.contact || {};
+          text = `👤 Контакт: ${c.name || ''} ${c.phone_number || ''}`;
+          break;
+        case 'location':
+          const loc = message.location || {};
+          text = `📍 Локація: ${loc.lat}, ${loc.lon}`;
+          break;
+        case 'sticker': text = '🏷️ Стікер'; break;
+        default: text = message.text || `[${message.type || 'unknown'}]`;
+      }
+
+      const orgDoc = await db.collection('organizations').doc(orgId).get();
+      const orgData = orgDoc.exists ? orgDoc.data() : {};
+
+      let lead = await findLead(orgId, { viberChatId });
+      let isNewLead = false;
+
+      if (!lead) {
+        const autoCreate = orgData.integrations?.direct?.global?.autoCreateLead !== false;
+        if (!autoCreate) return res.status(200).json({ status: 0, status_message: 'ok' });
+
+        lead = await createLead(orgId, orgData, {
+          biz: senderName, viberChatId,
+          source: 'viber_direct', channel: 'viber'
+        });
+        isNewLead = true;
+      }
+
+      await saveMessage(orgId, {
+        leadId: lead.id, channel: 'viber', direction: 'in', type: 'text',
+        text, senderName, chatId: viberChatId, attachments,
+        managerId: lead.assignedTo || null, read: false, source: 'viber_direct'
+      });
+
+      await db.collection('organizations').doc(orgId).collection('leads').doc(lead.id).update({
+        lastChannel: 'viber', viberChatId,
+        lastMessageAt: new Date().toISOString(),
+        log: admin.firestore.FieldValue.arrayUnion({
+          type: 'message_in', text: `[viber] ${senderName}: ${(text || '').slice(0, 100)}`, date: new Date().toISOString()
+        })
+      });
+
+      await emitEvent(orgId, {
+        type: 'new_message', channel: 'viber',
+        leadId: lead.id, leadName: lead.biz || senderName,
+        text: (text || '').slice(0, 100), senderName,
+        managerId: lead.assignedTo, isNewLead
+      });
+
+      if (lead.assignedTo) {
+        const managerChatId = await getUserTelegramChatId(lead.assignedTo);
+        if (managerChatId) {
+          await sendTelegramMessage(managerChatId,
+            `💬 Нове повідомлення [viber]\n\n${senderName}: ${(text || '').slice(0, 200)}\n\n🔗 <a href="https://talko-crm.vercel.app">Відкрити CRM</a>`
+          );
+        }
+      }
+
+      console.log(`DirectViber [${orgId}] lead:${lead.id} ${isNewLead ? '(NEW)' : ''} text:"${(text||'').slice(0,50)}"`);
+    }
+
+    // Conversation started
+    if (eventType === 'conversation_started') {
+      const user = event.user || {};
+      if (user.id) {
+        const orgDoc = await db.collection('organizations').doc(orgId).get();
+        const orgData = orgDoc.exists ? orgDoc.data() : {};
+        const autoCreate = orgData.integrations?.direct?.global?.autoCreateLead !== false;
+        if (autoCreate) {
+          let lead = await findLead(orgId, { viberChatId: user.id });
+          if (!lead) {
+            lead = await createLead(orgId, orgData, {
+              biz: user.name || 'Viber User', viberChatId: user.id,
+              source: 'viber_direct', channel: 'viber'
+            });
+          }
+          await saveMessage(orgId, {
+            leadId: lead.id, channel: 'viber', direction: 'in', type: 'system',
+            text: '▶️ Розпочав діалог з ботом', senderName: user.name || 'Viber User',
+            chatId: user.id, read: false, source: 'viber_direct'
+          });
+        }
+      }
+    }
+
+    // Delivery/seen status
+    if (eventType === 'delivered' || eventType === 'seen') {
+      // Non-critical, skip for now
+    }
+
+    return res.status(200).json({ status: 0, status_message: 'ok' });
+  } catch (err) {
+    console.error('[DirectViber] Error:', err);
+    return res.status(200).json({ status: 0, status_message: 'ok' });
+  }
+});
+
+
+// #####################################################
+// ===== 8. DIRECT META WEBHOOK ========================
+// #####################################################
+// Handles: WhatsApp Business, Instagram Direct, Facebook Messenger
+// URL: /directMetaWebhook?orgId=xxx
+
+exports.directMetaWebhook = functions.https.onRequest(async (req, res) => {
+  setCors(res);
+  if (req.method === 'OPTIONS') return res.status(200).end();
+
+  const orgId = req.query.orgId;
+
+  // GET — Meta webhook verification
+  if (req.method === 'GET') {
+    const mode = req.query['hub.mode'];
+    const token = req.query['hub.verify_token'];
+    const challenge = req.query['hub.challenge'];
+
+    if (mode === 'subscribe' && orgId) {
+      try {
+        const orgDoc = await db.collection('organizations').doc(orgId).get();
+        const orgData = orgDoc.exists ? orgDoc.data() : {};
+        const verifyToken = orgData.integrations?.direct?.whatsapp?.verifyToken
+          || orgData.integrations?.direct?.instagram?.verifyToken
+          || orgData.webhook?.key;
+
+        if (token === verifyToken) {
+          console.log(`[DirectMeta] Webhook verified for org ${orgId}`);
+          return res.status(200).send(challenge);
+        }
+      } catch (e) { console.error('[DirectMeta] Verify error:', e); }
+    }
+    return res.status(403).json({ error: 'Verification failed' });
+  }
+
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+  if (!orgId) return res.status(400).json({ error: 'Missing orgId' });
+
+  try {
+    const body = req.body;
+    const entries = body.entry || [];
+
+    const orgDoc = await db.collection('organizations').doc(orgId).get();
+    const orgData = orgDoc.exists ? orgDoc.data() : {};
+    const igPageId = orgData.integrations?.direct?.instagram?.pageId;
+    const fbPageId = orgData.integrations?.direct?.facebook?.pageId;
+
+    for (const entry of entries) {
+      const changes = entry.changes || [];
+      const messagingEvents = entry.messaging || [];
+
+      // WhatsApp Business — uses changes[].value
+      for (const change of changes) {
+        if (change.field === 'messages') {
+          const value = change.value || {};
+          const messages = value.messages || [];
+          const contacts = value.contacts || [];
+          const statuses = value.statuses || [];
+
+          // Process incoming messages
+          for (const msg of messages) {
+            const waFrom = msg.from;
+            if (!waFrom) continue;
+
+            const contactInfo = contacts.find(c => c.wa_id === waFrom) || {};
+            const senderName = contactInfo.profile?.name || waFrom;
+
+            let text = '';
+            const attachments = [];
+            switch (msg.type) {
+              case 'text': text = msg.text?.body || ''; break;
+              case 'image': text = msg.image?.caption || '🖼 Фото'; attachments.push({ type: 'image', mediaId: msg.image?.id }); break;
+              case 'video': text = msg.video?.caption || '🎬 Відео'; attachments.push({ type: 'video', mediaId: msg.video?.id }); break;
+              case 'audio': text = '🎤 Аудіо'; attachments.push({ type: 'audio', mediaId: msg.audio?.id }); break;
+              case 'document': text = `📎 ${msg.document?.filename || 'Документ'}`; attachments.push({ type: 'file', mediaId: msg.document?.id, name: msg.document?.filename }); break;
+              case 'location': text = `📍 ${msg.location?.name || 'Локація'}: ${msg.location?.latitude}, ${msg.location?.longitude}`; break;
+              case 'contacts': { const c = msg.contacts?.[0] || {}; text = `👤 ${c.name?.formatted_name || ''} ${c.phones?.[0]?.phone || ''}`; break; }
+              case 'sticker': text = '🏷️ Стікер'; break;
+              case 'reaction': text = `${msg.reaction?.emoji || '👍'} Реакція`; break;
+              case 'button': text = `🔘 ${msg.button?.text || 'Кнопка'}`; break;
+              case 'interactive': { const r = msg.interactive?.button_reply || msg.interactive?.list_reply || {}; text = `🔘 ${r.title || r.id || 'Вибір'}`; break; }
+              default: text = `[${msg.type}]`;
+            }
+
+            let lead = await findLead(orgId, { whatsappChatId: waFrom, phone: '+' + waFrom });
+            let isNewLead = false;
+            if (!lead) {
+              const autoCreate = orgData.integrations?.direct?.global?.autoCreateLead !== false;
+              if (!autoCreate) continue;
+              lead = await createLead(orgId, orgData, {
+                biz: senderName, phone: normalizePhone('+' + waFrom),
+                whatsappChatId: waFrom, source: 'whatsapp_direct', channel: 'whatsapp'
+              });
+              isNewLead = true;
+            }
+
+            await saveMessage(orgId, {
+              leadId: lead.id, channel: 'whatsapp', direction: 'in', type: 'text',
+              text, senderName, chatId: waFrom, attachments,
+              externalMsgId: msg.id, managerId: lead.assignedTo || null, read: false, source: 'whatsapp_direct'
+            });
+
+            await db.collection('organizations').doc(orgId).collection('leads').doc(lead.id).update({
+              lastChannel: 'whatsapp', whatsappChatId: waFrom,
+              lastMessageAt: new Date().toISOString(),
+              log: admin.firestore.FieldValue.arrayUnion({
+                type: 'message_in', text: `[whatsapp] ${senderName}: ${(text || '').slice(0, 100)}`, date: new Date().toISOString()
+              })
+            });
+
+            await emitEvent(orgId, {
+              type: 'new_message', channel: 'whatsapp',
+              leadId: lead.id, leadName: lead.biz || senderName,
+              text: (text || '').slice(0, 100), senderName,
+              managerId: lead.assignedTo, isNewLead
+            });
+
+            if (lead.assignedTo) {
+              const managerChatId = await getUserTelegramChatId(lead.assignedTo);
+              if (managerChatId) {
+                await sendTelegramMessage(managerChatId,
+                  `💬 Нове повідомлення [whatsapp]\n\n${senderName}: ${(text || '').slice(0, 200)}\n\n🔗 <a href="https://talko-crm.vercel.app">Відкрити CRM</a>`
+                );
+              }
+            }
+
+            console.log(`DirectWA [${orgId}] lead:${lead.id} ${isNewLead ? '(NEW)' : ''} from:${waFrom}`);
+          }
+
+          // Status updates (delivered/read) — non-critical
+          // for (const st of statuses) { ... }
+        }
+      }
+
+      // Instagram Direct + Facebook Messenger — uses entry.messaging
+      for (const msgEvent of messagingEvents) {
+        const senderId = msgEvent.sender?.id;
+        const recipientId = msgEvent.recipient?.id;
+        if (!senderId) continue;
+
+        // Skip echo
+        if (msgEvent.message?.is_echo) continue;
+        if (senderId === recipientId) continue;
+        if (igPageId && senderId === igPageId) continue;
+        if (fbPageId && senderId === fbPageId) continue;
+
+        // Determine channel
+        let channel = 'facebook';
+        if (igPageId && (recipientId === igPageId || entry.id === igPageId)) channel = 'instagram';
+        else if (fbPageId && (recipientId === fbPageId || entry.id === fbPageId)) channel = 'facebook';
+
+        const chatIdField = channel + 'ChatId';
+        const evMessage = msgEvent.message;
+        const evPostback = msgEvent.postback;
+
+        let text = '';
+        const attachments = [];
+
+        if (evMessage) {
+          text = evMessage.text || '';
+          if (evMessage.attachments) {
+            for (const att of evMessage.attachments) {
+              if (att.type === 'image') { attachments.push({ type: 'image', url: att.payload?.url }); if (!text) text = '🖼 Фото'; }
+              else if (att.type === 'video') { attachments.push({ type: 'video', url: att.payload?.url }); if (!text) text = '🎬 Відео'; }
+              else if (att.type === 'audio') { attachments.push({ type: 'audio', url: att.payload?.url }); if (!text) text = '🎤 Аудіо'; }
+              else if (att.type === 'file') { attachments.push({ type: 'file', url: att.payload?.url }); if (!text) text = '📎 Файл'; }
+            }
+          }
+          if (evMessage.story_mention && !text) text = '📖 Згадав(ла) вас в Stories';
+          if (evMessage.quick_reply && !text) text = `🔘 ${evMessage.quick_reply.payload || 'Вибір'}`;
+        }
+        if (evPostback) {
+          text = `🔘 ${evPostback.title || evPostback.payload || 'Кнопка'}`;
+        }
+
+        if (!text && !attachments.length) continue;
+
+        // Get sender name from Meta API
+        let senderName = 'Клієнт';
+        try {
+          const token = channel === 'instagram'
+            ? orgData.integrations?.direct?.instagram?.accessToken
+            : orgData.integrations?.direct?.facebook?.accessToken;
+          if (token) {
+            const resp = await fetch(`https://graph.facebook.com/v18.0/${senderId}?fields=name,first_name&access_token=${token}`);
+            const data = await resp.json();
+            if (data.name) senderName = data.name;
+            else if (data.first_name) senderName = data.first_name;
+          }
+        } catch (e) { /* non-critical */ }
+
+        const searchParams = { [chatIdField]: senderId };
+        let lead = await findLead(orgId, searchParams);
+        let isNewLead = false;
+
+        if (!lead) {
+          const autoCreate = orgData.integrations?.direct?.global?.autoCreateLead !== false;
+          if (!autoCreate) continue;
+          lead = await createLead(orgId, orgData, {
+            biz: senderName, [chatIdField]: senderId,
+            source: `${channel}_direct`, channel
+          });
+          isNewLead = true;
+        }
+
+        await saveMessage(orgId, {
+          leadId: lead.id, channel, direction: 'in', type: 'text',
+          text, senderName, chatId: senderId, attachments,
+          externalMsgId: evMessage?.mid, managerId: lead.assignedTo || null,
+          read: false, source: `${channel}_direct`
+        });
+
+        await db.collection('organizations').doc(orgId).collection('leads').doc(lead.id).update({
+          lastChannel: channel, [chatIdField]: senderId,
+          lastMessageAt: new Date().toISOString(),
+          log: admin.firestore.FieldValue.arrayUnion({
+            type: 'message_in', text: `[${channel}] ${senderName}: ${(text || '').slice(0, 100)}`, date: new Date().toISOString()
+          })
+        });
+
+        await emitEvent(orgId, {
+          type: 'new_message', channel,
+          leadId: lead.id, leadName: lead.biz || senderName,
+          text: (text || '').slice(0, 100), senderName,
+          managerId: lead.assignedTo, isNewLead
+        });
+
+        if (lead.assignedTo) {
+          const managerChatId = await getUserTelegramChatId(lead.assignedTo);
+          if (managerChatId) {
+            await sendTelegramMessage(managerChatId,
+              `💬 Нове повідомлення [${channel}]\n\n${senderName}: ${(text || '').slice(0, 200)}\n\n🔗 <a href="https://talko-crm.vercel.app">Відкрити CRM</a>`
+            );
+          }
+        }
+
+        console.log(`Direct${channel.charAt(0).toUpperCase() + channel.slice(1)} [${orgId}] lead:${lead.id} ${isNewLead ? '(NEW)' : ''}`);
+      }
+    }
+
+    return res.status(200).json({ status: 'ok' });
+  } catch (err) {
+    console.error('[DirectMeta] Error:', err);
+    return res.status(200).json({ status: 'ok' });
   }
 });
 
