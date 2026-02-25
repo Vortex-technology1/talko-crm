@@ -11012,7 +11012,15 @@ function showCallResultModal(lead) {
         if(el) el.remove();
         delete window._callResultPick;
         if(result && result !== 'cancel') {
-            taskAction(lead.id, result);
+            // taskAction збереже дані, потім відкриваємо Історію
+            const leadId = lead.id;
+            taskAction(leadId, result).then(() => {
+                openModal(leadId).then(() => {
+                    switchTab('history');
+                    const updatedLead = leads.find(l => l.id === leadId);
+                    if(updatedLead) renderCommLog(updatedLead);
+                });
+            });
         }
     };
     
@@ -14731,8 +14739,16 @@ async function setQuickFinal(finalAction) {
         showError('Помилка збереження: ' + err.message);
     }
     
+    const savedId = lead.id;
     closeQuickPanel();
     render();
+    
+    // Відкриваємо картку ліда на вкладці "Історія"
+    openModal(savedId).then(() => {
+        switchTab('history');
+        const updatedLead = leads.find(l => l.id === savedId);
+        if(updatedLead) renderCommLog(updatedLead);
+    });
 }
 
 function confirmQuickAction() {
@@ -14804,8 +14820,16 @@ function confirmQuickAction() {
     db.collection('organizations').doc(currentOrg.id).collection('leads').doc(lead.id).set(cleanData, { merge: true })
         .catch(err => showError('Помилка збереження: ' + err.message));
     
+    const savedLeadId = lead.id;
     closeQuickPanel();
     render();
+    
+    // Відкриваємо картку ліда на вкладці "Історія" щоб менеджер бачив запис
+    openModal(savedLeadId).then(() => {
+        switchTab('history');
+        const updatedLead = leads.find(l => l.id === savedLeadId);
+        if(updatedLead) renderCommLog(updatedLead);
+    });
 }
 
 function calculateNextDateTime(timeCode) {
