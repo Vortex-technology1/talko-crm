@@ -9190,11 +9190,10 @@ async function quickComplete(id) {
     
     const [date, time] = nextDate.split('T');
     
-    lead.calls = (lead.calls || 0) + 1;
     lead.nextAction = nextAction;
     lead.nextDate = date;
     lead.nextTime = time || '10:00';
-    addLog(lead, 'call', 'Виконано: ' + (lead.nextAction || 'дзвінок'));
+    addLog(lead, 'status', 'Виконано: ' + (lead.nextAction || 'задача'));
     
     // Зберігаємо напряму в Firebase
     if(!currentOrg?.id) return;
@@ -10941,16 +10940,16 @@ function renderCommLog(l){
         let callClass = e.type;
         let callLabel = {call:'Дзвінок',sms:'SMS',note:'Нотатка',status:'Статус'}[e.type]||e.type;
         if(e.type === 'call') {
-            if(e.text && (e.text.startsWith('Недодзвон') || e.text.startsWith('Не взяв'))) {
+            if(e.text && (e.text.startsWith('Недодзвон') || e.text.startsWith('Не взяв') || e.text.startsWith('Ще спроба'))) {
                 callClass = 'call-missed';
                 callLabel = 'Недодзвон';
-            } else if(e.text && e.text.startsWith('Додзвон')) {
+            } else if(e.text && (e.text.startsWith('Додзвон') || e.text.startsWith('Підтвердив') || e.text.startsWith('Думає,') || e.text.startsWith('Нагадав') || e.text.startsWith('Консультація підтверджена'))) {
                 callClass = 'call-reached';
                 callLabel = 'Додзвон';
             } else if(e.text && e.text.startsWith('Невірний')) {
                 callClass = 'call-wrong';
                 callLabel = 'Невірний №';
-            } else if(e.text && e.text.startsWith('Просив передзвонити')) {
+            } else if(e.text && (e.text.startsWith('Просив передзвонити') || e.text.startsWith('Чекаю дзвінок'))) {
                 callClass = 'call-callback';
                 callLabel = 'Передзвонити';
             }
@@ -11267,10 +11266,25 @@ function collectActivities(dateStr) {
             const entryDate = entry.date.substring(0, 10); // YYYY-MM-DD
             if(entryDate === targetDate) {
                 const d = new Date(entry.date);
+                // Визначаємо підтип для дзвінків
+                let actType = entry.type || 'note';
+                if(actType === 'call') {
+                    const txt = entry.text || '';
+                    if(txt.startsWith('Недодзвон') || txt.startsWith('Не взяв') || txt.startsWith('Ще спроба')) {
+                        actType = 'call_missed';
+                    } else if(txt.startsWith('Додзвон') || txt.startsWith('Підтвердив') || txt.startsWith('Думає,') || txt.startsWith('Нагадав') || txt.startsWith('Консультація підтверджена')) {
+                        actType = 'call_reached';
+                    } else if(txt.startsWith('Невірний')) {
+                        actType = 'call_wrong';
+                    } else if(txt.startsWith('Просив передзвонити') || txt.startsWith('Чекаю дзвінок')) {
+                        actType = 'call_callback';
+                    }
+                    // Інші call записи (Вихідний дзвінок) — залишаються як 'call'
+                }
                 activities.push({
                     time: d.toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit' }),
                     timestamp: entry.date,
-                    type: entry.type || 'note',
+                    type: actType,
                     text: entry.text || '',
                     leadId: l.id,
                     leadName: leadName,
@@ -11289,11 +11303,11 @@ function collectActivities(dateStr) {
 }
 
 function actTypeName(type) {
-    return { call: 'Дзвінок', sms: 'SMS', note: 'Нотатка', status: 'Статус', assign: 'Призначення', email: 'Email', meeting: 'Зустріч' }[type] || type;
+    return { call: 'Дзвінок', call_missed: 'Недодзвон', call_reached: 'Додзвон', call_wrong: 'Невірний №', call_callback: 'Передзвонити', sms: 'SMS', note: 'Нотатка', status: 'Статус', assign: 'Призначення', email: 'Email', meeting: 'Зустріч' }[type] || type;
 }
 
 function actTypeColor(type) {
-    return { call: '#3b82f6', sms: '#22c55e', note: '#8b5cf6', status: '#f97316', assign: '#06b6d4', email: '#eab308', meeting: '#ec4899' }[type] || '#6b7280';
+    return { call: '#3b82f6', call_missed: '#ef4444', call_reached: '#22c55e', call_wrong: '#6b7280', call_callback: '#f59e0b', sms: '#8b5cf6', note: '#64748b', status: '#f97316', assign: '#06b6d4', email: '#eab308', meeting: '#ec4899' }[type] || '#6b7280';
 }
 
 function exportActivityXLS(dateStr) {
@@ -11325,7 +11339,7 @@ function exportActivityXLS(dateStr) {
     const byUser = {};
     activities.forEach(a => {
         const user = getAssigneeEmail(a.assignedTo) || '(не призначено)';
-        if(!byUser[user]) byUser[user] = { total: 0, call: 0, sms: 0, note: 0, status: 0, assign: 0, other: 0 };
+        if(!byUser[user]) byUser[user] = { total: 0, call: 0, call_reached: 0, call_missed: 0, call_callback: 0, call_wrong: 0, sms: 0, note: 0, status: 0, assign: 0, other: 0 };
         byUser[user].total++;
         if(byUser[user][a.type] !== undefined) byUser[user][a.type]++;
         else byUser[user].other++;
@@ -11334,7 +11348,11 @@ function exportActivityXLS(dateStr) {
     const summaryData = Object.entries(byUser).map(([user, s]) => ({
         'Користувач': user,
         'Всього дій': s.total,
-        'Дзвінки': s.call,
+        'Дзвінки (інші)': s.call,
+        'Додзвони': s.call_reached,
+        'Недодзвони': s.call_missed,
+        'Передзвонити': s.call_callback,
+        'Невірний №': s.call_wrong,
         'SMS': s.sms,
         'Нотатки': s.note,
         'Зміни статусу': s.status,
@@ -11345,16 +11363,20 @@ function exportActivityXLS(dateStr) {
     summaryData.push({
         'Користувач': 'ВСЬОГО',
         'Всього дій': activities.length,
-        'Дзвінки': activities.filter(a => a.type === 'call').length,
+        'Дзвінки (інші)': activities.filter(a => a.type === 'call').length,
+        'Додзвони': activities.filter(a => a.type === 'call_reached').length,
+        'Недодзвони': activities.filter(a => a.type === 'call_missed').length,
+        'Передзвонити': activities.filter(a => a.type === 'call_callback').length,
+        'Невірний №': activities.filter(a => a.type === 'call_wrong').length,
         'SMS': activities.filter(a => a.type === 'sms').length,
         'Нотатки': activities.filter(a => a.type === 'note').length,
         'Зміни статусу': activities.filter(a => a.type === 'status').length,
         'Призначення': activities.filter(a => a.type === 'assign').length,
-        'Інше': activities.filter(a => !['call','sms','note','status','assign'].includes(a.type)).length
+        'Інше': activities.filter(a => !['call','call_reached','call_missed','call_callback','call_wrong','sms','note','status','assign'].includes(a.type)).length
     });
     
     const ws2 = XLSX.utils.json_to_sheet(summaryData);
-    ws2['!cols'] = [{ wch: 30 }, { wch: 12 }, { wch: 10 }, { wch: 8 }, { wch: 10 }, { wch: 16 }, { wch: 14 }, { wch: 8 }];
+    ws2['!cols'] = [{ wch: 30 }, { wch: 12 }, { wch: 14 }, { wch: 12 }, { wch: 14 }, { wch: 14 }, { wch: 12 }, { wch: 8 }, { wch: 10 }, { wch: 16 }, { wch: 14 }, { wch: 8 }];
     
     // Лист 3: По годинах (розподіл активності)
     const byHour = {};
