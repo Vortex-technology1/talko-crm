@@ -882,6 +882,8 @@
         .k-tag.has-deposit{background:#d1fae5;color:#065f46}
         .k-tag.action-today{background:#f5f3ff;color:#7c3aed}
         .k-tag.action-tomorrow{background:#f0fdf4;color:#16a34a}
+        .k-tag.call-stats{background:#eff6ff;color:#1d4ed8}
+        .k-tag.unreachable{background:#fef2f2;color:#dc2626;font-weight:600}
         .score{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600}
         .score.hot{background:#fee2e2;color:#dc2626}
         .score.warm{background:#fef3c7;color:#d97706}
@@ -1013,6 +1015,10 @@
         .comm-item{display:flex;gap:10px;padding:10px;background:var(--gl);border-radius:8px;margin-bottom:8px}
         .comm-icon{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px}
         .comm-icon.call{background:var(--bl);color:var(--b)}
+        .comm-icon.call-missed{background:#fef2f2;color:#ef4444}
+        .comm-icon.call-reached{background:#f0fdf4;color:#22c55e}
+        .comm-icon.call-wrong{background:#f9fafb;color:#6b7280}
+        .comm-icon.call-callback{background:#fffbeb;color:#f59e0b}
         .comm-icon.sms{background:var(--pl);color:var(--p)}
         .comm-icon.note{background:#f5f3ff;color:#8b5cf6}
         .comm-icon.status{background:var(--ol);color:var(--o)}
@@ -1716,6 +1722,7 @@
                 <button class="filter-btn" onclick="setFilter('action')"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> Дія сьогодні</button>
                 <button class="filter-btn" onclick="setFilter('money')"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg> Чекають оплату</button>
                 <button class="filter-btn" onclick="setFilter('overdue_hw')"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> Прострочені ДЗ</button>
+                <button class="filter-btn" onclick="setFilter('unreachable')"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/><line x1="1" y1="1" x2="23" y2="23"/></svg> Недоступні</button>
             </div>
             <div class="kanban" id="kanban"></div>
         </div>
@@ -1996,9 +2003,19 @@
                     </div>
                     <div class="form-row">
                         <div class="form-group">
-                            <label class="form-label">Дзвінки</label>
-                            <select class="form-select" id="f-calls"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option></select>
+                            <label class="form-label">Дзвінки (всього)</label>
+                            <select class="form-select" id="f-calls"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select>
                         </div>
+                        <div class="form-group">
+                            <label class="form-label" style="color:#22c55e">Додзвони</label>
+                            <input type="number" class="form-input" id="f-calls-reached" min="0" style="border-color:#bbf7d0" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" style="color:#ef4444">Недодзвони</label>
+                            <input type="number" class="form-input" id="f-calls-missed" min="0" style="border-color:#fecaca" readonly>
+                        </div>
+                    </div>
+                    <div class="form-row">
                         <div class="form-group">
                             <label class="form-label">SMS</label>
                             <select class="form-select" id="f-sms"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option></select>
@@ -7440,7 +7457,7 @@ function exportLeadsToCSV() {
     // Заголовки
     const headers = [
         'ID', 'Telegram', 'Телефон', 'Email', 'Бізнес', 'Джерело',
-        'Статус', 'Дзвінки', 'SMS', 'No-show', 
+        'Статус', 'Дзвінки', 'Додзвони', 'Недодзвони', 'SMS', 'No-show', 
         'Наступна дія', 'Дата дії', 'Час дії',
         'Консультація', 'Завдаток', 'Повна сума',
         'Примітки', 'Звіт', 'Створено'
@@ -7456,6 +7473,8 @@ function exportLeadsToCSV() {
         SRC[l.source] || l.source || '',
         getStatusName(l.status) || '',
         l.calls || 0,
+        l.callsReached || 0,
+        l.callsMissed || 0,
         l.sms || 0,
         l.noshow || 0,
         l.nextAction || '',
@@ -8821,17 +8840,85 @@ async function taskAction(id,a){
             lead.consult=await promptDateTime('Дата консультації:',tomorrow()+'T14:00');
             if(!lead.consult) return; // Скасовано
             lead.noshow=0;
+            lead.unreachable=false;
             lead.nextDate=getDayBefore(lead.consult);
             lead.nextTime='10:00';
             lead.nextAction='Підтвердити консультацію';
             addLog(lead,'status','Консультація призначена на '+fmtDT(lead.consult));
             break;
         case'call_later':
+            // Показуємо модалку вибору результату дзвінка
+            // return щоб НЕ зберігати — збереження відбудеться в новому виклику taskAction
+            showCallResultModal(lead);
+            return;
+        case'call_missed':
             lead.calls=(lead.calls||0)+1;
-            lead.nextDate=tomorrow();
-            lead.nextTime='10:00';
-            lead.nextAction='Подзвонити';
-            addLog(lead,'call','Не взяв трубку');
+            lead.callsMissed=(lead.callsMissed||0)+1;
+            lead.callsMissedStreak=(lead.callsMissedStreak||0)+1;
+            {
+                // Авто-задача через 2 години (або завтра якщо вже пізно)
+                const nowH = new Date().getHours();
+                if(nowH < 17) {
+                    // Через 2 години сьогодні
+                    const callbackH = Math.min(nowH + 2, 18);
+                    lead.nextDate = today();
+                    lead.nextTime = callbackH.toString().padStart(2,'0') + ':00';
+                } else {
+                    lead.nextDate = tomorrow();
+                    lead.nextTime = '10:00';
+                }
+                lead.nextAction = 'Передзвонити (недодзвон)';
+            }
+            addLog(lead,'call','Недодзвон — не взяв трубку');
+            // Мітка "Недоступний" при 3+ поспіль
+            if((lead.callsMissedStreak||0) >= 3) {
+                lead.unreachable = true;
+                addLog(lead,'status','Позначено як НЕДОСТУПНИЙ (3+ недодзвони поспіль)');
+            }
+            break;
+        case'call_reached':
+            lead.calls=(lead.calls||0)+1;
+            lead.callsReached=(lead.callsReached||0)+1;
+            lead.callsMissedStreak=0;
+            lead.unreachable = false; // Скидаємо мітку
+            {
+                const callNote = await promptModal('Про що говорили?', '', {placeholder: 'Коротко результат розмови...'});
+                if(callNote === null) {
+                    // Скасовано — все одно рахуємо як додзвон, просто без нотатки
+                    addLog(lead,'call','Додзвон');
+                } else {
+                    addLog(lead,'call','Додзвон' + (callNote.trim() ? ': ' + callNote.trim() : ''));
+                }
+            }
+            break;
+        case'call_callback':
+            lead.calls=(lead.calls||0)+1;
+            // Не рахуємо як missed — вони поговорили, просто просив пізніше
+            lead.callsReached=(lead.callsReached||0)+1;
+            lead.callsMissedStreak=0;
+            lead.unreachable = false;
+            {
+                const cbTime = await promptDateTime('Коли передзвонити?', tomorrow() + 'T14:00');
+                if(cbTime) {
+                    lead.nextDate = getDateOnly(cbTime);
+                    lead.nextTime = getTimeOnly(cbTime) || '10:00';
+                    lead.nextAction = 'Передзвонити (просив)';
+                    addLog(lead,'call','Просив передзвонити ' + fmtDT(cbTime));
+                } else {
+                    lead.nextDate = tomorrow();
+                    lead.nextTime = '10:00';
+                    lead.nextAction = 'Передзвонити';
+                    addLog(lead,'call','Просив передзвонити');
+                }
+            }
+            break;
+        case'call_wrong':
+            lead.calls=(lead.calls||0)+1;
+            lead.callsWrong=(lead.callsWrong||0)+1;
+            lead.unreachable = true;
+            lead.nextDate = today();
+            lead.nextAction = 'Перевірити номер / зв\'язатися через месенджер';
+            addLog(lead,'call','Невірний номер / номер не існує');
             break;
         case'call':
             lead.calls=(lead.calls||0)+1;
@@ -8892,6 +8979,11 @@ async function taskAction(id,a){
         case'complete':
             lead.status='completed';
             lead.calls=0;
+            lead.callsReached=0;
+            lead.callsMissed=0;
+            lead.callsMissedStreak=0;
+            lead.callsWrong=0;
+            lead.unreachable=false;
             lead.sms=0;
             lead.nextDate=today();
             lead.nextTime='10:00';
@@ -8919,6 +9011,11 @@ async function taskAction(id,a){
             lead.status='report_sent';
             lead.reportDate=today();
             lead.calls=0;
+            lead.callsReached=0;
+            lead.callsMissed=0;
+            lead.callsMissedStreak=0;
+            lead.callsWrong=0;
+            lead.unreachable=false;
             lead.sms=0;
             lead.nextDate=addDays(today(),2);
             lead.nextTime='10:00';
@@ -8927,6 +9024,9 @@ async function taskAction(id,a){
             break;
         case'followup':
             lead.calls=(lead.calls||0)+1;
+            lead.callsReached=(lead.callsReached||0)+1;
+            lead.callsMissedStreak=0;
+            lead.unreachable=false;
             lead.nextDate=addDays(today(),2);
             lead.nextTime='10:00';
             lead.nextAction='Дожати рішення';
@@ -8936,6 +9036,11 @@ async function taskAction(id,a){
             lead.status='repeat';
             lead.repeatCount=(lead.repeatCount||0)+1;
             lead.calls=0;
+            lead.callsReached=0;
+            lead.callsMissed=0;
+            lead.callsMissedStreak=0;
+            lead.callsWrong=0;
+            lead.unreachable=false;
             lead.sms=0;
             lead.noshow=0;
             lead.consult=await promptDateTime('Дата повторної консультації:',tomorrow()+'T14:00');
@@ -8969,13 +9074,21 @@ async function taskAction(id,a){
             }else return;
             break;
         case'dep_later':
+            lead.calls=(lead.calls||0)+1;
+            lead.callsReached=(lead.callsReached||0)+1;
+            lead.callsMissedStreak=0;
             lead.nextDate=addDays(today(), DEPOSIT_REMINDER_DAYS);
             lead.nextTime='10:00';
-            addLog(lead,'call','Нагадав, +тиждень');
+            addLog(lead,'call','Нагадав про оплату, +тиждень');
             break;
         case'react_ok':
             lead.status='new';
             lead.calls=0;
+            lead.callsReached=0;
+            lead.callsMissed=0;
+            lead.callsMissedStreak=0;
+            lead.callsWrong=0;
+            lead.unreachable=false;
             lead.sms=0;
             lead.noshow=0;
             lead.nextDate=today();
@@ -8986,19 +9099,19 @@ async function taskAction(id,a){
         case'react_later':
             lead.reactDate=addDays(today(), REACTIVATION_DAYS);
             lead.nextDate=lead.reactDate;
-            addLog(lead,'call','Реактивація +3 міс');
+            addLog(lead,'status','Реактивація +3 міс');
             break;
         case'react_year':
             lead.reactDate=addDays(today(),365);
             lead.nextDate=lead.reactDate;
-            addLog(lead,'call','Реактивація +1 рік');
+            addLog(lead,'status','Реактивація +1 рік');
             break;
         
         // ========== НОВІ ACTIONS ==========
         case'do_now':
             lead.nextDate=today();
             lead.nextTime=new Date().getHours().toString().padStart(2,'0')+':00';
-            addLog(lead,'call','Перенесено на зараз');
+            addLog(lead,'status','Перенесено на зараз');
             break;
         case'next_done':
             const nextAction = await promptModal('Наступна дія:', lead.nextAction || 'Подзвонити', {
@@ -9007,14 +9120,14 @@ async function taskAction(id,a){
             if(nextAction === null) return;
             const nextDT = await promptDateTime('Коли?', tomorrow() + 'T10:00');
             if(!nextDT) return;
-            addLog(lead,'call','Виконано: '+(lead.nextAction||'дія'));
+            addLog(lead,'status','Виконано: '+(lead.nextAction||'дія'));
             lead.nextAction = nextAction;
             lead.nextDate = getDateOnly(nextDT);
             lead.nextTime = getTimeOnly(nextDT) || '10:00';
             break;
         case'postpone_1d':
             lead.nextDate = tomorrow();
-            addLog(lead,'call','Відкладено на завтра');
+            addLog(lead,'status','Відкладено на завтра');
             break;
         case'send_sms':
             lead.sms=(lead.sms||0)+1;
@@ -9152,6 +9265,7 @@ function filterLeads(arr){
         case'action':return filtered.filter(l=>l.nextDate===t);
         case'money':return filtered.filter(l=>l.status==='deposit'||(l.status==='report_sent'&&l.calls>=2));
         case'overdue_hw':return filtered.filter(l=>hasOverdueHomework(l));
+        case'unreachable':return filtered.filter(l=>l.unreachable || (l.callsMissed||0) >= 3);
         default:return filtered;
     }
 }
@@ -9212,6 +9326,18 @@ function getTags(l){
         tags.push({cls:'has-deposit',icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>',text:'Завдаток'});
     }
     
+    // Статистика дзвінків (якщо є дзвінки)
+    if((l.calls||0) > 0) {
+        const reached = l.callsReached||0;
+        const missed = l.callsMissed||0;
+        tags.push({cls:'call-stats',icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>',text:l.calls+'/' + reached + '/' + missed});
+    }
+    
+    // Недоступний (3+ недодзвонів поспіль)
+    if(l.unreachable) {
+        tags.push({cls:'unreachable',icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/><line x1="1" y1="1" x2="23" y2="23"/></svg>',text:'Недоступний'});
+    }
+    
     // Дія сьогодні/завтра (якщо немає консультації сьогодні/завтра)
     const consultDate = l.consult ? (String(l.consult).includes('T') ? String(l.consult).split('T')[0] : String(l.consult)) : null;
     const hasConsultSoonTag = consultDate && (consultDate === t || consultDate === tm);
@@ -9262,9 +9388,10 @@ function kCard(l){
 function getAlert(l){
     if(!l.status)return{crit:true};
     if(l.nextDate&&l.nextDate<today())return{crit:true};
-    if(l.status==='new'&&l.calls>=3)return{crit:true};
+    if(l.status==='new'&&(l.callsMissed>=3||l.calls>=3))return{crit:true};
     if(l.status==='report_sent'&&l.calls>=3&&l.sms>=3)return{crit:true};
     if(l.noshow>=3)return{crit:true};
+    if(l.unreachable)return{crit:true};
     return null;
 }
 
@@ -9443,8 +9570,8 @@ async function handleTouchDrop(leadId, status) {
     lead.status = status;
     lead.stageDate = new Date().toISOString();
     
-    if(status === 'completed') { lead.calls = 0; lead.sms = 0; }
-    if(status === 'report_sent') { lead.reportDate = today(); lead.calls = 0; lead.sms = 0; lead.nextDate = tomorrow(); }
+    if(status === 'completed') { lead.calls = 0; lead.callsReached = 0; lead.callsMissed = 0; lead.callsMissedStreak = 0; lead.callsWrong = 0; lead.unreachable = false; lead.sms = 0; }
+    if(status === 'report_sent') { lead.reportDate = today(); lead.calls = 0; lead.callsReached = 0; lead.callsMissed = 0; lead.callsMissedStreak = 0; lead.callsWrong = 0; lead.unreachable = false; lead.sms = 0; lead.nextDate = tomorrow(); }
     
     addLog(lead, 'status', getStatusName(old, lead.funnelId) + ' → ' + getStatusName(status, lead.funnelId));
     
@@ -9573,8 +9700,8 @@ async function dDrop(e, status) {
     lead.status = status;
     lead.stageDate = new Date().toISOString();
     
-    if(status === 'completed'){ lead.calls = 0; lead.sms = 0; }
-    if(status === 'report_sent'){ lead.reportDate = today(); lead.calls = 0; lead.sms = 0; lead.nextDate = tomorrow(); }
+    if(status === 'completed'){ lead.calls = 0; lead.callsReached = 0; lead.callsMissed = 0; lead.callsMissedStreak = 0; lead.callsWrong = 0; lead.unreachable = false; lead.sms = 0; }
+    if(status === 'report_sent'){ lead.reportDate = today(); lead.calls = 0; lead.callsReached = 0; lead.callsMissed = 0; lead.callsMissedStreak = 0; lead.callsWrong = 0; lead.unreachable = false; lead.sms = 0; lead.nextDate = tomorrow(); }
     
     addLog(lead, 'status', getStatusName(oldStatus, lead.funnelId) + ' → ' + getStatusName(status, lead.funnelId));
     
@@ -10414,7 +10541,7 @@ function switchTab(t){
     }
 }
 function resetForm(){
-    ['f-id','f-status','f-noshow','f-tg','f-phone','f-viber','f-whatsapp','f-email','f-primary-channel','f-biz','f-source','f-consult','f-repeat','f-calls','f-sms','f-next','f-next-time','f-action','f-fail','f-report','f-notes','l-record','l-report','l-kp','l-contract','fin-dep','fin-dep-cur','fin-dep-date','fin-total','fin-total-cur','fin-paid-date'].forEach(id=>{
+    ['f-id','f-status','f-noshow','f-tg','f-phone','f-viber','f-whatsapp','f-email','f-primary-channel','f-biz','f-source','f-consult','f-repeat','f-calls','f-calls-reached','f-calls-missed','f-sms','f-next','f-next-time','f-action','f-fail','f-report','f-notes','l-record','l-report','l-kp','l-contract','fin-dep','fin-dep-cur','fin-dep-date','fin-total','fin-total-cur','fin-paid-date'].forEach(id=>{
         const e=document.getElementById(id);if(e)e.value='';
     });
     document.getElementById('f-next-time').value='10:00';
@@ -10472,6 +10599,8 @@ function fillForm(l){
     
     document.getElementById('f-repeat').value=l.repeatCount||'0';
     document.getElementById('f-calls').value=l.calls||'0';
+    document.getElementById('f-calls-reached').value=l.callsReached||0;
+    document.getElementById('f-calls-missed').value=l.callsMissed||0;
     document.getElementById('f-sms').value=l.sms||'0';
     document.getElementById('f-next').value=l.nextDate||'';
     document.getElementById('f-next-time').value=l.nextTime||'10:00';
@@ -10605,6 +10734,10 @@ async function saveLeadForm(){
     const assignedToRaw = document.getElementById('f-assignee')?.value;
     const assignedTo = assignedToRaw && assignedToRaw.trim() !== '' ? assignedToRaw : null;
     
+    // Зберігаємо поля які не мають input (callsWrong, unreachable)
+    const existingId = document.getElementById('f-id').value;
+    const oldLead = existingId ? leads.find(x => x.id === existingId) : null;
+    
     const data={
         id:document.getElementById('f-id').value||genId(),
         funnelId,
@@ -10622,6 +10755,10 @@ async function saveLeadForm(){
         consultations: getConsultationsFromForm(),
         repeatCount:+document.getElementById('f-repeat').value||0,
         calls:+document.getElementById('f-calls').value||0,
+        callsReached:+document.getElementById('f-calls-reached').value||0,
+        callsMissed:+document.getElementById('f-calls-missed').value||0,
+        callsWrong: oldLead?.callsWrong || 0,
+        unreachable: oldLead?.unreachable || false,
         sms:+document.getElementById('f-sms').value||0,
         nextDate:document.getElementById('f-next').value,
         nextTime:document.getElementById('f-next-time').value||'10:00',
@@ -10799,15 +10936,34 @@ function renderCommLog(l){
     const log=l.log||[];
     const c=document.getElementById('comm-log');
     if(!log.length){c.innerHTML='<div style="color:var(--g);text-align:center;padding:20px">Історія порожня</div>';return;}
-    c.innerHTML=log.slice().reverse().map(e=>`
+    c.innerHTML=log.slice().reverse().map(e=>{
+        // Визначаємо підтип дзвінка для кольорової диференціації
+        let callClass = e.type;
+        let callLabel = {call:'Дзвінок',sms:'SMS',note:'Нотатка',status:'Статус'}[e.type]||e.type;
+        if(e.type === 'call') {
+            if(e.text && (e.text.startsWith('Недодзвон') || e.text.startsWith('Не взяв'))) {
+                callClass = 'call-missed';
+                callLabel = 'Недодзвон';
+            } else if(e.text && e.text.startsWith('Додзвон')) {
+                callClass = 'call-reached';
+                callLabel = 'Додзвон';
+            } else if(e.text && e.text.startsWith('Невірний')) {
+                callClass = 'call-wrong';
+                callLabel = 'Невірний №';
+            } else if(e.text && e.text.startsWith('Просив передзвонити')) {
+                callClass = 'call-callback';
+                callLabel = 'Передзвонити';
+            }
+        }
+        return `
         <div class="comm-item">
-            <div class="comm-icon ${e.type}">${{call:'<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>',sms:'<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>',note:'<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>',status:'<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>'}[e.type]||'•'}</div>
+            <div class="comm-icon ${callClass}">${{call:'<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>','call-missed':'<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#ef4444" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/><line x1="1" y1="1" x2="23" y2="23"/></svg>','call-reached':'<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#22c55e" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/><polyline points="22 4 12 14.01 9 11.01"/></svg>','call-wrong':'<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#6b7280" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>','call-callback':'<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#f59e0b" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>',sms:'<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>',note:'<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>',status:'<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>'}[callClass]||'•'}</div>
             <div class="comm-body">
-                <div class="comm-head"><span class="comm-type">${{call:'Дзвінок',sms:'SMS',note:'Нотатка',status:'Статус'}[e.type]||e.type}</span><span class="comm-date">${fmtDT(e.date)}</span></div>
+                <div class="comm-head"><span class="comm-type">${callLabel}</span><span class="comm-date">${fmtDT(e.date)}</span></div>
                 <div class="comm-text">${e.text}</div>
             </div>
         </div>
-    `).join('');
+    `;}).join('');
 }
 function addComm(){
     if(!editing)return;
@@ -10817,7 +10973,12 @@ function addComm(){
     const idx=leads.findIndex(x=>x.id===editing);if(idx<0)return;
     const l=leads[idx]; // Працюємо з оригіналом!
     addLog(l,type,text);
-    if(type==='call'){l.calls=(l.calls||0)+1;document.getElementById('f-calls').value=l.calls;}
+    if(type==='call'){
+        l.calls=(l.calls||0)+1;
+        document.getElementById('f-calls').value=l.calls;
+        document.getElementById('f-calls-reached').value=l.callsReached||0;
+        document.getElementById('f-calls-missed').value=l.callsMissed||0;
+    }
     if(type==='sms'){l.sms=(l.sms||0)+1;document.getElementById('f-sms').value=l.sms;}
     
     // Зберігаємо напряму в Firebase
@@ -10830,6 +10991,68 @@ function addComm(){
     document.getElementById('comm-text').value='';
 }
 function addLog(l,type,text){if(!l.log)l.log=[];l.log.push({type,text,date:new Date().toISOString()});}
+
+// ===== CALL RESULT MODAL =====
+function showCallResultModal(lead) {
+    const overlay = document.createElement('div');
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:10000;display:flex;align-items:center;justify-content:center;padding:16px';
+    overlay.id = 'call-result-overlay';
+    
+    // Видаляємо попередній якщо є
+    const prev = document.getElementById('call-result-overlay');
+    if(prev) prev.remove();
+    
+    const missedCount = lead.callsMissed || 0;
+    const reachedCount = lead.callsReached || 0;
+    const totalCalls = lead.calls || 0;
+    
+    // Глобальна функція для обробки вибору
+    window._callResultPick = function(result) {
+        const el = document.getElementById('call-result-overlay');
+        if(el) el.remove();
+        delete window._callResultPick;
+        if(result && result !== 'cancel') {
+            taskAction(lead.id, result);
+        }
+    };
+    
+    overlay.innerHTML = `<div style="background:#fff;border-radius:16px;padding:24px;max-width:400px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.2)">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+            <h3 style="margin:0;font-size:16px;font-weight:600">Результат дзвінка</h3>
+            <div style="display:flex;gap:12px;font-size:13px;color:#525252">
+                <span title="Всього дзвінків">${totalCalls} <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-2px"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg></span>
+                <span style="color:#22c55e" title="Додзвони">${reachedCount} <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#22c55e" stroke-width="2" style="vertical-align:-2px"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></span>
+                <span style="color:#ef4444" title="Недодзвони">${missedCount} <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#ef4444" stroke-width="2" style="vertical-align:-2px"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg></span>
+            </div>
+        </div>
+        <div style="display:grid;gap:8px">
+            <button onclick="_callResultPick('call_missed')" style="display:flex;align-items:center;gap:10px;padding:12px 16px;border:1px solid #fecaca;background:#fef2f2;border-radius:12px;cursor:pointer;font-size:14px;text-align:left;color:#991b1b;transition:all .15s">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#ef4444" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/><line x1="1" y1="1" x2="23" y2="23" stroke="#ef4444" stroke-width="2"/></svg>
+                <div><div style="font-weight:600">Не взяв</div><div style="font-size:12px;color:#b91c1c;margin-top:2px">Передзвоню через 2 год</div></div>
+            </button>
+            <button onclick="_callResultPick('call_reached')" style="display:flex;align-items:center;gap:10px;padding:12px 16px;border:1px solid #bbf7d0;background:#f0fdf4;border-radius:12px;cursor:pointer;font-size:14px;text-align:left;color:#166534;transition:all .15s">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#22c55e" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/><polyline points="22 4 12 14.01 9 11.01" stroke="#22c55e"/></svg>
+                <div><div style="font-weight:600">Поговорили</div><div style="font-size:12px;color:#15803d;margin-top:2px">Додзвон — запишу результат</div></div>
+            </button>
+            <button onclick="_callResultPick('call_callback')" style="display:flex;align-items:center;gap:10px;padding:12px 16px;border:1px solid #fde68a;background:#fffbeb;border-radius:12px;cursor:pointer;font-size:14px;text-align:left;color:#92400e;transition:all .15s">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#f59e0b" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                <div><div style="font-weight:600">Передзвонити пізніше</div><div style="font-size:12px;color:#b45309;margin-top:2px">Просив перенести</div></div>
+            </button>
+            <button onclick="_callResultPick('call_wrong')" style="display:flex;align-items:center;gap:10px;padding:12px 16px;border:1px solid #e5e7eb;background:#f9fafb;border-radius:12px;cursor:pointer;font-size:14px;text-align:left;color:#374151;transition:all .15s">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#6b7280" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                <div><div style="font-weight:600">Невірний номер</div><div style="font-size:12px;color:#6b7280;margin-top:2px">Номер не існує або чужий</div></div>
+            </button>
+        </div>
+        <button onclick="_callResultPick('cancel')" style="width:100%;margin-top:12px;padding:10px;border:none;background:#f3f4f6;border-radius:10px;cursor:pointer;font-size:13px;color:#6b7280">Скасувати</button>
+    </div>`;
+    
+    // Закриття по кліку на фон
+    overlay.addEventListener('click', (e) => {
+        if(e.target === overlay) _callResultPick('cancel');
+    });
+    
+    document.body.appendChild(overlay);
+}
 
 function qAction(a){if(!editing)return;closeModal();taskAction(editing,a==='call'?'call_later':a==='sms'?'followup':a==='schedule'?'schedule':'fail');}
 
@@ -13839,6 +14062,11 @@ async function changeLeadStatus(leadId, newStatus) {
             lead.nextTime = '10:00';
             lead.nextAction = 'Написати звіт';
             lead.calls = 0;
+            lead.callsReached = 0;
+            lead.callsMissed = 0;
+            lead.callsMissedStreak = 0;
+            lead.callsWrong = 0;
+            lead.unreachable = false;
             lead.sms = 0;
             break;
             
@@ -13863,6 +14091,11 @@ async function changeLeadStatus(leadId, newStatus) {
             lead.nextTime = '10:00';
             lead.nextAction = 'Підтвердити консультацію';
             lead.calls = 0;
+            lead.callsReached = 0;
+            lead.callsMissed = 0;
+            lead.callsMissedStreak = 0;
+            lead.callsWrong = 0;
+            lead.unreachable = false;
             lead.sms = 0;
             lead.noshow = 0;
             break;
@@ -14459,6 +14692,7 @@ async function setQuickFinal(finalAction) {
         lead.status = 'scheduled';
         lead.consult = dt;
         lead.noshow = 0;
+        lead.unreachable = false;
         lead.nextDate = getDayBefore(dt);
         lead.nextTime = '10:00';
         lead.nextAction = 'Підтвердити консультацію';
@@ -14466,6 +14700,11 @@ async function setQuickFinal(finalAction) {
     } else if(finalAction === 'completed') {
         lead.status = 'completed';
         lead.calls = 0;
+        lead.callsReached = 0;
+        lead.callsMissed = 0;
+        lead.callsMissedStreak = 0;
+        lead.callsWrong = 0;
+        lead.unreachable = false;
         lead.sms = 0;
         lead.nextDate = today();
         lead.nextTime = '10:00';
@@ -14514,16 +14753,28 @@ function confirmQuickAction() {
     // Update counters based on outcome
     if(quickState.outcome === 'no_answer') {
         lead.calls = (lead.calls || 0) + 1;
-        addLog(lead, 'call', 'Не взяв трубку' + (combinedNote ? ': ' + combinedNote : ''));
+        lead.callsMissed = (lead.callsMissed || 0) + 1;
+        lead.callsMissedStreak = (lead.callsMissedStreak || 0) + 1;
+        addLog(lead, 'call', 'Недодзвон — не взяв трубку' + (combinedNote ? ': ' + combinedNote : ''));
+        // Мітка "Недоступний" при 3+ поспіль
+        if((lead.callsMissedStreak||0) >= 3) {
+            lead.unreachable = true;
+        }
     } else if(quickState.outcome === 'sms') {
         lead.sms = (lead.sms || 0) + 1;
         addLog(lead, 'sms', 'SMS надіслано' + (combinedNote ? ': ' + combinedNote : ''));
     } else if(quickState.outcome === 'callback') {
+        lead.callsReached = (lead.callsReached || 0) + 1;
+        lead.callsMissedStreak = 0;
+        lead.unreachable = false;
         addLog(lead, 'call', 'Чекаю дзвінок' + (combinedNote ? ': ' + combinedNote : ''));
     } else if(quickState.outcome === 'answered') {
         lead.calls = (lead.calls || 0) + 1;
+        lead.callsReached = (lead.callsReached || 0) + 1;
+        lead.callsMissedStreak = 0;
+        lead.unreachable = false;
         const logText = combinedNote || quickState.action || 'Розмова';
-        addLog(lead, 'call', logText);
+        addLog(lead, 'call', 'Додзвон: ' + logText);
     }
     
     // Save comment to notes if it's meaningful
@@ -15080,6 +15331,12 @@ document.addEventListener('keydown', (e) => {
         e.preventDefault();
         
         // Priority order: close the topmost modal first
+        
+        // 0. Call result modal
+        if(document.getElementById('call-result-overlay')) {
+            if(window._callResultPick) _callResultPick('cancel');
+            return;
+        }
         
         // 1. Confirm modal
         if(document.getElementById('confirm-modal')?.classList.contains('active')) {
