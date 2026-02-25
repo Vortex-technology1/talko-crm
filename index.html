@@ -11179,18 +11179,40 @@ function showActivityModal(dateStr) {
         byUser[user].push(a);
     });
     
-    // Зведення по типах дій
-    const summary = {};
+    // Зведення по типах дій — об'єднуємо call-підтипи
+    const callTypes = ['call', 'call_missed', 'call_reached', 'call_callback', 'call_wrong'];
+    const isCallType = (t) => callTypes.includes(t);
+    
+    const totalCalls = activities.filter(a => isCallType(a.type)).length;
+    const totalReached = activities.filter(a => a.type === 'call_reached').length;
+    const totalMissed = activities.filter(a => a.type === 'call_missed').length;
+    
+    // Не-call типи
+    const nonCallSummary = {};
     activities.forEach(a => {
-        const key = a.type;
-        summary[key] = (summary[key] || 0) + 1;
+        if(!isCallType(a.type)) {
+            nonCallSummary[a.type] = (nonCallSummary[a.type] || 0) + 1;
+        }
     });
     
     let usersHTML = '';
     Object.entries(byUser).sort((a,b) => b[1].length - a[1].length).forEach(([user, acts]) => {
-        const typeCounts = {};
-        acts.forEach(a => { typeCounts[a.type] = (typeCounts[a.type] || 0) + 1; });
-        const typeStr = Object.entries(typeCounts).map(([t, c]) => `<span style="background:#f0fdf4;color:#166534;padding:2px 8px;border-radius:4px;font-size:11px;margin-right:4px">${actTypeName(t)}: ${c}</span>`).join('');
+        // Для юзера: Дзвінки(загальна) / Додзвони / Недодзвони + інше
+        const userCalls = acts.filter(a => isCallType(a.type)).length;
+        const userReached = acts.filter(a => a.type === 'call_reached').length;
+        const userMissed = acts.filter(a => a.type === 'call_missed').length;
+        const nonCallCounts = {};
+        acts.forEach(a => { if(!isCallType(a.type)) nonCallCounts[a.type] = (nonCallCounts[a.type] || 0) + 1; });
+        
+        let typeStr = '';
+        if(userCalls > 0) {
+            typeStr += `<span style="background:#eff6ff;color:#1d4ed8;padding:2px 8px;border-radius:4px;font-size:11px;margin-right:4px">Дзвінки: ${userCalls}</span>`;
+            if(userReached > 0) typeStr += `<span style="background:#f0fdf4;color:#166534;padding:2px 8px;border-radius:4px;font-size:11px;margin-right:4px">Додзвони: ${userReached}</span>`;
+            if(userMissed > 0) typeStr += `<span style="background:#fef2f2;color:#991b1b;padding:2px 8px;border-radius:4px;font-size:11px;margin-right:4px">Недодзвони: ${userMissed}</span>`;
+        }
+        Object.entries(nonCallCounts).forEach(([t, c]) => {
+            typeStr += `<span style="background:#f0fdf4;color:#166534;padding:2px 8px;border-radius:4px;font-size:11px;margin-right:4px">${actTypeName(t)}: ${c}</span>`;
+        });
         
         usersHTML += `
             <div style="padding:14px;background:#f9fafb;border-radius:10px;margin-bottom:8px">
@@ -11217,12 +11239,27 @@ function showActivityModal(dateStr) {
         usersHTML = '<div style="text-align:center;padding:40px;color:#6b7280">Немає дій за обрану дату</div>';
     }
     
-    const summaryHTML = Object.entries(summary).map(([t, c]) => 
-        `<div style="text-align:center;padding:10px 14px;background:#fff;border-radius:8px;border:1px solid #e5e7eb">
+    let summaryHTML = '';
+    if(totalCalls > 0) {
+        summaryHTML += `<div style="text-align:center;padding:10px 14px;background:#fff;border-radius:8px;border:1px solid #e5e7eb">
+            <div style="font-size:20px;font-weight:700;color:#3b82f6">${totalCalls}</div>
+            <div style="font-size:11px;color:#6b7280">Дзвінки</div>
+        </div>`;
+        if(totalReached > 0) summaryHTML += `<div style="text-align:center;padding:10px 14px;background:#fff;border-radius:8px;border:1px solid #e5e7eb">
+            <div style="font-size:20px;font-weight:700;color:#22c55e">${totalReached}</div>
+            <div style="font-size:11px;color:#6b7280">Додзвони</div>
+        </div>`;
+        if(totalMissed > 0) summaryHTML += `<div style="text-align:center;padding:10px 14px;background:#fff;border-radius:8px;border:1px solid #e5e7eb">
+            <div style="font-size:20px;font-weight:700;color:#ef4444">${totalMissed}</div>
+            <div style="font-size:11px;color:#6b7280">Недодзвони</div>
+        </div>`;
+    }
+    Object.entries(nonCallSummary).forEach(([t, c]) => {
+        summaryHTML += `<div style="text-align:center;padding:10px 14px;background:#fff;border-radius:8px;border:1px solid #e5e7eb">
             <div style="font-size:20px;font-weight:700;color:${actTypeColor(t)}">${c}</div>
             <div style="font-size:11px;color:#6b7280">${actTypeName(t)}</div>
-        </div>`
-    ).join('');
+        </div>`;
+    });
     
     modal.innerHTML = `
         <div style="background:#fff;border-radius:16px;width:100%;max-width:700px;max-height:85vh;overflow:hidden;display:flex;flex-direction:column">
@@ -11345,38 +11382,36 @@ function exportActivityXLS(dateStr) {
         else byUser[user].other++;
     });
     
+    const callTypes = ['call', 'call_reached', 'call_missed', 'call_callback', 'call_wrong'];
+    const isCall = (t) => callTypes.includes(t);
+    
     const summaryData = Object.entries(byUser).map(([user, s]) => ({
         'Користувач': user,
         'Всього дій': s.total,
-        'Дзвінки (інші)': s.call,
+        'Дзвінки': s.call + s.call_reached + s.call_missed + s.call_callback + s.call_wrong,
         'Додзвони': s.call_reached,
         'Недодзвони': s.call_missed,
-        'Передзвонити': s.call_callback,
-        'Невірний №': s.call_wrong,
         'SMS': s.sms,
-        'Нотатки': s.note,
         'Зміни статусу': s.status,
         'Призначення': s.assign,
-        'Інше': s.other
+        'Інше': s.other + s.note
     }));
     // Підсумок
+    const totalCallsXLS = activities.filter(a => isCall(a.type)).length;
     summaryData.push({
         'Користувач': 'ВСЬОГО',
         'Всього дій': activities.length,
-        'Дзвінки (інші)': activities.filter(a => a.type === 'call').length,
+        'Дзвінки': totalCallsXLS,
         'Додзвони': activities.filter(a => a.type === 'call_reached').length,
         'Недодзвони': activities.filter(a => a.type === 'call_missed').length,
-        'Передзвонити': activities.filter(a => a.type === 'call_callback').length,
-        'Невірний №': activities.filter(a => a.type === 'call_wrong').length,
         'SMS': activities.filter(a => a.type === 'sms').length,
-        'Нотатки': activities.filter(a => a.type === 'note').length,
         'Зміни статусу': activities.filter(a => a.type === 'status').length,
         'Призначення': activities.filter(a => a.type === 'assign').length,
-        'Інше': activities.filter(a => !['call','call_reached','call_missed','call_callback','call_wrong','sms','note','status','assign'].includes(a.type)).length
+        'Інше': activities.filter(a => !isCall(a.type) && !['sms','status','assign'].includes(a.type)).length
     });
     
     const ws2 = XLSX.utils.json_to_sheet(summaryData);
-    ws2['!cols'] = [{ wch: 30 }, { wch: 12 }, { wch: 14 }, { wch: 12 }, { wch: 14 }, { wch: 14 }, { wch: 12 }, { wch: 8 }, { wch: 10 }, { wch: 16 }, { wch: 14 }, { wch: 8 }];
+    ws2['!cols'] = [{ wch: 30 }, { wch: 12 }, { wch: 10 }, { wch: 12 }, { wch: 14 }, { wch: 8 }, { wch: 16 }, { wch: 14 }, { wch: 8 }];
     
     // Лист 3: По годинах (розподіл активності)
     const byHour = {};
